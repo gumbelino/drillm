@@ -11,32 +11,100 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 
 library(reticulate)
-use_python_version("3.13.1")
-
-py_run_file("py/test.py")
+library(tidyverse)
+library(readxl)
+library(rlang)
+library(psych)
 
 ```
 
-```{python}
+## Get available LLMs
+```{r}
 
-def greet_and_create_file():
-  # Print "Hello"
-  print("Hello")
+# Read the CSV file into a data frame and remove duplicates
+models <- read_csv("private/llms_v2.csv") %>%
+  distinct(provider, model)
 
-  # Define the file path
-  file_path = os.path.join(os.path.dirname(__file__), "data/hello.txt")
+# Initialize a vector to store the 'has_data' values
+has_data_flags <- logical(nrow(models))
 
-  # Ensure the directory exists
-  os.makedirs(os.path.dirname(file_path), exist_ok=True)
+# Iterate over each row in the models data frame
+for (i in 1:nrow(models)) {
+  provider <- models$provider[i]
+  model <- models$model[i]
+  
+  # Create the path
+  path <- paste0("llm_data/", provider, "/", model)
+  
+  # Check if the path exists and set the 'has_data' flag accordingly
+  has_data_flags[i] <- file.exists(path)
+}
 
-  # Write "Hello there" to the file
-  with open(file_path, "w") as file:
-    file.write("Hello there")
+# Add the 'has_data' column to the models data frame
+models <- models %>%
+  mutate(has_data = has_data_flags)
+
+```
 
 
-# Call the function
-greet_and_create_file()
 
+## Generate LLM data
+
+```{r}
+# py_run_file("py/test.py")
+
+```
+
+# Read LLM data
+
+```{r}
+
+considerations <- read_csv("llm_data/1.Uppsala Speaks_considerations.csv")
+considerations <- considerations %>% select(-c(1:4))
+
+long_data <- pivot_longer(considerations, cols = everything(), names_to = "Consideration", values_to = "Value")
+
+
+# Create a box plot using ggplot2
+ggplot(long_data, aes(x = Consideration, y = Value, fill = Consideration)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Considerations",
+       x = "Consideration",
+       y = "Value") +
+  theme_minimal() +
+  theme(legend.position = "none")  # Remove legend since x-axis labels suffice
+
+```
+
+```{r}
+policies <- read_csv("llm_data/1.Uppsala Speaks_policies.csv")
+policies <- policies %>% select(-c(1:4))
+
+long_data <- pivot_longer(policies, cols = everything(), names_to = "Policy", values_to = "Value")
+
+
+# Create a box plot using ggplot2
+ggplot(long_data, aes(x = Policy, y = Value, fill = Policy)) +
+  geom_boxplot() +
+  labs(title = "Box Plot of Policies",
+       x = "Policy",
+       y = "Value") +
+  theme_minimal() +
+  theme(legend.position = "none")  # Remove legend since x-axis labels suffice
+
+```
+
+
+## Calculate Cronbach's Alpha
+```{r echo=FALSE}
+res_c <- alpha(considerations, check.keys = TRUE)
+res_p <- alpha(policies, check.keys = TRUE)
+```
+
+```{r}
+# Print the result
+print(res_c$total$raw_alpha)
+print(res_p$total$raw_alpha)
 ```
 
 

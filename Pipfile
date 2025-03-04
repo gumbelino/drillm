@@ -5,6 +5,17 @@ name = "pypi"
 
 [packages]
 requests = "*"
+pandas = "*"
+openai = "*"
+openpyxl = "*"
+anthropic = "*"
+google-generativeai = "*"
+llamaapi = "*"
+tenacity = "*"
+cohere = "*"
+mistralai = "*"
+ollama = "*"
+boto3 = "*"
 
 [dev-packages]
 

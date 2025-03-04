@@ -1,0 +1,63 @@
+import pandas as pd
+
+SURVEYS_PATH = "data/surveys_v2.xlsx"
+
+
+def get_mps_data(file_path=SURVEYS_PATH):
+    xls = pd.ExcelFile(file_path)
+    sheets = {}
+    for sheet_name in xls.sheet_names:
+        sheets[sheet_name] = pd.read_excel(xls, sheet_name)
+    return sheets
+
+
+def sort_statements(statements, order):
+
+    if len(statements) != len(order):
+        raise ValueError("The lengths of 'statements' and 'order' must be equal.")
+
+    # Combine the statements and order lists into a list of tuples
+    statement_order_pairs = list(zip(statements, order))
+
+    # Sort the pairs based on the order values
+    sorted_statement_order_pairs = sorted(statement_order_pairs, key=lambda x: x[1])
+
+    # Separate the sorted statements from their corresponding order values
+    sorted_statements = [x[0] for x in sorted_statement_order_pairs]
+
+    return sorted_statements
+
+
+def get_policies_and_considerations(sheet):
+    policies = sheet["policies"].dropna().tolist()
+    considerations = sheet["considerations"].dropna().tolist()
+
+    policies_order = sheet["policies_order"].dropna().tolist()
+    policies_order = [int(i) for i in policies_order]
+    considerations_order = sheet["considerations_order"].dropna().tolist()
+    considerations_order = [int(i) for i in considerations_order]
+
+    # sort policies and considerations based on
+    policies = sort_statements(policies, policies_order)
+    considerations = sort_statements(considerations, considerations_order)
+
+    # read optional params
+    likert = sheet["likert"].dropna().tolist()
+    q_method = sheet["q-method"].dropna().tolist()
+
+    # print(likert)
+    # print(q_)
+
+    # convert to likert to value -- default: 10
+    if len(likert) > 0:
+        likert = int(likert[0])
+    else:
+        likert = 10
+
+    # convert to q_methof to value -- default: False
+    if len(q_method) > 0:
+        q_method = bool(q_method[0])
+    else:
+        q_method = False
+
+    return policies, considerations, likert, q_method
