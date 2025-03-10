@@ -144,7 +144,7 @@ def get_or_create_single_output(mp, model, columns, data_type):
     # get model provider
     provider = get_provider(model)
 
-    # crete {OUTPUTDIR}/{provider}/{model} string
+    # create {OUTPUTDIR}/{provider}/{model} string
     output_path = os.path.join(OUTPUT_DIR, provider, model)
 
     # create output directory if it doesn't exist
@@ -154,6 +154,12 @@ def get_or_create_single_output(mp, model, columns, data_type):
     # create output file
     output_file_name = f"{mp}_{data_type}.csv"
     output_file_path = os.path.join(output_path, output_file_name)
+
+    # prefix columns based on data_type
+    if data_type == POLICIES:
+        columns = [f"P{i+1}. {col}" for i, col in enumerate(columns)]
+    elif data_type == CONSIDERATIONS:
+        columns = [f"C{i+1}. {col}" for i, col in enumerate(columns)]
 
     # create file if it doesn't exist
     if not os.path.exists(output_file_path):

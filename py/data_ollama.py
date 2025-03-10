@@ -24,13 +24,17 @@ def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
     # get provider
     provider = PROVIDERS[model] if model in PROVIDERS else PROVIDER
 
+    # set temperature in runtime
+    # temperature = 0 is better for more deterministic output
+    options = {"temperature": 0}
+
     # build initial message
     messages = [
         {"role": "user", "content": c_prompt},
     ]
 
     # send first messageS
-    res: ChatResponse = chat(model=model, messages=messages)
+    res: ChatResponse = chat(model=model, messages=messages, options=options)
 
     c_response = res.message.content
 

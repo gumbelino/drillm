@@ -15,14 +15,27 @@ library(tidyverse)
 library(readxl)
 library(rlang)
 library(psych)
+library(bootstrap)
 
 ```
 
-## Get available LLMs
+
+## Define functions
+Maybe move this to it's own package...
 ```{r}
 
+create_file_path <- function(provider, model, survey, file_type) {
+  file.path("llm_data", provider, model, paste0(survey, "_", file_type, ".csv"))
+}
+
+```
+
+
+## Get available LLMs
+```{r }
+
 # Read the CSV file into a data frame and remove duplicates
-models <- read_csv("private/llms_v2.csv") %>%
+models <- read_csv("private/llms_v2.csv", show_col_types = FALSE) %>%
   distinct(provider, model)
 
 # Initialize a vector to store the 'has_data' values
@@ -44,87 +57,332 @@ for (i in 1:nrow(models)) {
 models <- models %>%
   mutate(has_data = has_data_flags)
 
-```
-
-
-
-## Generate LLM data
-
-```{r}
-# py_run_file("py/test.py")
+# Print rows where has_data is TRUE
+if (any(models$has_data)) {
+  print(models %>% filter(has_data == TRUE))
+} else {
+  warn("No data available!")
+}
 
 ```
 
-# Read LLM data
 
-```{r}
+## Get available surveys
+```{r survey names}
 
-considerations <- read_csv("llm_data/1.Uppsala Speaks_considerations.csv")
-considerations <- considerations %>% select(-c(1:4))
+# Read the sheet names of the Excel file
+survey_names <- excel_sheets("data/surveys_v2.xlsx")
 
-long_data <- pivot_longer(considerations, cols = everything(), names_to = "Consideration", values_to = "Value")
+print(survey_names)
 
-
-# Create a box plot using ggplot2
-ggplot(long_data, aes(x = Consideration, y = Value, fill = Consideration)) +
-  geom_boxplot() +
-  labs(title = "Box Plot of Considerations",
-       x = "Consideration",
-       y = "Value") +
-  theme_minimal() +
-  theme(legend.position = "none")  # Remove legend since x-axis labels suffice
+# Define the file types
+file_types <- c("considerations", "policies", "reasons")
 
 ```
 
-```{r}
-policies <- read_csv("llm_data/1.Uppsala Speaks_policies.csv")
-policies <- policies %>% select(-c(1:4))
 
-long_data <- pivot_longer(policies, cols = everything(), names_to = "Policy", values_to = "Value")
+## Read and format LLM data
+```{r format LLM data}
 
+# initialize an empty list to store the data frames
+data_list <- list()
+index <- 0
 
-# Create a box plot using ggplot2
-ggplot(long_data, aes(x = Policy, y = Value, fill = Policy)) +
-  geom_boxplot() +
-  labs(title = "Box Plot of Policies",
-       x = "Policy",
-       y = "Value") +
-  theme_minimal() +
-  theme(legend.position = "none")  # Remove legend since x-axis labels suffice
+# iterate over each survey
+for (survey_name in survey_names) {
+  
+  # iterate over each row in the models data frame where has_data is TRUE
+  for (i in 1:nrow(models)) {
+    if (models$has_data[i]) {
+      provider <- models$provider[i]
+      model <- models$model[i]
+      
+      # check if any file for the survey exists
+      survey_path <- paste0("llm_data/", provider, "/", model, "/", survey_name)
+      if (!any(file.exists(paste0(
+        survey_path, "_", file_types, ".csv"
+      )))) {
+        next
+      }
+      
+      # Iterate over each file type
+      for (file_type in file_types) {
+        # Create the file path
+        file_path <- create_file_path(provider, model, survey_name, file_type)
+        index <- index + 1
+        
+        # Check if the file exists
+        if (file.exists(file_path)) {
+          # Read the CSV file
+          temp_data <- read_csv(file_path, show_col_types = FALSE)
+          
+          # Skip file if file exists but has no data
+          if (nrow(temp_data) == 0) {
+            warn(paste0(file_path, " exists but has no data!"))
+            break
+          }
+          
+          meta <- c(
+            "cuid",
+            "created_at",
+            "provider",
+            "model",
+            "input_tokens",
+            "output_tokens"
+          )
+          
+          # Select the relevant columns based on file type
+          if (file_type == "considerations") {
+            survey_data <- temp_data %>%
+              rename_with( ~ paste0("C", seq_along(.)),
+                           starts_with("C", ignore.case = FALSE))
+            
+            # add column "survey" to meta data
+            survey_data <- survey_data %>%
+              mutate(survey = survey_name) %>%
+              relocate(survey, .after = model)
+            meta <- c(meta, "survey")
+            
+            # Ensure survey_data has columns up to C50
+            for (j in (ncol(survey_data) - length(meta) + 1):50) {
+              survey_data[[paste0("C", j)]] <- as.numeric(NA)
+            }
+            
+            # go to next file type
+            next
+            
+          } else if (file_type == "policies") {
+            temp_data <- temp_data %>%
+              select(cuid, starts_with("P", ignore.case = FALSE)) %>%
+              rename_with( ~ paste0("P", seq_along(.)),
+                           starts_with("P", ignore.case = FALSE))
+            
+            # Ensure temp_data has columns up to C50
+            for (j in (ncol(temp_data)):10) {
+              temp_data[[paste0("P", j)]] <- as.numeric(NA)
+            }
+            
+          } else if (file_type == "reasons") {
+            temp_data <- temp_data %>%
+              select(cuid, reason) %>%
+              rename(R = reason)
+          }
+          
+          # merge the data frames by 'cuid' and keep all rows
+          survey_data <- full_join(survey_data, temp_data, by = c("cuid"))
+          
+        }
+      }
+      
+      # Add the survey_data data frame to the list
+      if (exists("survey_data")) {
+        data_list[[length(data_list) + 1]] <- survey_data
+        
+        # Remove the survey_data data frame to free up memory
+        rm(survey_data)
+      }
+      
+    }
+  }
+}
+
+# Combine all data frames in the list into a single data frame
+llm_data <- bind_rows(data_list)
+
+# delete data_list from memory
+rm(data_list)
+rm(temp_data)
+
+# Aggregate llm_data by provider, model, and survey and N the number of rows
+llm_data_summary <- llm_data %>%
+  group_by(provider, model, survey) %>%
+  summarise(N = n(), .groups = 'drop')
+
+# Print the summary
+print(llm_data_summary)
 
 ```
 
 
 ## Calculate Cronbach's Alpha
 ```{r echo=FALSE}
-res_c <- alpha(considerations, check.keys = TRUE)
-res_p <- alpha(policies, check.keys = TRUE)
+
+# Initialize an empty list to store the alpha results
+alpha_results <- list()
+
+# Iterate over each unique provider/model combination
+for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"))) {
+  # Filter the data for the current provider/model
+  provider_model_data <- llm_data %>% filter(paste(provider, model, sep = "/") == provider_model)
+  
+  # Iterate over each survey
+  for (survey_name in unique(provider_model_data$survey)) {
+    # Filter the data for the current survey
+    survey_data <- provider_model_data %>% filter(survey == !!survey_name)
+    
+    # Calculate Cronbach's Alpha for considerations (C1..C50)
+    considerations_data <- survey_data %>% select(starts_with("C", ignore.case = FALSE))
+    
+    #considerations_data <- considerations_data[, colSums(is.na(considerations_data)) != nrow(considerations_data)]
+
+    if (ncol(considerations_data) > 1) {
+      alpha_considerations <- alpha(considerations_data, check.keys = TRUE)$total$raw_alpha
+    } else {
+      alpha_considerations <- NA
+    }
+    
+    # Calculate Cronbach's Alpha for policies (P1..P10)
+    policies_data <- survey_data %>% select(starts_with("P", ignore.case = FALSE))
+    
+    #policies_data <- policies_data[, colSums(is.na(policies_data)) != nrow(policies_data)]
+
+    
+    if (ncol(policies_data) > 1) {
+      alpha_policies <- alpha(policies_data, check.keys = TRUE)$total$raw_alpha
+    } else {
+      alpha_policies <- NA
+    }
+    
+    # Store the results in the list
+    alpha_results[[length(alpha_results) + 1]] <- tibble(
+      provider_model = provider_model,
+      survey = survey_name,
+      N = nrow(considerations_data),
+      alpha_considerations = alpha_considerations,
+      alpha_policies = alpha_policies
+    )
+  }
+}
+
+# Combine all results into a single data frame
+alpha_results <- bind_rows(alpha_results)
+
+rm(considerations_data)
+rm(survey_data)
+rm(policies_data)
+rm(provider_model_data)
+
+# Print the results
+print(alpha_results)
+
 ```
 
+## Check alpha results per model
 ```{r}
-# Print the result
-print(res_c$total$raw_alpha)
-print(res_p$total$raw_alpha)
+
+# Aggregate alpha_results by model and calculate summary statistics
+alpha_summary <- alpha_results %>%
+  group_by(provider_model) %>%
+  summarise(
+    min_alpha_considerations = min(alpha_considerations, na.rm = TRUE),
+    max_alpha_considerations = max(alpha_considerations, na.rm = TRUE),
+    mean_alpha_considerations = mean(alpha_considerations, na.rm = TRUE),
+    std_alpha_considerations = sd(alpha_considerations, na.rm = TRUE),
+    min_alpha_policies = min(alpha_policies, na.rm = TRUE),
+    max_alpha_policies = max(alpha_policies, na.rm = TRUE),
+    mean_alpha_policies = mean(alpha_policies, na.rm = TRUE),
+    std_alpha_policies = sd(alpha_policies, na.rm = TRUE)
+  )
+
+# Print the summary
+print(alpha_summary)
+```
+
+## Aggregate considerations and preferences
+```{r}
+
+# Initialize an empty list to store the alpha results
+aggregation_results <- list()
+
+calculate_mode <- function(x) {
+  if (length(x) == 0) {
+    return(NA)
+  }
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x, ux)))]
+}
+
+
+aggregate_llm_considerations <- function(considerations) {
+  # Ensure there are columns to aggregate
+  if (ncol(considerations) == 0) {
+    return(tibble())
+  }
+
+  # Calculate the mode for each column
+  mode_considerations <- considerations %>%
+    summarise(across(everything(), calculate_mode))
+
+  return(mode_considerations)
+  
+}
+
+aggregate_llm_policies <- function(policies) {
+  # Ensure there are columns to aggregate
+  if (ncol(policies) == 0) {
+    return(tibble())
+  }
+  
+  # Calculate the mode for each column
+  mode_policies <- policies %>%
+    summarise(across(everything(), calculate_mode))
+  
+  return(mode_policies)
+}
+
+# Iterate over each unique provider/model combination
+for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"))) {
+  # Filter the data for the current provider/model
+  provider_model_data <- llm_data %>% filter(paste(provider, model, sep = "/") == provider_model)
+  
+  # Iterate over each survey
+  for (survey_name in unique(provider_model_data$survey)) {
+    # Filter the data for the current survey
+    survey_data <- provider_model_data %>% filter(survey == !!survey_name)
+    
+    # Calculate Cronbach's Alpha for considerations (C1..C50)
+    considerations_data <- survey_data %>% select(starts_with("C", ignore.case = FALSE))
+    
+    aggregated_considerations <- aggregate_llm_considerations(considerations_data)
+    
+    # Calculate Cronbach's Alpha for policies (P1..P10)
+    policies_data <- survey_data %>% select(starts_with("P", ignore.case = FALSE))
+    
+    aggregated_policies <- aggregate_llm_policies(policies_data)
+
+    # store the results in the list
+    aggregation_result <- tibble(
+      provider_model = provider_model,
+      survey = survey_name,
+      N = nrow(considerations_data)
+    )
+
+    aggregation_result <- aggregation_result %>%
+      bind_cols(aggregated_considerations) %>%
+      bind_cols(aggregated_policies)
+
+    aggregation_results[[length(aggregation_results) + 1]] <- aggregation_result
+
+  }
+}
+
+# Combine all results into a single data frame
+aggregation_results <- bind_rows(aggregation_results)
+
+rm(aggregation_result)
+rm(considerations_data)
+rm(policies_data)
+rm(provider_model)
+rm(aggregated_considerations)
+rm(aggregated_policies)
+
+print(aggregation_results)
+
 ```
 
 
+## Calculate DRI
+```{r}
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.

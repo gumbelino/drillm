@@ -61,14 +61,14 @@ mps_success = {mp: 0 for mp in mps_surveys}
 # execurtion params
 iterations = 10
 llm_provider = data_ollama
-model = "llama3.2"
+model = "mistral-nemo"
 
 model_info = get_model_info(model)
 provider = get_provider(model)
 
 # testing params
-subset_mps = ["3.ACP"]  # ["0.Template", "3.ACP", "6.Biobanking"]
-subset_only = True
+subset_mps = []  # ["0.Template", "3.ACP", "6.Biobanking"]
+skip_mps = ["0.Template"]
 
 # set reproduceable seed
 random.seed(1)
@@ -79,7 +79,11 @@ start_time = time.time()
 # llms = get_available_llms()
 # providers = llms["provider"].drop_duplicates().tolist()
 
-mps_exec = subset_mps if subset_only else [mp for mp in mps_surveys]
+# get mps to generate data for
+mps_exec = subset_mps if subset_mps else [mp for mp in mps_surveys]
+
+# remove skips from mps list
+mps_exec = [mp for mp in mps_exec if mp not in skip_mps]
 
 # fail if iteration count will go over completions left for current params
 check_params(progress_df, provider, model, mps_exec, iterations)
@@ -91,8 +95,6 @@ print(f"Model: {model}")
 # iterate over each mini public
 for mp in mps_exec:
 
-    print(f"\nMini-public: {mp}")
-
     # get policies and consideration statements
     try:
         policies, considerations, likert, q_method = get_policies_and_considerations(
@@ -101,6 +103,10 @@ for mp in mps_exec:
     except Exception as e:
         print(f"ERROR: {mp} not formatted correctly: {e}")
         break
+
+    print(f"\nMini-public: {mp}")
+    print(f"Scale: 1-{likert}")
+    print(f"Q: {q_method}\n")
 
     # create policy and consideration files if they don't exist
     p_df, c_df, r_df = get_or_create_output(mp, model, policies, considerations)
@@ -160,6 +166,8 @@ for mp in mps_exec:
         mps_success[mp] += 1
 
         time.sleep(2)
+
+    print(f"Success rate for {mp}: {int((mps_success[mp] * 100) / iterations)}%")
 
 
 end_time = time.time()
