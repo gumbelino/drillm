@@ -489,7 +489,6 @@ def quasi_normality_check(ratings):
 
     mean = np.mean(ratings)
     median = np.median(ratings)
-    mode = np.argmax(np.bincount(ratings))
     percentile_25 = np.percentile(ratings, 25)
     percentile_75 = np.percentile(ratings, 75)
     iqr = percentile_75 - percentile_25

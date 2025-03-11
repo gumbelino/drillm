@@ -317,7 +317,7 @@ aggregate_llm_considerations <- function(considerations) {
   
 }
 
-aggregate_llm_policies <- function(policies) {
+aggregate_llm_policies_mode <- function(policies) {
   # Ensure there are columns to aggregate
   if (ncol(policies) == 0) {
     return(tibble())
@@ -328,6 +328,15 @@ aggregate_llm_policies <- function(policies) {
     summarise(across(everything(), calculate_mode))
   
   return(mode_policies)
+}
+
+aggregate_llm_policies_first <- function(policies) {
+  if (nrow(policies) == 0) {
+    return(tibble())
+  }
+  
+  # return first row of dataset
+  return(policies[1])
 }
 
 # Iterate over each unique provider/model combination
@@ -348,7 +357,7 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     # Calculate Cronbach's Alpha for policies (P1..P10)
     policies_data <- survey_data %>% select(starts_with("P", ignore.case = FALSE))
     
-    aggregated_policies <- aggregate_llm_policies(policies_data)
+    aggregated_policies <- aggregate_llm_policies_mode(policies_data)
 
     # store the results in the list
     aggregation_result <- tibble(
@@ -381,8 +390,205 @@ print(aggregation_results)
 ```
 
 
-## Calculate DRI
+## Read and format human data
 ```{r}
+
+get_human_data <- function(data,
+                           survey_name = "Uppsala Speaks",
+                           case_name = "Activate",
+                           stage_analysis = "Post-Delib") {
+  # Filter data for "Upsala Speaks" and "Post-Delib"
+  filtered_human_data <- data %>%
+    filter(Study == survey_name &
+             Stage_Analysis == Stage_Analysis,
+           Case == case_name) %>%
+    select(PNum,
+           matches("C\\d+"),
+           matches("P\\d+")) %>%
+    rename(subjectID = PNum) %>%
+    mutate(subject = "human") %>%
+    relocate(subject, subjectID, .before = 1)
+  
+  return(filtered_human_data)
+  
+}
+
+
+# Import the CSV file into a data frame
+human_data <- read_csv("data/total dataset_clean.csv", show_col_types = FALSE)
+
+# Rename columns to be consistent with LLM data
+human_data <- human_data %>%
+  rename_with( ~ sub("^U0|^U", "C", .), starts_with("U", ignore.case = FALSE)) %>%
+  rename_with( ~ sub("^Pref", "P", .), starts_with("Pref", ignore.case = FALSE))
+
+# Print the first few rows of the data frame
+print(head(human_data))
+
+```
+
+## Merge LLM and human data 
+
+```{r}
+
+filtered_human_data <- human_data %>% get_human_data()
+
+get_DRI(filtered_human_data)
+
+
+get_LLM_data <- function(data,
+                         survey_name = "1.Uppsala Speaks",
+                         provider_model = "google/gemma2") {
+  # Filter aggregation_results for survey "1.Uppsala Speaks"
+  filtered_aggregation_results <- data %>%
+    filter(survey == survey_name &
+             provider_model == !!provider_model) %>%
+    mutate(subject = "llm") %>%
+    rename(subjectID = provider_model) %>%
+    select(subject, subjectID, matches("C\\d+"), matches("P\\d+"))
+  
+  return(filtered_aggregation_results)
+  
+}
+
+filtered_llm_data <- aggregation_results %>% get_LLM_data()
+
+filtered_human_data <- filtered_human_data %>%
+  transform(subjectID = as.character(subjectID))
+
+# Append the values
+appended_data <- bind_rows(filtered_human_data, filtered_llm_data)
+
+# Print the appended data
+print(appended_data)
+```
+
+
+### Calculate 1.Uppsala Speaks human and LLM DRI
+```{r}
+
+dri_calc <- function(data, v1, v2) {
+  lambda <- 1 - (sqrt(2) / 2)
+  dri <- 2 * (((1 - mean(abs((data[[v1]] - data[[v2]]) / sqrt(2)
+  ))) - (lambda)) / (1 - (lambda))) - 1
+  
+  return(dri)
+}
+
+
+get_DRI <- function(data) {
+  
+  data <- appended_data
+  # make sure there's data to analyze
+  if (nrow(data) > 0) {
+    # get participant numbers/ids
+    PNums <- data$subjectID
+    
+    # variables for reading COLUMN data
+    # Q is a list considerations (Likert scale)
+    # - there are up to 50 questions
+    # R is a list ratings (rankings)
+    Q <- data %>% select(starts_with("C", ignore.case = FALSE))
+    R <- data %>% select(starts_with("P", ignore.case = FALSE))
+    
+    # remove all NA columns (in case there are less than 50
+    # consideration questions
+    Q <- Q[, colSums(is.na(Q)) != nrow(Q)]
+    R <- R[, colSums(is.na(R)) != nrow(R)]
+    
+    # transpose data
+    Q <- t(Q)
+    R <- t(R)
+    
+    # format data as data frame
+    Q <- as.data.frame(Q)
+    R <- as.data.frame(R)
+    
+    # name columns with participant numbers
+    colnames(Q) <- PNums
+    colnames(R) <- PNums
+    
+    # obtain a list of correlations without duplicates
+    # cor() returns a correlation matrix between Var1 and Var2
+    # Var1 and Var2 are the variables being correlated
+    # Freq is the correlation
+    QWrite <- subset(as.data.frame(as.table(cor(Q, method = "spearman"))),
+                     match(Var1, names(Q)) > match(Var2, names(Q)))
+    
+    RWrite <- subset(as.data.frame(as.table(cor(R, method = "spearman"))),
+                     match(Var1, names(R)) > match(Var2, names(R)))
+    
+    # initialize the output in the first iteration
+    IC <- data.frame("P_P" = paste0(QWrite$Var1, '-', QWrite$Var2))
+    IC$P1 <- QWrite$Var1
+    IC$P2 <- QWrite$Var2
+    
+    
+    # prepare QWrite
+    QWrite <- as.data.frame(QWrite$Freq)
+    names(QWrite) <- "Q"
+    
+    # prepare RWrite for merge
+    RWrite <- as.data.frame(RWrite$Freq)
+    names(RWrite) <- "R"
+    
+    # merge
+    IC <- cbind(IC, QWrite, RWrite)
+  }
+  
+  
+  # append case & study info
+  IC$Study <- "Uppsala Speaks"
+  IC$Case <- "Test"
+  
+  ### Analysis ###
+  
+  ## IC Points calculations ##
+  IC$IC <- 1 - abs((IC$R - IC$Q) / sqrt(2))
+  
+  ## Group DRI level ##
+  DRI <- dri_calc(data = IC, v1 = 'R', v2 = 'Q')
+  
+  ## INDIVIDUAL DRI ##
+  
+    Plist <- unique(c(IC$P1, IC$P2))
+    
+    Plist <- Plist[order(Plist)]
+
+    DRIInd <- data.frame('Participant' = Plist)
+
+    #Add individual-level metrics
+    for(i in 1:length(Plist)){
+      DRIInd$DRI[i] <- dri_calc(data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]), 
+                                   v1 = 'R', v2 = 'Q')
+    }
+    
+    return(DRI)
+
+  
+}
+
+# get human-only DRI
+get_DRI(filtered_human_data)
+
+# get DRI with LLM
+get_DRI(appended_data)
+
+
+```
+
+```{r}
+
+
+
+
+
+# Append the values
+appended_data <- bind_rows(filtered_human_data, filtered_aggregation_results)
+
+# Print the appended data
+print(appended_data)
+
 
 ```
 
