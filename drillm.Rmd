@@ -16,6 +16,9 @@ library(readxl)
 library(rlang)
 library(psych)
 library(bootstrap)
+library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
+
+SURVEY_FILE <- "data/surveys_v3.xlsx"
 
 ```
 
@@ -25,7 +28,7 @@ Maybe move this to it's own package...
 ```{r}
 
 create_file_path <- function(provider, model, survey, file_type) {
-  file.path("llm_data", provider, model, paste0(survey, "_", file_type, ".csv"))
+  file.path("llm_data", provider, model, survey, paste0(file_type, ".csv"))
 }
 
 ```
@@ -71,7 +74,10 @@ if (any(models$has_data)) {
 ```{r survey names}
 
 # Read the sheet names of the Excel file
-survey_names <- excel_sheets("data/surveys_v2.xlsx")
+survey_names <- excel_sheets(SURVEY_FILE)
+
+# remove invalid and "template" 
+survey_names <- survey_names[!grepl("^~", survey_names) & survey_names != "template"]
 
 print(survey_names)
 
@@ -98,10 +104,8 @@ for (survey_name in survey_names) {
       model <- models$model[i]
       
       # check if any file for the survey exists
-      survey_path <- paste0("llm_data/", provider, "/", model, "/", survey_name)
-      if (!any(file.exists(paste0(
-        survey_path, "_", file_types, ".csv"
-      )))) {
+      survey_path <- paste0("llm_data/", provider, "/", model, "/", survey_name, "/")
+      if (!any(file.exists(paste0(survey_path, file_types, ".csv")))) {
         next
       }
       
@@ -223,9 +227,7 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     # Calculate Cronbach's Alpha for considerations (C1..C50)
     considerations_data <- survey_data %>% select(starts_with("C", ignore.case = FALSE))
     
-    #considerations_data <- considerations_data[, colSums(is.na(considerations_data)) != nrow(considerations_data)]
-
-    if (ncol(considerations_data) > 1) {
+    if (nrow(considerations_data) > 1) {
       alpha_considerations <- alpha(considerations_data, check.keys = TRUE)$total$raw_alpha
     } else {
       alpha_considerations <- NA
@@ -233,11 +235,8 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     
     # Calculate Cronbach's Alpha for policies (P1..P10)
     policies_data <- survey_data %>% select(starts_with("P", ignore.case = FALSE))
-    
-    #policies_data <- policies_data[, colSums(is.na(policies_data)) != nrow(policies_data)]
-
-    
-    if (ncol(policies_data) > 1) {
+  
+    if (nrow(policies_data) > 1) {
       alpha_policies <- alpha(policies_data, check.keys = TRUE)$total$raw_alpha
     } else {
       alpha_policies <- NA
@@ -330,13 +329,47 @@ aggregate_llm_policies_mode <- function(policies) {
   return(mode_policies)
 }
 
-aggregate_llm_policies_first <- function(policies) {
+aggregate_llm_policies <- function(policies) {
+  # Ensure there are columns to aggregate
   if (nrow(policies) == 0) {
     return(tibble())
+  } else if (nrow(policies) == 1) {
+    return(policies)
   }
   
-  # return first row of dataset
-  return(policies[1])
+  # Remove columns with NAs
+  valid_policies <- policies[, colSums(is.na(policies)) != nrow(policies)]
+  
+  
+  # Convert the policies to a ranked matrix
+  ranked_matrix <- as.matrix(valid_policies)
+  
+  # Define the number of winners to all - 1 policies
+  # stv complains if winners == all policies
+  num_winners <- ncol(valid_policies) - 1
+  
+  # Run the Single Transferable Vote algorithm
+  results <- stv(ranked_matrix, num_winners, quiet = TRUE)
+  
+  # add last policy to ranked result
+  last_policy <- setdiff(colnames(valid_policies), results$elected)
+  ranked_policies <- c(results$elected, last_policy)
+  
+  policy_order <- colnames(valid_policies)
+  
+  order <- match(policy_order, ranked_policies)
+  
+  # Calculate the number of missing values needed to reach length 10
+  missing_columns <- ncol(policies) - length(order)
+  
+  # Fill in the missing values with NA
+  order <- c(order, rep(NA, missing_columns))
+  
+  # Create a new data.frame with aggregated results
+  policy_ranks <- data.frame(t(order))
+  colnames(policy_ranks) <- colnames(policies)
+  
+  return(policy_ranks)
 }
 
 # Iterate over each unique provider/model combination
@@ -357,7 +390,7 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     # Calculate Cronbach's Alpha for policies (P1..P10)
     policies_data <- survey_data %>% select(starts_with("P", ignore.case = FALSE))
     
-    aggregated_policies <- aggregate_llm_policies_mode(policies_data)
+    aggregated_policies <- aggregate_llm_policies(policies_data)
 
     # store the results in the list
     aggregation_result <- tibble(
@@ -394,7 +427,7 @@ print(aggregation_results)
 ```{r}
 
 get_human_data <- function(data,
-                           survey_name = "Uppsala Speaks",
+                           survey_name = "uppsala_speaks",
                            case_name = "Activate",
                            stage_analysis = "Post-Delib") {
   # Filter data for "Upsala Speaks" and "Post-Delib"
@@ -420,10 +453,18 @@ human_data <- read_csv("data/total dataset_clean.csv", show_col_types = FALSE)
 # Rename columns to be consistent with LLM data
 human_data <- human_data %>%
   rename_with( ~ sub("^U0|^U", "C", .), starts_with("U", ignore.case = FALSE)) %>%
-  rename_with( ~ sub("^Pref", "P", .), starts_with("Pref", ignore.case = FALSE))
+  rename_with( ~ sub("^Pref", "P", .), starts_with("Pref", ignore.case = FALSE)) %>%
+  filter(Study != "Sydney CC Adaptation" & Study != "WA Biobank")
 
-# Print the first few rows of the data frame
-print(head(human_data))
+# Read the mapping file
+study_survey_map <- read_csv("data/study_survey_map.csv")
+
+# Add a new column 'Survey' to human_data by matching 'Study' with 'survey'
+human_data <- human_data %>%
+  left_join(study_survey_map, by = c("Study" = "study")) %>%
+  relocate(survey, .after = "Study")
+
+human_data
 
 ```
 
@@ -433,12 +474,9 @@ print(head(human_data))
 
 filtered_human_data <- human_data %>% get_human_data()
 
-get_DRI(filtered_human_data)
-
-
 get_LLM_data <- function(data,
-                         survey_name = "1.Uppsala Speaks",
-                         provider_model = "google/gemma2") {
+                         survey_name = "uppsala_speaks",
+                         provider_model = "meta/llama3.2") {
   # Filter aggregation_results for survey "1.Uppsala Speaks"
   filtered_aggregation_results <- data %>%
     filter(survey == survey_name &
@@ -563,16 +601,23 @@ get_DRI <- function(data) {
                                    v1 = 'R', v2 = 'Q')
     }
     
-    return(DRI)
+    # Define a new row as a named list or tibble
+    group_row <- tibble(
+      Participant = "Group",
+      DRI = !!DRI
+    )
+
+# Add the new row to the dataframe
+    DRIInd <- bind_rows(DRIInd, group_row)
+    
+    return(DRIInd)
 
   
 }
 
-# get human-only DRI
-get_DRI(filtered_human_data)
 
 # get DRI with LLM
-get_DRI(appended_data)
+DRI <- get_DRI(appended_data)
 
 
 ```
@@ -588,6 +633,13 @@ appended_data <- bind_rows(filtered_human_data, filtered_aggregation_results)
 
 # Print the appended data
 print(appended_data)
+
+
+```
+
+
+```{r}
+
 
 
 ```

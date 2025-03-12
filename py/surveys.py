@@ -1,9 +1,9 @@
 import pandas as pd
 
-SURVEYS_PATH = "data/surveys_v2.xlsx"
+SURVEYS_PATH = "data/surveys_v3.xlsx"
 
 
-def get_mps_data(file_path=SURVEYS_PATH):
+def get_surveys_data(file_path=SURVEYS_PATH):
     xls = pd.ExcelFile(file_path)
     sheets = {}
     for sheet_name in xls.sheet_names:
@@ -29,6 +29,7 @@ def sort_statements(statements, order):
 
 
 def get_policies_and_considerations(sheet):
+
     policies = sheet["policies"].dropna().tolist()
     considerations = sheet["considerations"].dropna().tolist()
 
@@ -42,17 +43,17 @@ def get_policies_and_considerations(sheet):
     considerations = sort_statements(considerations, considerations_order)
 
     # read optional params
-    likert = sheet["likert"].dropna().tolist()
+    scale_max = sheet["scale_max"].dropna().tolist()
     q_method = sheet["q-method"].dropna().tolist()
 
-    # print(likert)
+    # print(scale_max)
     # print(q_)
 
-    # convert to likert to value -- default: 10
-    if len(likert) > 0:
-        likert = int(likert[0])
+    # convert to scale_max to value -- default: 10
+    if len(scale_max) > 0:
+        scale_max = int(scale_max[0])
     else:
-        likert = 10
+        scale_max = 10
 
     # convert to q_methof to value -- default: False
     if len(q_method) > 0:
@@ -60,4 +61,4 @@ def get_policies_and_considerations(sheet):
     else:
         q_method = False
 
-    return policies, considerations, likert, q_method
+    return policies, considerations, scale_max, q_method

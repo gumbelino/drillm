@@ -3,6 +3,8 @@ import os
 import pandas as pd
 import random
 import sys
+import numpy as np
+
 
 LLM_INFO = "private/llms_v2.csv"
 OUTPUT_DIR = "llm_data"
@@ -91,7 +93,7 @@ def get_provider(model):
     return model_info["provider"]
 
 
-def update_progress(progress_df, provider, model, mp):
+def update_progress(progress_df, provider, model, survey):
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
 
     if not os.path.exists(progress_file_path):
@@ -100,11 +102,9 @@ def update_progress(progress_df, provider, model, mp):
 
     df = progress_df
 
-    # Find the row that matches the provider, model, and mp
+    # Find the row that matches the provider, model, and survey
     mask = (
-        (df["provider"] == provider)
-        & (df["model"] == model)
-        & (df["mini-public"] == mp)
+        (df["provider"] == provider) & (df["model"] == model) & (df["survey"] == survey)
     )
     if not mask.any():
         print("No matching entry found in progress file.")
@@ -120,15 +120,15 @@ def update_progress(progress_df, provider, model, mp):
     df.to_csv(progress_file_path, index=False)
 
 
-def append_data_to_file(mp, model, new_df, data_type):
+def append_data_to_file(survey, model, new_df, data_type):
 
     # get model provider
     provider = get_provider(model)
 
     # crete {OUTPUTDIR}/{provider}/{model} string
-    output_path = os.path.join(OUTPUT_DIR, provider, model)
+    output_path = os.path.join(OUTPUT_DIR, provider, model, survey)
 
-    output_file_name = f"{mp}_{data_type}.csv"
+    output_file_name = f"{data_type}.csv"
     output_file_path = os.path.join(output_path, output_file_name)
 
     # append data to file
@@ -139,20 +139,20 @@ def get_provider(model):
     return PROVIDERS[model] if model in PROVIDERS else None
 
 
-def get_or_create_single_output(mp, model, columns, data_type):
+def get_or_create_single_output(survey, model, columns, data_type):
 
     # get model provider
     provider = get_provider(model)
 
     # create {OUTPUTDIR}/{provider}/{model} string
-    output_path = os.path.join(OUTPUT_DIR, provider, model)
+    output_path = os.path.join(OUTPUT_DIR, provider, model, survey)
 
     # create output directory if it doesn't exist
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
     # create output file
-    output_file_name = f"{mp}_{data_type}.csv"
+    output_file_name = f"{data_type}.csv"
     output_file_path = os.path.join(output_path, output_file_name)
 
     # prefix columns based on data_type
@@ -172,12 +172,12 @@ def get_or_create_single_output(mp, model, columns, data_type):
     return pd.read_csv(output_file_path, nrows=0)
 
 
-def get_or_create_output(mp, model, policies, considerations):
+def get_or_create_output(survey, model, policies, considerations):
 
     # get empty dataframes
-    p_df = get_or_create_single_output(mp, model, policies, POLICIES)
-    c_df = get_or_create_single_output(mp, model, considerations, CONSIDERATIONS)
-    r_df = get_or_create_single_output(mp, model, ["reason"], REASONS)
+    p_df = get_or_create_single_output(survey, model, policies, POLICIES)
+    c_df = get_or_create_single_output(survey, model, considerations, CONSIDERATIONS)
+    r_df = get_or_create_single_output(survey, model, ["reason"], REASONS)
 
     return p_df, c_df, r_df
 
@@ -201,14 +201,14 @@ def parse_numbers_from_string(number_string: str):
     return num_list
 
 
-def log_request(cuid, date, provider, model, mp, type, prompt, response):
+def log_request(cuid, date, provider, model, survey, type, prompt, response):
     log_file_path = os.path.join(OUTPUT_DIR, provider, model, "request_log.csv")
     log_data = {
         "cuid": cuid,
         "date": date,
         "provider": provider,
         "model": model,
-        "mini-public": mp,
+        "survey": survey,
         "type": type,
         "prompt": prompt,
         "response": response,
@@ -233,14 +233,14 @@ def log_execution(
     time_per_completion,
     cost_input,
     cost_output,
-    mps_exec,
-    mps_success,
+    surveys_exec,
+    surveys_success,
 ):
     log_file_path = os.path.join(OUTPUT_DIR, "exec_log.csv")
     log_data = {
         "provider": provider,
         "model": model,
-        "num mini-publics": len(mps_exec),
+        "num surveys": len(surveys_exec),
         "num iterations": iterations,
         "num completions": num_completions,
         "num requests": num_requests,
@@ -248,6 +248,7 @@ def log_execution(
         "output cost ($)": round(cost_output, 2),
         "total cost ($)": round(cost_input + cost_output, 2),
         "num fail completions": num_invalid,
+        "num success completions": sum([surveys_success[s] for s in surveys_success]),
         "success rate (%)": round(success_rate, 2),
         "total elapsed time (min)": round(elapsed_time / 60, 2),
         "time per completion (s)": round(time_per_completion, 2),
@@ -255,11 +256,11 @@ def log_execution(
 
     log_df = pd.DataFrame([log_data])
 
-    # append mp data to data frame, make it a percentage
-    for mp in mps_success:
-        column_name = mp + " success rate (%)"
-        if mp in mps_exec:
-            row_value = int(mps_success[mp] * 100 / iterations)
+    # append survey data to data frame, make it a percentage
+    for s in surveys_success:
+        column_name = s + " success rate (%)"
+        if s in surveys_exec:
+            row_value = int(surveys_success[s] * 100 / iterations)
         else:
             row_value = ""
         log_df[column_name] = row_value
@@ -334,7 +335,7 @@ def get_prompts(policies, considerations, likert, q_method):
     return prompt_p, prompt_c
 
 
-def get_or_create_progress_tracker(mp_keys):
+def get_or_create_progress_tracker(survey_names):
 
     # create progress tracker file
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
@@ -354,19 +355,21 @@ def get_or_create_progress_tracker(mp_keys):
     for _, row in df.iterrows():
         provider = row["provider"]
         model = row["model"]
-        for mp in mp_keys:
+        for survey in survey_names:
             # check only policies file, assume all are the same length
-            file_path = f"{OUTPUT_DIR}/{provider}/{model}/{mp}_{POLICIES}.csv"
+            policy_file = f"{POLICIES}.csv"
+            file_path = os.path.join(OUTPUT_DIR, provider, model, survey, policy_file)
+
             if os.path.exists(file_path):
-                mp_df = pd.read_csv(file_path)
-                num_rows = len(mp_df)
+                s_df = pd.read_csv(file_path)
+                num_rows = len(s_df)
             else:
                 num_rows = 0
 
             progress_data = {
                 "provider": provider,
                 "model": model,
-                "mini-public": mp,
+                "survey": survey,
                 "completions": num_rows,
                 "completions left": 100 - num_rows,
                 "done": True if num_rows == 100 else False,
@@ -422,22 +425,22 @@ def print_progress():
             )
 
 
-def check_params(progress_df, provider, model, mps_exec, iterations):
+def check_params(progress_df, provider, model, surveys_exec, iterations):
     selection = progress_df[
         (progress_df["provider"] == provider)
         & (progress_df["model"] == model)
-        & (progress_df["mini-public"].isin(mps_exec))
+        & (progress_df["survey"].isin(surveys_exec))
         & (progress_df["completions left"] < iterations)
     ]
 
     if selection.any(axis=None):
         print(
-            f"WARNING: iterations value ({iterations}) is too high for this selection of provider/model ({provider}/{model}) and mini-publics {mps_exec}:"
+            f"WARNING: iterations value ({iterations}) is too high for this selection of provider/model ({provider}/{model}) and surveys {surveys_exec}:"
         )
 
         print(selection)
         print(
-            "Lower the value of iterations or see llm_data/progress.csv for alternative models or mini-publics."
+            f"Lower the value of iterations or see {OUTPUT_DIR}/{PROGRESS_FILE} for alternative models or surveys."
         )
         exit(-1)
 
@@ -470,9 +473,6 @@ def is_valid_response(c_ranks, p_ranks, considerations, policies, likert, q_meth
         return False
 
     return True
-
-
-import numpy as np
 
 
 def quasi_normality_check(ratings):

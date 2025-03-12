@@ -1,6 +1,6 @@
 import os
 import sys
-from surveys import get_mps_data, get_policies_and_considerations
+from surveys import get_surveys_data, get_policies_and_considerations
 from utils import (
     check_params,
     get_model_info,
@@ -37,10 +37,10 @@ def get_available_llms():
     return available_llms
 
 
-# get mini publics data
-mps_surveys = get_mps_data()
+# get surveys data
+surveys = get_surveys_data()
 
-progress_df = get_or_create_progress_tracker(mps_surveys)
+progress_df = get_or_create_progress_tracker(surveys)
 
 # execution constants
 REASON = True
@@ -55,20 +55,21 @@ num_iterations = 0  # record number of iterations completed
 input_tokens = 0
 output_tokens = 0
 
-# track execution data on each mini-public
-mps_success = {mp: 0 for mp in mps_surveys}
+# track execution data on each survey
+surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
-iterations = 10
+iterations = 2
 llm_provider = data_ollama
-model = "mistral-nemo"
+model = "llama3.2"
 
 model_info = get_model_info(model)
 provider = get_provider(model)
 
 # testing params
-subset_mps = []  # ["0.Template", "3.ACP", "6.Biobanking"]
-skip_mps = ["0.Template"]
+subset_surveys = []  # ["0.Template", "3.ACP", "6.Biobanking"]
+skip_surveys = [s for s in surveys if s[0] == "~"]  # remove those that start with ~
+skip_surveys += []  # ["0.Template"]
 
 # set reproduceable seed
 random.seed(1)
@@ -79,37 +80,37 @@ start_time = time.time()
 # llms = get_available_llms()
 # providers = llms["provider"].drop_duplicates().tolist()
 
-# get mps to generate data for
-mps_exec = subset_mps if subset_mps else [mp for mp in mps_surveys]
+# get surveys to generate data for
+surveys_exec = subset_surveys if subset_surveys else [s for s in surveys]
 
-# remove skips from mps list
-mps_exec = [mp for mp in mps_exec if mp not in skip_mps]
+# remove skips from surveys list
+surveys_exec = [s for s in surveys_exec if s not in skip_surveys]
 
 # fail if iteration count will go over completions left for current params
-check_params(progress_df, provider, model, mps_exec, iterations)
+check_params(progress_df, provider, model, surveys_exec, iterations)
 
-print(f"\nGenerating data for: {mps_exec}")
+print(f"\nGenerating data for: {surveys_exec}")
 print(f"LLM provider: {provider}")
 print(f"Model: {model}")
 
-# iterate over each mini public
-for mp in mps_exec:
+# iterate over each survey
+for i, survey in enumerate(surveys_exec):
 
     # get policies and consideration statements
     try:
-        policies, considerations, likert, q_method = get_policies_and_considerations(
-            mps_surveys[mp]
+        policies, considerations, scale_max, q_method = get_policies_and_considerations(
+            surveys[survey]
         )
     except Exception as e:
-        print(f"ERROR: {mp} not formatted correctly: {e}")
+        print(f"ERROR: {survey} not formatted correctly: {e}")
         break
 
-    print(f"\nMini-public: {mp}")
-    print(f"Scale: 1-{likert}")
+    print(f"\nSurvey: {survey} ({(i+1)} of {len(surveys_exec)})")
+    print(f"Scale: 1-{scale_max}")
     print(f"Q: {q_method}\n")
 
     # create policy and consideration files if they don't exist
-    p_df, c_df, r_df = get_or_create_output(mp, model, policies, considerations)
+    p_df, c_df, r_df = get_or_create_output(survey, model, policies, considerations)
 
     # get X completions from the LLM API, where X is _iterations_
     for i in range(iterations):
@@ -123,18 +124,18 @@ for mp in mps_exec:
         rand_p, rand_c, p_indexes, c_indexes = shuffle_p_and_c(policies, considerations)
 
         # create policy and consideration prompts
-        p_prompt, c_prompt = get_prompts(rand_p, rand_c, likert, q_method)
+        p_prompt, c_prompt = get_prompts(rand_p, rand_c, scale_max, q_method)
 
         # make API call
         p_ranks, c_ranks, reason, meta = llm_provider.generate_data(
-            mp, p_prompt, c_prompt, completion_uid, model=model, reason=REASON
+            survey, p_prompt, c_prompt, completion_uid, model=model, reason=REASON
         )
 
         # record number of requests
         num_requests += 3 if REASON else 2
 
         if not is_valid_response(
-            c_ranks, p_ranks, considerations, policies, likert, q_method
+            c_ranks, p_ranks, considerations, policies, scale_max, q_method
         ):
             num_invalid += 1
             continue
@@ -154,35 +155,37 @@ for mp in mps_exec:
 
         # append data to files
         print(f"SUCCESS.")
-        append_data_to_file(mp, model, p_df, POLICIES)
-        append_data_to_file(mp, model, c_df, CONSIDERATIONS)
-        append_data_to_file(mp, model, r_df, REASONS)
+        append_data_to_file(survey, model, p_df, POLICIES)
+        append_data_to_file(survey, model, c_df, CONSIDERATIONS)
+        append_data_to_file(survey, model, r_df, REASONS)
 
         # save progress to file
         # note: progress_df passed by reference, so values here are updated too
-        update_progress(progress_df, provider, model, mp)
+        update_progress(progress_df, provider, model, survey)
 
         num_success += 1
-        mps_success[mp] += 1
+        surveys_success[survey] += 1
 
         time.sleep(2)
 
-    print(f"Success rate for {mp}: {int((mps_success[mp] * 100) / iterations)}%")
+    print(
+        f"Success rate for {survey}: {int((surveys_success[survey] * 100) / iterations)}%"
+    )
 
 
 end_time = time.time()
 
 elapsed_time = end_time - start_time
 num_completions = num_success + num_invalid
-time_per_completion = elapsed_time / num_completions
-success_rate = int(num_success * 100 / num_completions)
+time_per_completion = elapsed_time / num_completions if num_completions > 0 else 0
+success_rate = int(num_success * 100 / num_completions) if num_completions > 0 else 0
 cost_input = (input_tokens / 1000000) * model_info["price_1M_input"]
 cost_output = (output_tokens / 1000000) * model_info["price_1M_output"]
 
 print(f"\n=============== S U M M A R Y ===============")
 print(f"Execution complete for {provider}/{model}")
-print(f"Mini-publics (MP): {len(mps_exec)}")
-print(f"Iterations per MP: {iterations}")
+print(f"Surveys: {len(surveys_exec)}")
+print(f"Iterations per survey: {iterations}")
 print(f"Total LLM completions: {num_completions}")
 print(f"Total LLM requests: {num_requests}")
 
@@ -191,6 +194,9 @@ print(f"Cost output: US${cost_output:.2f}")
 print(f"Total cost: US${cost_input + cost_output:.2f}")
 
 print(f"Invalid LLM completions: {num_invalid}")
+print(
+    f"Successful LLM completions: {sum([surveys_success[s] for s in surveys_success])}"
+)
 print(f"Success rate: {success_rate}%")
 et_summary = elapsed_time if elapsed_time < 60 else elapsed_time / 60
 et_summary_unit = "s" if elapsed_time < 60 else "min"
@@ -210,6 +216,6 @@ log_execution(
     time_per_completion,
     cost_input,
     cost_output,
-    mps_exec,
-    mps_success,
+    surveys_exec,
+    surveys_success,
 )
