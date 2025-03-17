@@ -59,9 +59,10 @@ output_tokens = 0
 surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
-iterations = 2
+iterations = 10
 llm_provider = data_ollama
-model = "llama3.2"
+model = "gemma2"
+temperature = 0
 
 model_info = get_model_info(model)
 provider = get_provider(model)
@@ -69,7 +70,7 @@ provider = get_provider(model)
 # testing params
 subset_surveys = []  # ["0.Template", "3.ACP", "6.Biobanking"]
 skip_surveys = [s for s in surveys if s[0] == "~"]  # remove those that start with ~
-skip_surveys += []  # ["0.Template"]
+skip_surveys += ["template"]  # ["0.Template"]
 
 # set reproduceable seed
 random.seed(1)
@@ -128,7 +129,13 @@ for i, survey in enumerate(surveys_exec):
 
         # make API call
         p_ranks, c_ranks, reason, meta = llm_provider.generate_data(
-            survey, p_prompt, c_prompt, completion_uid, model=model, reason=REASON
+            survey,
+            p_prompt,
+            c_prompt,
+            completion_uid,
+            model=model,
+            temperature=temperature,
+            reason=REASON,
         )
 
         # record number of requests
@@ -150,8 +157,8 @@ for i, survey in enumerate(surveys_exec):
         r_df.loc[0] = [completion_uid] + meta + [reason]
 
         # read costs
-        input_tokens += meta[3]
-        output_tokens += meta[4]
+        input_tokens += meta[4]
+        output_tokens += meta[5]
 
         # append data to files
         print(f"SUCCESS.")
@@ -184,6 +191,8 @@ cost_output = (output_tokens / 1000000) * model_info["price_1M_output"]
 
 print(f"\n=============== S U M M A R Y ===============")
 print(f"Execution complete for {provider}/{model}")
+print(f"Temperature: {temperature}")
+
 print(f"Surveys: {len(surveys_exec)}")
 print(f"Iterations per survey: {iterations}")
 print(f"Total LLM completions: {num_completions}")
@@ -207,6 +216,7 @@ print(f"=============================================\n")
 log_execution(
     provider,
     model,
+    temperature,
     iterations,
     num_requests,
     num_completions,

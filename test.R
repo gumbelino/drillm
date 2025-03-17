@@ -1,62 +1,70 @@
 
 library(boot)
 
-
-
-# Define the colModes function
-colModes <- function(data) {
-  # Function to calculate the mode of a single vector
-  getMode <- function(x) {
-    # Get unique values and their counts
-    ux <- unique(x)
-    freq <- tabulate(match(x, ux))
-    
-    # Find the maximum frequency
-    max_freq <- max(freq)
-    
-    # Return all modes (in case of ties)
-    modes <- ux[freq == max_freq]
-    return(modes)
-  }
-  
-  # Apply getMode to each column in the dataframe
-  mode_list <- lapply(data, getMode)
-  
-  # Convert list to a data frame for easier viewing
-  mode_df <- do.call(cbind, mode_list)
-  
-  return(mode_df)
+# Function to calculate mode of data, same as stat_function
+calc_mode <- function(data) {
+  as.numeric(names(sort(table(data), decreasing = TRUE)[1]))
 }
 
+bootstrap_mode <- function(data, n_bootstrap = 1000) {
+  
+  # Return NA if data contains any NA
+  if (any(is.na(data))) {
+    return(NA)
+  }
+  
+  # Define the statistic function for bootstrapping to find mode
+  stat_function <- function(data, indices) {
+    as.numeric(names(sort(table(data[indices]), decreasing = TRUE)[1]))
+  }
+  
+  # Perform bootstrap
+  results <- boot(data = data, statistic = stat_function, R = n_bootstrap)
+  
+  # Calculate bootstrapped mode
+  b_mode <- calc_mode(results$t)
+  
+  # Return the bootstrapped modes
+  return(b_mode)
+}
 
-aggregate_llm_policies_mode <- function(policies) {
-  if (ncol(policies) == 0) {
+# Example usage:
+# bootstrap_mode(c(1, 2, 3, 4, 5, 5))
+
+# Example usage:
+test <- c(1, 2, 3, 4, 5, 5)
+calc_mode(test)
+mode <- bootstrap_mode(test)
+b_mode <- calc_mode(modes)
+
+
+aggregate_llm_considerations <- function(considerations) {
+  # Ensure there are columns to aggregate
+  if (ncol(considerations) == 0) {
     return(tibble())
   }
   
+  # Calculate the mode for each column
+  mode_considerations <- considerations %>%
+    summarise(across(everything(), bootstrap_mode))
   
-  b <- boot(policies, mean, 1000)
+  return(mode_considerations)
   
-  
-  
-    mode_policies <- policies %>%
-    summarise(across(everything(), calculate_mode))
-  
-  return(mode_policies)
 }
 
 df <- tibble(
-  P1 = c(1,1,2),
-  P2 = c(2,2,1),
-  P3 = c(3,3,1),
-  P4 = c(4,2,1)
+  C1 = c(1, 2, 3, 4, 5, 5),
+  C2 = c(1, 1, 1, 4, 5, 5),
+  C3 = c(1, 2, 2, 2, 5, 5),
+  C4 = NA
 )
 
 df
 
+aggregate_llm_considerations(df)
 
-# Calculate modes for each column
-modes <- colModes(df)
+
+
 print(modes)
 
 

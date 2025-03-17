@@ -9,7 +9,15 @@ import numpy as np
 LLM_INFO = "private/llms_v2.csv"
 OUTPUT_DIR = "llm_data"
 PROGRESS_FILE = "progress.csv"
-META_DATA = ["cuid", "created_at", "provider", "model", "input_tokens", "output_tokens"]
+META_DATA = [
+    "cuid",
+    "created_at",
+    "provider",
+    "model",
+    "temperature",
+    "input_tokens",
+    "output_tokens",
+]
 
 POLICIES = "policies"
 CONSIDERATIONS = "considerations"
@@ -201,13 +209,16 @@ def parse_numbers_from_string(number_string: str):
     return num_list
 
 
-def log_request(cuid, date, provider, model, survey, type, prompt, response):
+def log_request(
+    cuid, date, provider, model, temperature, survey, type, prompt, response
+):
     log_file_path = os.path.join(OUTPUT_DIR, provider, model, "request_log.csv")
     log_data = {
         "cuid": cuid,
         "date": date,
         "provider": provider,
         "model": model,
+        "temperature": temperature,
         "survey": survey,
         "type": type,
         "prompt": prompt,
@@ -224,6 +235,7 @@ def log_request(cuid, date, provider, model, survey, type, prompt, response):
 def log_execution(
     provider,
     model,
+    temperature,
     iterations,
     num_requests,
     num_completions,
@@ -240,6 +252,7 @@ def log_execution(
     log_data = {
         "provider": provider,
         "model": model,
+        "temperature": temperature,
         "num surveys": len(surveys_exec),
         "num iterations": iterations,
         "num completions": num_completions,

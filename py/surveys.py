@@ -1,6 +1,6 @@
 import pandas as pd
 
-SURVEYS_PATH = "data/surveys_v3.xlsx"
+SURVEYS_PATH = "data/surveys_v4.xlsx"
 
 
 def get_surveys_data(file_path=SURVEYS_PATH):

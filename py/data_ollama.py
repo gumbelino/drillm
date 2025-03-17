@@ -16,7 +16,9 @@ from utils import (
 PROVIDER = "ollama"
 
 
-def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
+def generate_data(
+    mp, p_prompt, c_prompt, cuid, model="llama3.2", temperature=0, reason=False
+):
 
     # get current time
     date = datetime.now(timezone.utc)
@@ -26,7 +28,7 @@ def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
 
     # set temperature in runtime
     # temperature = 0 is better for more deterministic output
-    options = {"temperature": 0}
+    options = {"temperature": temperature}
 
     # build initial message
     messages = [
@@ -39,7 +41,17 @@ def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
     c_response = res.message.content
 
     # log request history to file
-    log_request(cuid, date, provider, model, mp, CONSIDERATIONS, c_prompt, c_response)
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        CONSIDERATIONS,
+        c_prompt,
+        c_response,
+    )
 
     # append response to messages
     messages.append(
@@ -57,7 +69,9 @@ def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
     p_response = res.message.content
 
     # log request history to file
-    log_request(cuid, date, provider, model, mp, POLICIES, p_prompt, p_response)
+    log_request(
+        cuid, date, provider, model, temperature, mp, POLICIES, p_prompt, p_response
+    )
 
     if reason:
 
@@ -78,7 +92,9 @@ def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
         reason_text = parse_reasoning_from_response(r_response)
 
         # log request history to file
-        log_request(cuid, date, provider, model, mp, REASONS, PROMPT_R, r_response)
+        log_request(
+            cuid, date, provider, model, temperature, mp, REASONS, PROMPT_R, r_response
+        )
 
     else:
         reason_text = "Reasoning was not requested."
@@ -92,6 +108,6 @@ def generate_data(mp, p_prompt, c_prompt, cuid, model="llama3.2", reason=False):
     output_tokens = 0
 
     # set meta columns
-    meta = [date, provider, res.model, input_tokens, output_tokens]
+    meta = [date, provider, res.model, temperature, input_tokens, output_tokens]
 
     return p_ranks, c_ranks, reason_text, meta
