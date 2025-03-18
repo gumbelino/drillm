@@ -23,15 +23,6 @@ POLICIES = "policies"
 CONSIDERATIONS = "considerations"
 REASONS = "reasons"
 
-PROVIDERS = {
-    "llama3.2": "meta",
-    "gemma2": "google",
-    "deepseek-r1": "deepseek",
-    "phi4": "microsoft",
-    "mistral-nemo": "mistralai",
-    "mistral": "mistralai",
-}
-
 # generic considerations prompt
 PROMPT_C = """## Instructions:
 - Rate each of the {0} [Considerations] below from 1 to {1}, where 1 is strongly \
@@ -88,12 +79,12 @@ Q_METHOD_INSTRUCTION = """
 
 
 def get_model_info(model):
-    df = pd.read_csv("private/llms_v2.csv")
+    df = pd.read_csv(LLM_INFO)
     model_data = df[df["model"] == model].to_dict(orient="records")
     if model_data:
         return model_data[0]
     else:
-        raise ValueError(f"Model {model} not found in llms.csv")
+        raise ValueError(f"Model {model} not found in {LLM_INFO}")
 
 
 def get_provider(model):
@@ -141,10 +132,6 @@ def append_data_to_file(survey, model, new_df, data_type):
 
     # append data to file
     new_df.to_csv(output_file_path, mode="a", header=False, index=False)
-
-
-def get_provider(model):
-    return PROVIDERS[model] if model in PROVIDERS else None
 
 
 def get_or_create_single_output(survey, model, columns, data_type):

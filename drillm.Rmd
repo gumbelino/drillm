@@ -15,10 +15,16 @@ library(tidyverse)
 library(readxl)
 library(rlang)
 library(psych)
-library(bootstrap)
+library(boot)
 library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
 
 SURVEY_FILE <- "data/surveys_v4.xlsx"
+OUTPUT_DIR <- "analysis"
+
+# create output directory if it doesn't exist
+if (!dir.exists(OUTPUT_DIR)) {
+  dir.create(OUTPUT_DIR, recursive = TRUE)
+}
 
 ```
 
@@ -206,6 +212,9 @@ llm_surveys <- llm_data %>%
 # Print the summary
 print(llm_surveys)
 
+# write summary to file
+write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
+
 ```
 
 
@@ -229,7 +238,7 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     considerations_data <- survey_data %>% select(starts_with("C", ignore.case = FALSE))
     
     if (nrow(considerations_data) > 1) {
-      alpha_considerations <- alpha(considerations_data, check.keys = TRUE)$total$raw_alpha
+      alpha_considerations <- alpha(considerations_data, check.keys = TRUE, warnings = FALSE)$total$raw_alpha
     } else {
       alpha_considerations <- NA
     }
@@ -238,7 +247,7 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     policies_data <- survey_data %>% select(starts_with("P", ignore.case = FALSE))
   
     if (nrow(policies_data) > 1) {
-      alpha_policies <- alpha(policies_data, check.keys = TRUE)$total$raw_alpha
+      alpha_policies <- alpha(policies_data, check.keys = TRUE, warnings = FALSE)$total$raw_alpha
     } else {
       alpha_policies <- NA
     }
@@ -264,6 +273,9 @@ rm(provider_model_data)
 
 # Print the results
 print(alpha_results)
+
+# write summary to file
+write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 
 ```
 
@@ -389,8 +401,8 @@ aggregate_llm_policies <- function(policies) {
 ## Aggregate considerations and preferences
 ```{r}
 
-
 aggregate_llm_data <- function(data) {
+  
   # Initialize an empty list to store the alpha results
   aggregation_results <- list()
   
@@ -439,37 +451,26 @@ aggregate_llm_data <- function(data) {
   
 }
 
+time_start <- Sys.time()
+llm_data_aggregated <- aggregate_llm_data(llm_data)
+time_end <- Sys.time()
+elapsed_time <- difftime(time_end, time_start, units = "auto")
 
-aggregation_results <- aggregate_llm_data(llm_data)
+print(paste("LLM data aggregation completed in", round(as.numeric(elapsed_time),2), units(elapsed_time)))
 
-print(aggregation_results)
+print(llm_data_aggregated)
+
+output_path <- paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep = "/")
+
+# write summary to file
+write_csv(llm_data_aggregated, output_path)
+print(paste("Results written to", output_path))
 
 ```
 
 
 ## Read and format human data
 ```{r}
-
-get_human_data <- function(data,
-                           survey_name = "zh_uster",
-                           case_name = "Activate",
-                           stage_analysis = "Post-Delib") {
-  # Filter data for "Upsala Speaks" and "Post-Delib"
-  filtered_human_data <- data %>%
-    filter(Study == survey_name &
-             Stage_Analysis == Stage_Analysis,
-           Case == case_name) %>%
-    select(PNum,
-           matches("C\\d+"),
-           matches("P\\d+")) %>%
-    rename(subjectID = PNum) %>%
-    mutate(subject = "human") %>%
-    relocate(subject, subjectID, .before = 1)
-  
-  return(filtered_human_data)
-  
-}
-
 
 # Import the CSV file into a data frame
 human_data <- read_csv("data/total dataset_clean.csv", show_col_types = FALSE)
@@ -657,7 +658,7 @@ mini_publics <- human_data %>%
   summarise(.groups = "drop")
 
 get_llm_data <- function(provider, model, survey) {
-  llm_participant <- aggregation_results %>%
+  llm_participant <- llm_data_aggregated %>%
     filter(provider == !!provider, model == !!model, survey == !!survey)
   return(llm_participant)
 }
@@ -675,10 +676,10 @@ get_ind_LLM_DRI <- function(data, provider, model) {
 
 add_llm_participant <- function(data, provider, model, survey) {
   
-  print(paste("adding", paste(provider, model, survey, sep = "/"), "to human data."))
+  # print(paste("adding", paste(provider, model, survey, sep = "/"), "to human data."))
   
   # get llm data
-  llm_participant <- aggregation_results %>%
+  llm_participant <- llm_data_aggregated %>%
     filter(provider == !!provider, model == !!model, survey == !!survey)
   
   # check if it exists
@@ -707,7 +708,6 @@ for (case_study in 1:nrow(mini_publics)) {
   survey <- mini_publics[case_study, ]$survey
   case <- mini_publics[case_study, ]$Case
   
-  
   # get human data for this case study
   data_case_study <- human_data %>% filter(survey == !!survey &
                                              Case == !!case)
@@ -715,11 +715,18 @@ for (case_study in 1:nrow(mini_publics)) {
   # intersubject correlations (IC)
   IC <- get_IC(data_case_study, survey, case)
 
-  ## DRI ##
+  ## GROUP DRI ##
   DRI.Case <- get_case_DRI(IC)
  
   ## INDIVIDUAL DRI ##
   DRIInd <- get_ind_DRI(IC)
+  
+  # get human average
+  # NOTE: this should be the same as human_only group DRI
+  human_ind_DRI_mean <- tibble(
+    DRIPre = mean(DRIInd$DRIPre),
+    DRIPost = mean(DRIInd$DRIPost)
+  )
   
   # Global dataframes for depositing results
   # initialize *.Global
@@ -760,22 +767,78 @@ for (case_study in 1:nrow(mini_publics)) {
     DRIInd.LLM <- get_ind_DRI(IC.LLM)
     DRIInd.LLM.Model <- get_ind_LLM_DRI(DRIInd.LLM, provider, model)
     
+    DRIInd.LLM.Model$human_only_DRIPre_mean <- human_ind_DRI_mean$DRIPre
+    DRIInd.LLM.Model$human_only_DRIPost_mean <- human_ind_DRI_mean$DRIPost
+    
+    get_bm_index <- function(diff) {
+      bm_index <- (diff + 2) / 4
+      return(bm_index)
+    }
+    
+    DRIInd.LLM.Model <- DRIInd.LLM.Model %>%
+      mutate(DRIPre_diff = DRIPre - human_only_DRIPre_mean,
+             DRIPost_diff = DRIPost - human_only_DRIPost_mean) %>%
+      
+      # benchmark index = use DRIPost & normalize it to be >= 0
+      mutate(bm_index = get_bm_index(DRIPost_diff))
+      
+    
     DRIInd.LLMs[[length(DRIInd.LLMs) + 1]] <- DRIInd.LLM.Model
     
     DRI.Global <- rbind(DRI.Global, DRI.Case.LLM)
 
   }
   
-  
-  
 } # end for each case study
 
 
 DRIInd.LLMs <- bind_rows(DRIInd.LLMs)
 
+# add delta column
 DRI.Global <- DRI.Global %>%
-  mutate(DRIDelta = DRI_POST - DRI_PRE)
+  mutate(DRI_DELTA = DRI_POST - DRI_PRE)
+
+# write summary to file
+write_csv(DRIInd.LLMs, paste(OUTPUT_DIR, "DRIInd_LLMs.csv", sep = "/"))
+write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
+
+
+models %>%
+  group_by(provider) %>%
+  summarize()
+
 
 ```
 
+```{r benchmark index}
+
+DRI_benchmark <- DRIInd.LLMs %>%
+  group_by(provider, model) %>%
+  summarise(N = n(), 
+            agg_bm_index = mean(bm_index)) %>%
+  arrange(desc(agg_bm_index))
+
+llm_sd <- DRIInd.LLMs %>%
+  group_by(survey, case) %>%
+  summarise(N = n(), 
+            llm_sd = sd(bm_index)) %>%
+  arrange(desc(llm_sd))
+
+write_csv(llm_sd, paste(OUTPUT_DIR, "llm_sd.csv", sep = "/"))
+
+DRI_benchmark %>%
+  mutate(label = paste(provider, model, sep="/")) %>%
+  ggplot(aes(x = reorder(label, desc(agg_bm_index)), y = agg_bm_index)) +
+  geom_bar(stat = "identity") +
+  geom_text(aes(label = round(agg_bm_index, 3)), vjust = -0.3) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "", y = "DRI benchmark") -> plot
+
+ggsave(paste(OUTPUT_DIR, "benchmark.png", sep = "/"), plot, width = 10, height = 6)
+
+
+
+```
 

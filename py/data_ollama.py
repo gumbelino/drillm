@@ -5,15 +5,13 @@ from ollama import ChatResponse
 from utils import (
     CONSIDERATIONS,
     POLICIES,
-    PROVIDERS,
     PROMPT_R,
     REASONS,
     log_request,
     parse_numbers_from_response,
     parse_reasoning_from_response,
+    get_provider,
 )
-
-PROVIDER = "ollama"
 
 
 def generate_data(
@@ -24,7 +22,7 @@ def generate_data(
     date = datetime.now(timezone.utc)
 
     # get provider
-    provider = PROVIDERS[model] if model in PROVIDERS else PROVIDER
+    provider = get_provider(model)
 
     # set temperature in runtime
     # temperature = 0 is better for more deterministic output

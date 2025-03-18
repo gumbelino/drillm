@@ -61,7 +61,7 @@ surveys_success = {survey_name: 0 for survey_name in surveys}
 # execurtion params
 iterations = 10
 llm_provider = data_ollama
-model = "gemma2"
+model = "gemma3"
 temperature = 0
 
 model_info = get_model_info(model)
@@ -128,15 +128,19 @@ for i, survey in enumerate(surveys_exec):
         p_prompt, c_prompt = get_prompts(rand_p, rand_c, scale_max, q_method)
 
         # make API call
-        p_ranks, c_ranks, reason, meta = llm_provider.generate_data(
-            survey,
-            p_prompt,
-            c_prompt,
-            completion_uid,
-            model=model,
-            temperature=temperature,
-            reason=REASON,
-        )
+        try:
+            p_ranks, c_ranks, reason, meta = llm_provider.generate_data(
+                survey,
+                p_prompt,
+                c_prompt,
+                completion_uid,
+                model=model,
+                temperature=temperature,
+                reason=REASON,
+            )
+        except Exception as e:
+            print(f"Error generating data, skipping iteration: {e}")
+            break
 
         # record number of requests
         num_requests += 3 if REASON else 2
