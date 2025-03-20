@@ -1,22 +1,27 @@
 survey,case,N,llm_sd
-zh_uster,USTER,4,0.1619478123890587
-ds_bellinzona,Bellinzona,5,0.10044528097199945
-zh_thalwil,Thalwill,5,0.09190574790078539
-auscj,HGE Deliberative Group,4,0.0851459663228959
-ccps,CCPS ACT Deliberative,4,0.08343552094104853
-auscj,HGE Control Group,4,0.07668831393172253
-energy_futures,CSIRO WA,4,0.06994675389369479
+zh_uster,USTER,5,0.1500306284739381
+ds_bellinzona,Bellinzona,5,0.09941757056632108
+zh_thalwil,Thalwill,5,0.09305278459220614
+ccps,CCPS ACT Deliberative,5,0.09086131894172747
+auscj,HGE Deliberative Group,5,0.08732174656296911
+biobanking_wa,WA Citizens,5,0.08667196622051562
+auscj,HGE Control Group,5,0.0753340133626338
 fnqcj,FNQCJ,5,0.0678643702058137
-ds_aargau,Aargau,5,0.06251933600766121
+energy_futures,CSIRO WA,5,0.06262839225788715
 valsamoggia,Valsamoggia,4,0.06173858568074735
-zukunft,Zukunft,4,0.05649955176752469
-energy_futures,CSIRO NSW,4,0.04317084405023188
+ds_aargau,Aargau,5,0.05861982181216614
+zukunft,Zukunft,5,0.052961672911631286
+fremantle,Fremantle,5,0.045876298938462554
 uppsala_speaks,Standard,5,0.04253381125587017
 gbr,GBR,4,0.041502935777161284
-fremantle,Fremantle,4,0.04058610225955695
-forestera,Forest Stakeholder,4,0.02539691593035799
+energy_futures,CSIRO NSW,5,0.038455256890018094
+forestera,Forest Lay Citizen,5,0.03480348681831188
+biobanking_mayo_ubc,Mayo,4,0.030102164580545463
+acp,Citizen Parliamentarian,5,0.02333938503060929
+forestera,Forest Stakeholder,5,0.022867745202169294
 uppsala_speaks,UPSA Control Group,5,0.022305883720005026
 uppsala_speaks,Activate,5,0.022143930615805465
-acp,Citizen Parliamentarian,5,0.022087448028878662
 bep,BEP,4,0.01768647815172434
-forestera,Forest Lay Citizen,4,0.013047870843665786
+biobanking_mayo_ubc,UBC Bio,4,0.016436483629882842
+biobanking_wa,WA Stakeholder,5,0.012241077032591844
+zh_winterthur,Winterthur,5,0.010313245002843738

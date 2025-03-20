@@ -383,8 +383,6 @@ aggregate_llm_policies <- function(policies) {
   # Remove columns with NAs
   valid_policies <- policies[, colSums(is.na(policies)) != nrow(policies)]
   
-  print(valid_policies)
-  
   # Convert the policies to a ranked matrix
   ranked_matrix <- as.matrix(valid_policies)
   
@@ -500,7 +498,7 @@ human_data <- read_csv("data/total dataset_clean.csv", show_col_types = FALSE)
 human_data <- human_data %>%
   rename_with( ~ sub("^U0|^U", "C", .), starts_with("U", ignore.case = FALSE)) %>%
   rename_with( ~ sub("^Pref", "P", .), starts_with("Pref", ignore.case = FALSE)) %>%
-  filter(Study != "Sydney CC Adaptation" & Study != "WA Biobank")
+  filter(Study != "Sydney CC Adaptation")
 
 # Read the mapping file
 study_survey_map <- read_csv("data/study_survey_map.csv", show_col_types = FALSE)
@@ -769,11 +767,6 @@ for (case_study in 1:nrow(mini_publics)) {
   if (nrow(llms) == 0) {
     next
   }
-  
-  # TODO: skip problematic surveys for now
-  if (survey == "zh_winterthur") {
-    next
-  }
 
   for (llm in 1:nrow(llms)) {
     
@@ -867,6 +860,11 @@ DRIInd.LLMs %>%
   labs(x = "", y = "DRI benchmark") -> plot
 
 ggsave(paste(OUTPUT_DIR, "benchmark.png", sep = "/"), plot, width = 10, height = 6)
+
+sort(unique(llm_data$survey))
+sort(unique(DRIInd.LLMs$survey))
+
+sort(unique(human_data$Study))
 
 ```
 
