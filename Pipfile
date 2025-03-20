@@ -16,6 +16,7 @@ cohere = "*"
 mistralai = "*"
 ollama = "*"
 boto3 = "*"
+google-genai = "*"
 
 [dev-packages]
 

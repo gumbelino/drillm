@@ -23,6 +23,8 @@ POLICIES = "policies"
 CONSIDERATIONS = "considerations"
 REASONS = "reasons"
 
+# https://ai.google.dev/gemini-api/docs/prompting-intro
+
 # generic considerations prompt
 PROMPT_C = """## Instructions:
 - Rate each of the {0} [Considerations] below from 1 to {1}, where 1 is strongly \
@@ -197,19 +199,32 @@ def parse_numbers_from_string(number_string: str):
 
 
 def log_request(
-    cuid, date, provider, model, temperature, survey, type, prompt, response
+    cuid,
+    date,
+    provider,
+    model,
+    temperature,
+    survey,
+    type,
+    prompt,
+    response,
+    input_tokens=0,
+    output_tokens=0,
+    model_version=None,
 ):
     log_file_path = os.path.join(OUTPUT_DIR, provider, model, "request_log.csv")
     log_data = {
         "cuid": cuid,
         "date": date,
         "provider": provider,
-        "model": model,
+        "model": model_version if model_version else model,
         "temperature": temperature,
         "survey": survey,
         "type": type,
         "prompt": prompt,
         "response": response,
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
     }
     log_df = pd.DataFrame([log_data])
 
@@ -468,6 +483,12 @@ def is_valid_response(c_ranks, p_ranks, considerations, policies, likert, q_meth
         print(f"ERROR: Policy ranks contain invalid values.")
         return False
 
+    # check if p_ranks has duplicate values
+    if len(p_ranks) != len(set(p_ranks)):
+        print(f"ERROR: Policy ranks contains duplicate values.")
+        return False
+
+    # check for normality
     if q_method and not quasi_normality_check(c_ranks):
         print(f"ERROR: Considerations do not follow a Fixed Quasi-Normal Distribution.")
         return False

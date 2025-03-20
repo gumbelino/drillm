@@ -1,67 +1,124 @@
 from datetime import datetime, timezone
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import os
 
 from utils import (
+    CONSIDERATIONS,
+    POLICIES,
+    PROMPT_R,
+    REASONS,
     log_request,
     parse_numbers_from_response,
-    parse_numbers_from_string,
-    PROMPT_R,
+    parse_reasoning_from_response,
+    get_provider,
 )
 
-genai.configure(api_key=os.environ["GEMINI_API_KEY"])
-
-PROVIDER = "google"
+client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
-def generate_data(p_prompt, c_prompt, model="gemini-1.5-flash", reason=False):
+def generate_data(
+    mp, p_prompt, c_prompt, cuid, model="gemini-1.5-flash", temperature=0, reason=False
+):
 
-    print(f"getting data from {PROVIDER}: {model}")
-
+    # get current time
     date = datetime.now(timezone.utc)
 
-    api = genai.GenerativeModel(model)
-    chat = api.start_chat()
+    # get provider
+    provider = get_provider(model)
 
-    print("> consideration ratings...")
-    c_response = chat.send_message(c_prompt)
+    # start chat
+    # set temperature in runtime
+    chat = client.chats.create(
+        model=model, config=types.GenerateContentConfig(temperature=temperature)
+    )
+
+    # send first message
+    res = chat.send_message(c_prompt)
+    c_response = res.text
+    # print(res.usage_metadata)
+
+    # get cost
+    input_tokens = res.usage_metadata.prompt_token_count
+    output_tokens = res.usage_metadata.candidates_token_count
 
     # log request history to file
-    log_request(date, PROVIDER, model, c_prompt, c_response.text)
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        CONSIDERATIONS,
+        c_prompt,
+        c_response,
+        res.usage_metadata.prompt_token_count,
+        res.usage_metadata.candidates_token_count,
+        res.model_version,
+    )
 
-    print("> policies rankings...")
-    p_response = chat.send_message(p_prompt)
+    # get p prompt response
+    res = chat.send_message(p_prompt)
+    p_response = res.text
+    # print(res.usage_metadata)
+
+    # get cost
+    input_tokens += res.usage_metadata.prompt_token_count
+    output_tokens += res.usage_metadata.candidates_token_count
 
     # log request history to file
-    log_request(date, PROVIDER, model, p_prompt, p_response.text)
-
-    # parse ranks from response
-    c_ranks = parse_numbers_from_response(c_response.text)
-    p_ranks = parse_numbers_from_response(p_response.text)
-
-    # calculate cost
-    cost = (
-        c_response.usage_metadata.total_token_count
-        + p_response.usage_metadata.total_token_count
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        POLICIES,
+        p_prompt,
+        p_response,
+        res.usage_metadata.prompt_token_count,
+        res.usage_metadata.candidates_token_count,
+        res.model_version,
     )
 
     if reason:
-        print("> reasoning...")
-        r_response = chat.send_message(PROMPT_R)
 
-        # Clean up the reasoning text
-        reason_text = r_response.text.strip()
-        reason_text = " ".join(reason_text.split())
+        res = chat.send_message(PROMPT_R)
+        r_response = res.text
+        # print(res.usage_metadata)
+
+        # get cost
+        input_tokens += res.usage_metadata.prompt_token_count
+        output_tokens += res.usage_metadata.candidates_token_count
+
+        reason_text = parse_reasoning_from_response(r_response)
 
         # log request history to file
-        log_request(date, PROVIDER, model, PROMPT_R, reason_text)
+        log_request(
+            cuid,
+            date,
+            provider,
+            model,
+            temperature,
+            mp,
+            REASONS,
+            PROMPT_R,
+            r_response,
+            res.usage_metadata.prompt_token_count,
+            res.usage_metadata.candidates_token_count,
+            res.model_version,
+        )
 
-        # update cost
-        cost += r_response.usage_metadata.total_token_count
     else:
         reason_text = "Reasoning was not requested."
 
-    # set columns
-    meta = [date, model, PROVIDER, cost]
+    # parse ranks from response
+    c_ranks = parse_numbers_from_response(c_response)
+    p_ranks = parse_numbers_from_response(p_response)
+
+    # set meta columns
+    meta = [date, provider, model, temperature, input_tokens, output_tokens]
 
     return p_ranks, c_ranks, reason_text, meta

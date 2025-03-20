@@ -60,8 +60,8 @@ surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
 iterations = 10
-llm_provider = data_ollama
-model = "gemma3"
+llm_provider = data_google
+model = "gemini-1.5-pro"
 temperature = 0
 
 model_info = get_model_info(model)

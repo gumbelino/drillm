@@ -18,7 +18,7 @@ library(psych)
 library(boot)
 library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
 
-SURVEY_FILE <- "data/surveys_v4.xlsx"
+SURVEY_FILE <- "data/surveys_v5.xlsx"
 OUTPUT_DIR <- "analysis"
 
 # create output directory if it doesn't exist
@@ -200,6 +200,9 @@ for (survey_name in survey_names) {
 # Combine all data frames in the list into a single data frame
 llm_data <- bind_rows(data_list)
 
+write_csv(llm_data, paste(OUTPUT_DIR, "llm_data.csv", sep = "/"))
+
+
 # delete data_list from memory
 rm(data_list)
 rm(temp_data)
@@ -353,16 +356,15 @@ aggregate_llm_considerations <- function(considerations) {
 }
 
 aggregate_llm_policies <- function(policies) {
-  # Ensure there are columns to aggregate
-  if (nrow(policies) == 0) {
-    return(tibble())
-  } else if (nrow(policies) == 1) {
+  # Ensure there are at least 2 columns to aggregate
+  if (nrow(policies) < 2) {
     return(policies)
   }
   
   # Remove columns with NAs
   valid_policies <- policies[, colSums(is.na(policies)) != nrow(policies)]
   
+  print(valid_policies)
   
   # Convert the policies to a ranked matrix
   ranked_matrix <- as.matrix(valid_policies)
@@ -836,9 +838,18 @@ DRI_benchmark %>%
         plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(0, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
+DRIInd.LLMs %>%
+  mutate(label = paste(provider, model, sep="/")) %>%
+  ggplot(aes(x = reorder(label, desc(bm_index), FUN = median), y = bm_index)) +
+  geom_boxplot() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(-0.1, 1)) +
+  labs(x = "", y = "DRI benchmark") -> plot
+
 ggsave(paste(OUTPUT_DIR, "benchmark.png", sep = "/"), plot, width = 10, height = 6)
 
-
-
 ```
+
+
 
