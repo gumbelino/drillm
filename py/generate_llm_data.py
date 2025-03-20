@@ -30,16 +30,10 @@ import pandas as pd
 import random
 import uuid
 
-
-def get_available_llms():
-    df = pd.read_csv("private/llms.csv")
-    available_llms = df[df["available"] == True]
-    return available_llms
-
-
 # get surveys data
 surveys = get_surveys_data()
 
+# FIXME: change it to read actual data
 progress_df = get_or_create_progress_tracker(surveys)
 
 # execution constants
@@ -60,8 +54,8 @@ surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
 iterations = 10
-llm_provider = data_google
-model = "gemini-1.5-pro"
+llm_provider = data_mistral
+model = "mistral-large-latest"
 temperature = 0
 
 model_info = get_model_info(model)
@@ -139,8 +133,8 @@ for i, survey in enumerate(surveys_exec):
                 reason=REASON,
             )
         except Exception as e:
-            print(f"Error generating data, skipping iteration: {e}")
-            break
+            print(f"\nError generating data, skipping iteration: {e}")
+            continue
 
         # record number of requests
         num_requests += 3 if REASON else 2
