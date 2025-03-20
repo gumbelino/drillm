@@ -1,0 +1,6 @@
+provider,model,N,input_tokens,output_tokens
+google,gemini-1.5-flash,191,769947,50896
+google,gemini-1.5-flash-8b,187,752719,49858
+google,gemini-1.5-pro,196,789150,52144
+google,gemini-2.0-flash,200,803488,53494
+mistralai,mistral-large-latest,71,323382,20625

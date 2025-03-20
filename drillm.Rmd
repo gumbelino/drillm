@@ -202,6 +202,10 @@ llm_data <- bind_rows(data_list)
 
 write_csv(llm_data, paste(OUTPUT_DIR, "llm_data.csv", sep = "/"))
 
+inp <- mean(llm_data$input_tokens)
+outp <- mean(llm_data$output_tokens)
+tot <- inp + outp
+
 
 # delete data_list from memory
 rm(data_list)
@@ -210,13 +214,28 @@ rm(temp_data)
 # Aggregate llm_data by provider, model, and survey and N the number of rows
 llm_surveys <- llm_data %>%
   group_by(provider, model, survey) %>%
-  summarise(N = n(), .groups = 'drop')
+  summarise(
+    N = n(),
+    mean_input_tokens = as.integer(mean(input_tokens)),
+    mean_output_tokens = as.integer(mean(output_tokens)),
+    .groups = 'drop'
+  )
+
+cost_tokens <- llm_data %>%
+  group_by(provider, model) %>%
+  summarise(
+    N = n(),
+    input_tokens = as.integer(sum(input_tokens)),
+    output_tokens = as.integer(sum(output_tokens)),
+    .groups = 'drop'
+  )
 
 # Print the summary
 print(llm_surveys)
 
 # write summary to file
 write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
+write_csv(cost_tokens, paste(OUTPUT_DIR, "cost_tokens.csv", sep = "/"))
 
 ```
 

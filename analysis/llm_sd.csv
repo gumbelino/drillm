@@ -1,22 +1,22 @@
 survey,case,N,llm_sd
-ds_bellinzona,Bellinzona,4,0.2114541492395918
-ccps,CCPS ACT Deliberative,4,0.16993955962292923
-fnqcj,FNQCJ,4,0.14089925923112645
-gbr,GBR,3,0.12587972856452612
-bep,BEP,4,0.09880207017647895
-zh_uster,USTER,4,0.09633782330972404
-uppsala_speaks,Standard,4,0.06363290296147742
-ds_aargau,Aargau,4,0.05892719256048846
-fremantle,Fremantle,4,0.05704335854505862
-forestera,Forest Stakeholder,4,0.056429186269280306
-zukunft,Zukunft,4,0.04965268982372592
-zh_thalwil,Thalwill,4,0.04866844582018513
-uppsala_speaks,Activate,4,0.04635143270652429
-acp,Citizen Parliamentarian,4,0.03473143171892965
-auscj,HGE Deliberative Group,2,0.034393987761350164
-uppsala_speaks,UPSA Control Group,4,0.030178919852601398
-valsamoggia,Valsamoggia,4,0.027626391289971294
-energy_futures,CSIRO NSW,4,0.027049424013901993
-forestera,Forest Lay Citizen,4,0.024178070438673992
-energy_futures,CSIRO WA,4,0.023795896547433634
-auscj,HGE Control Group,2,0.021100915937586732
+zh_uster,USTER,4,0.1619478123890587
+ds_bellinzona,Bellinzona,5,0.10044528097199945
+zh_thalwil,Thalwill,5,0.09190574790078539
+auscj,HGE Deliberative Group,4,0.0851459663228959
+ccps,CCPS ACT Deliberative,4,0.08343552094104853
+auscj,HGE Control Group,4,0.07668831393172253
+energy_futures,CSIRO WA,4,0.06994675389369479
+fnqcj,FNQCJ,5,0.0678643702058137
+ds_aargau,Aargau,5,0.06251933600766121
+valsamoggia,Valsamoggia,4,0.06173858568074735
+zukunft,Zukunft,4,0.05649955176752469
+energy_futures,CSIRO NSW,4,0.04317084405023188
+uppsala_speaks,Standard,5,0.04253381125587017
+gbr,GBR,4,0.041502935777161284
+fremantle,Fremantle,4,0.04058610225955695
+forestera,Forest Stakeholder,4,0.02539691593035799
+uppsala_speaks,UPSA Control Group,5,0.022305883720005026
+uppsala_speaks,Activate,5,0.022143930615805465
+acp,Citizen Parliamentarian,5,0.022087448028878662
+bep,BEP,4,0.01768647815172434
+forestera,Forest Lay Citizen,4,0.013047870843665786
