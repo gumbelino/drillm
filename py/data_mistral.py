@@ -1,15 +1,13 @@
 from mistralai import Mistral
 import os
 import time
-from datetime import datetime, timezone
-from ollama import chat
-from ollama import ChatResponse
 
 from utils import (
     CONSIDERATIONS,
     POLICIES,
     PROMPT_R,
     REASONS,
+    get_utc_time,
     log_request,
     parse_numbers_from_response,
     parse_reasoning_from_response,
@@ -31,7 +29,7 @@ def generate_data(
 ):
 
     # get current time
-    date = datetime.now(timezone.utc)
+    date = get_utc_time()
 
     # get provider
     provider = get_provider(model)
@@ -96,7 +94,7 @@ def generate_data(
         model,
         temperature,
         mp,
-        CONSIDERATIONS,
+        POLICIES,
         c_prompt,
         c_response,
         res.usage.prompt_tokens,
@@ -138,7 +136,7 @@ def generate_data(
             model,
             temperature,
             mp,
-            CONSIDERATIONS,
+            REASONS,
             c_prompt,
             c_response,
             res.usage.prompt_tokens,

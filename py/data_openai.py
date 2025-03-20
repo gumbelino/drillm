@@ -1,21 +1,16 @@
-import csv
-from datetime import datetime, timezone
 from openai import OpenAI
-import pandas as pd
-import surveys
-import os
-from utils import parse_numbers_from_string
-from tenacity import (
-    retry,
-    stop_after_attempt,
-    wait_random_exponential,
-)  # for exponential backoff
 
-
-@retry(wait=wait_random_exponential(min=1, max=60), stop=stop_after_attempt(6))
-def completion_with_backoff(**kwargs):
-    return client.completions.create(**kwargs)
-
+from utils import (
+    CONSIDERATIONS,
+    POLICIES,
+    PROMPT_R,
+    REASONS,
+    get_utc_time,
+    log_request,
+    parse_numbers_from_response,
+    parse_reasoning_from_response,
+    get_provider,
+)
 
 # define openai client to access API
 client = OpenAI(
@@ -23,36 +18,54 @@ client = OpenAI(
     project="proj_k8Gv8E3GjDirposW9zEqvdfq",
 )
 
-PROVIDER = "openai"
 
-# deprecated: API_KEYS live in local file
-# API_KEYS_FILE_PATH = "private/api_keys.csv"
+def generate_data(
+    mp,
+    p_prompt,
+    c_prompt,
+    cuid,
+    model="gpt-4o",
+    temperature=0,
+    reason=False,
+):
 
+    # get current time
+    date = get_utc_time()
 
-# more about roles: https://platform.openai.com/docs/guides/text-generation#messages-and-roles
-def get_llm_data(p_prompt, c_prompt, model="gpt-4o-mini"):
-
-    print(f"Getting data from {PROVIDER}")
+    # get provider
+    provider = get_provider(model)
 
     # build initial message
     messages = [
         {"role": "user", "content": c_prompt},
     ]
 
-    print("> Getting consideration ratings...")
-
-    # send first messageS
+    # send first message
     res = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        # reasoning_effort="low", #NOTE only for o1 models
-        # seed=1, #NOTE possible to add a seed. should we do it??
+        model=model, messages=messages, temperature=temperature
     )
 
-    # get initial message cost
-    cost = res.usage.total_tokens
-
     c_response = res.choices[0].message.content
+
+    # get cost
+    input_tokens = res.usage.prompt_tokens
+    output_tokens = res.usage.completion_tokens
+
+    # log request history to file
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        CONSIDERATIONS,
+        c_prompt,
+        c_response,
+        res.usage.prompt_tokens,
+        res.usage.completion_tokens,
+        res.model,
+    )
 
     # append response to messages
     messages.append(
@@ -64,27 +77,80 @@ def get_llm_data(p_prompt, c_prompt, model="gpt-4o-mini"):
         {"role": "user", "content": p_prompt},
     )
 
-    print("> Getting policies rankings...")
-
     # get p prompt response
     res = client.chat.completions.create(
-        model=model,
-        messages=messages,
+        model=model, messages=messages, temperature=temperature
     )
 
     p_response = res.choices[0].message.content
 
-    # print("c_response", c_response.text)
-    # print("p_response", p_response.text)
+    # get cost
+    input_tokens += res.usage.prompt_tokens
+    output_tokens += res.usage.completion_tokens
 
-    # calculate cost
-    cost += res.usage.total_tokens
+    # log request history to file
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        POLICIES,
+        c_prompt,
+        c_response,
+        res.usage.prompt_tokens,
+        res.usage.completion_tokens,
+        res.model,
+    )
+
+    if reason:
+
+        # append response to messages
+        messages.append(
+            {"role": "assistant", "content": p_response},
+        )
+
+        # append reasoning prompt
+        messages.append(
+            {"role": "user", "content": PROMPT_R},
+        )
+
+        res = client.chat.completions.create(
+            model=model, messages=messages, temperature=temperature
+        )
+        r_response = res.choices[0].message.content
+
+        reason_text = parse_reasoning_from_response(r_response)
+
+        # get cost
+        input_tokens += res.usage.prompt_tokens
+        output_tokens += res.usage.completion_tokens
+
+        # log request history to file
+        log_request(
+            cuid,
+            date,
+            provider,
+            model,
+            temperature,
+            mp,
+            REASONS,
+            c_prompt,
+            c_response,
+            res.usage.prompt_tokens,
+            res.usage.completion_tokens,
+            res.model,
+        )
+
+    else:
+        reason_text = "Reasoning was not requested."
 
     # parse ranks from response
-    c_ranks = parse_numbers_from_string(c_response)
-    p_ranks = parse_numbers_from_string(p_response)
+    c_ranks = parse_numbers_from_response(c_response)
+    p_ranks = parse_numbers_from_response(p_response)
 
-    # set columns
-    meta = [datetime.now(timezone.utc), res.model, PROVIDER, cost]
+    # set meta columns
+    meta = [date, provider, model, temperature, input_tokens, output_tokens]
 
-    return p_ranks, c_ranks, meta
+    return p_ranks, c_ranks, reason_text, meta

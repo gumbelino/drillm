@@ -231,7 +231,7 @@ cost_tokens <- llm_data %>%
   )
 
 # Print the summary
-print(llm_surveys)
+print(head(llm_surveys))
 
 # write summary to file
 write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
@@ -261,6 +261,8 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
     
     if (nrow(considerations_data) > 1) {
       alpha_considerations <- alpha(considerations_data, check.keys = TRUE, warnings = FALSE)$total$raw_alpha
+      #alpha_considerations <- round(alpha_considerations, 2)
+
     } else {
       alpha_considerations <- NA
     }
@@ -270,7 +272,8 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
   
     if (nrow(policies_data) > 1) {
       alpha_policies <- alpha(policies_data, check.keys = TRUE, warnings = FALSE)$total$raw_alpha
-    } else {
+      #alpha_policies <- round(alpha_policies, 2)
+      } else {
       alpha_policies <- NA
     }
     
@@ -294,7 +297,7 @@ rm(policies_data)
 rm(provider_model_data)
 
 # Print the results
-print(alpha_results)
+print(head(alpha_results))
 
 # write summary to file
 write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
@@ -319,7 +322,7 @@ alpha_summary <- alpha_results %>%
   )
 
 # Print the summary
-print(alpha_summary)
+print(head(alpha_summary))
 ```
 
 ## Define aggregation functions
@@ -475,15 +478,12 @@ llm_data_aggregated <- aggregate_llm_data(llm_data)
 time_end <- Sys.time()
 elapsed_time <- difftime(time_end, time_start, units = "auto")
 
-print(paste("LLM data aggregation completed in", round(as.numeric(elapsed_time),2), units(elapsed_time)))
+print(paste("Aggregation of", nrow(llm_data), "LLM responses across", length(unique(llm_data$survey)) ,"surveys completed in", round(as.numeric(elapsed_time),2), units(elapsed_time)))
 
-print(llm_data_aggregated)
-
-output_path <- paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep = "/")
+print(head(llm_data_aggregated))
 
 # write summary to file
-write_csv(llm_data_aggregated, output_path)
-print(paste("Results written to", output_path))
+write_csv(llm_data_aggregated, paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep = "/"))
 
 ```
 
@@ -808,6 +808,12 @@ for (case_study in 1:nrow(mini_publics)) {
 
 DRIInd.LLMs <- bind_rows(DRIInd.LLMs)
 
+missing <-setdiff(unique(llm_data$survey), unique(DRIInd.LLMs$survey))
+
+if (length(missing) > 0) {
+  warn(paste("Missing", missing, "from DRIInd.LLMs!"))
+}
+
 # add delta column
 DRI.Global <- DRI.Global %>%
   mutate(DRI_DELTA = DRI_POST - DRI_PRE)
@@ -816,25 +822,19 @@ DRI.Global <- DRI.Global %>%
 write_csv(DRIInd.LLMs, paste(OUTPUT_DIR, "DRIInd_LLMs.csv", sep = "/"))
 write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
-
-models %>%
-  group_by(provider) %>%
-  summarize()
-
-
 ```
 
 ```{r benchmark index}
 
 DRI_benchmark <- DRIInd.LLMs %>%
   group_by(provider, model) %>%
-  summarise(N = n(), 
+  summarise(N = n(), .groups = "drop",
             agg_bm_index = mean(bm_index)) %>%
   arrange(desc(agg_bm_index))
 
 llm_sd <- DRIInd.LLMs %>%
   group_by(survey, case) %>%
-  summarise(N = n(), 
+  summarise(N = n(), .groups = "drop",
             llm_sd = sd(bm_index)) %>%
   arrange(desc(llm_sd))
 
@@ -852,19 +852,15 @@ DRI_benchmark %>%
 
 DRIInd.LLMs %>%
   mutate(label = paste(provider, model, sep="/")) %>%
-  ggplot(aes(x = reorder(label, desc(bm_index), FUN = median), y = bm_index)) +
+  ggplot(aes(x = reorder(label, asc(bm_index), FUN = median), y = bm_index)) +
   geom_boxplot() +
+  coord_flip() +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+  theme(
         plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(-0.1, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
 ggsave(paste(OUTPUT_DIR, "benchmark.png", sep = "/"), plot, width = 10, height = 6)
-
-sort(unique(llm_data$survey))
-sort(unique(DRIInd.LLMs$survey))
-
-sort(unique(human_data$Study))
 
 ```
 

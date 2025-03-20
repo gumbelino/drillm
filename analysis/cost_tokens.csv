@@ -3,4 +3,11 @@ google,gemini-1.5-flash,191,769947,50896
 google,gemini-1.5-flash-8b,187,752719,49858
 google,gemini-1.5-pro,196,789150,52144
 google,gemini-2.0-flash,200,803488,53494
+meta,llama3.2,294,0,0
+mistralai,ministral-8b-latest,111,437562,30020
 mistralai,mistral-large-latest,158,688269,43786
+mistralai,mistral-small-latest,104,416512,27874
+mistralai,open-mistral-nemo,102,408770,26786
+mistralai,open-mixtral-8x22b,129,561554,36583
+openai,gpt-3.5-turbo,190,714861,46601
+openai,gpt-4o,200,748918,46830
