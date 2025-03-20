@@ -4,4 +4,5 @@
 .Ruserdata
 private/
 data/
+billing/
 llm_data*
