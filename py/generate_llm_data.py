@@ -54,8 +54,8 @@ surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
 iterations = 10
-llm_provider = data_mistral
-model = "mistral-large-latest"
+llm_provider = data_openai
+model = "gpt-3.5-turbo"
 temperature = 0
 
 model_info = get_model_info(model)
@@ -133,7 +133,8 @@ for i, survey in enumerate(surveys_exec):
                 reason=REASON,
             )
         except Exception as e:
-            print(f"\nError generating data, skipping iteration: {e}")
+            print(f"ERROR: {e}")
+            num_errors += 1
             continue
 
         # record number of requests
@@ -171,7 +172,7 @@ for i, survey in enumerate(surveys_exec):
         num_success += 1
         surveys_success[survey] += 1
 
-        time.sleep(2)
+        time.sleep(1)
 
     print(
         f"Success rate for {survey}: {int((surveys_success[survey] * 100) / iterations)}%"
@@ -201,6 +202,7 @@ print(f"Cost output: US${cost_output:.2f}")
 print(f"Total cost: US${cost_input + cost_output:.2f}")
 
 print(f"Invalid LLM completions: {num_invalid}")
+print(f"Data generation errors: {num_errors}")
 print(
     f"Successful LLM completions: {sum([surveys_success[s] for s in surveys_success])}"
 )
@@ -219,6 +221,7 @@ log_execution(
     num_requests,
     num_completions,
     elapsed_time,
+    num_errors,
     num_invalid,
     success_rate,
     time_per_completion,
