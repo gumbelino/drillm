@@ -3,7 +3,9 @@ google,gemini-1.5-flash,191,769947,50896
 google,gemini-1.5-flash-8b,187,752719,49858
 google,gemini-1.5-pro,196,789150,52144
 google,gemini-2.0-flash,200,803488,53494
+google,gemma2,186,0,0
 meta,llama3.2,294,0,0
+microsoft,phi4,190,0,0
 mistralai,ministral-8b-latest,111,437562,30020
 mistralai,mistral-large-latest,158,688269,43786
 mistralai,mistral-small-latest,104,416512,27874

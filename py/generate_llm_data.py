@@ -53,9 +53,9 @@ output_tokens = 0
 surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
-iterations = 10
-llm_provider = data_openai
-model = "gpt-3.5-turbo"
+iterations = 50
+llm_provider = data_google
+model = "gemini-1.5-flash"
 temperature = 0
 
 model_info = get_model_info(model)
