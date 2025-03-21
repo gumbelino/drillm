@@ -241,8 +241,7 @@ write_csv(cost_tokens, paste(OUTPUT_DIR, "cost_tokens.csv", sep = "/"))
 
 
 ## Calculate Cronbach's Alpha
-```{r echo=FALSE}
-knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```{r error=FALSE, warning=FALSE, message=FALSE}
 
 # Initialize an empty list to store the alpha results
 alpha_results <- list()
@@ -303,7 +302,6 @@ print(head(alpha_results))
 # write summary to file
 write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 
-return()
 ```
 
 ## Check alpha results per model

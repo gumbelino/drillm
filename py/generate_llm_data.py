@@ -53,7 +53,7 @@ output_tokens = 0
 surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
-iterations = 50
+iterations = 20
 llm_provider = data_google
 model = "gemini-1.5-flash"
 temperature = 0
