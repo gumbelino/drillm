@@ -242,6 +242,7 @@ write_csv(cost_tokens, paste(OUTPUT_DIR, "cost_tokens.csv", sep = "/"))
 
 ## Calculate Cronbach's Alpha
 ```{r echo=FALSE}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
 
 # Initialize an empty list to store the alpha results
 alpha_results <- list()
@@ -302,6 +303,7 @@ print(head(alpha_results))
 # write summary to file
 write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 
+return()
 ```
 
 ## Check alpha results per model
@@ -421,7 +423,7 @@ aggregate_llm_policies <- function(policies) {
 
 
 ## Aggregate considerations and preferences
-```{r}
+```{r aggregate llm data}
 
 aggregate_llm_data <- function(data) {
   
@@ -487,9 +489,11 @@ write_csv(llm_data_aggregated, paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep 
 
 ```
 
+It takes `r round(as.numeric(elapsed_time),2)` `r units(elapsed_time)` to run the aggregation script.
+
 
 ## Read and format human data
-```{r}
+```{r human data}
 
 # Import the CSV file into a data frame
 human_data <- read_csv("data/total dataset_clean.csv", show_col_types = FALSE)
@@ -519,7 +523,7 @@ human_data
 
 
 ## Original DRI analysis
-```{r}
+```{r DRI}
 
 dri_calc <- function(data, v1, v2) {
   lambda <- 1 - (sqrt(2) / 2)
@@ -852,7 +856,7 @@ DRI_benchmark %>%
 
 DRIInd.LLMs %>%
   mutate(label = paste(provider, model, sep="/")) %>%
-  ggplot(aes(x = reorder(label, asc(bm_index), FUN = median), y = bm_index)) +
+  ggplot(aes(x = reorder(label, bm_index, FUN = median), y = bm_index)) +
   geom_boxplot() +
   coord_flip() +
   theme_minimal() +
