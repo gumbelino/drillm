@@ -24,6 +24,8 @@ import data_openai
 import data_cohere
 import data_mistral
 import data_ollama
+import data_deepseek
+import data_anthropic
 
 import time
 import pandas as pd
@@ -33,7 +35,6 @@ import uuid
 # get surveys data
 surveys = get_surveys_data()
 
-# FIXME: change it to read actual data
 progress_df = get_or_create_progress_tracker(surveys)
 
 # execution constants
@@ -53,9 +54,9 @@ output_tokens = 0
 surveys_success = {survey_name: 0 for survey_name in surveys}
 
 # execurtion params
-iterations = 20
-llm_provider = data_google
-model = "gemini-1.5-flash"
+iterations = 10
+llm_provider = data_anthropic
+model = "claude-3-haiku-20240307"
 temperature = 0
 
 model_info = get_model_info(model)
@@ -112,6 +113,9 @@ for i, survey in enumerate(surveys_exec):
 
         print(f"- iteration {i+1} of {iterations}... ", end="", flush=True)
 
+        # record start time
+        it_start_time = time.time()
+
         # generate a unique id for the completion
         completion_uid = str(uuid.uuid4())
 
@@ -159,8 +163,12 @@ for i, survey in enumerate(surveys_exec):
         input_tokens += meta[4]
         output_tokens += meta[5]
 
+        it_end_time = time.time()
+
+        it_elapsed_time = round(it_end_time - it_start_time, 2)
+
         # append data to files
-        print(f"SUCCESS.")
+        print(f"SUCCESS. ({it_elapsed_time}s)")
         append_data_to_file(survey, model, p_df, POLICIES)
         append_data_to_file(survey, model, c_df, CONSIDERATIONS)
         append_data_to_file(survey, model, r_df, REASONS)
@@ -230,3 +238,6 @@ log_execution(
     surveys_exec,
     surveys_success,
 )
+
+# audio notification
+os.system('say "done"')

@@ -6,7 +6,7 @@ import sys
 import numpy as np
 
 TOTAL_ITERATIONS = 100
-LLM_INFO = "private/llms_v2.csv"
+LLM_INFO_PATH = "private/llms_v3.csv"
 OUTPUT_DIR = "llm_data"
 PROGRESS_FILE = "progress.csv"
 META_DATA = [
@@ -80,13 +80,17 @@ Q_METHOD_INSTRUCTION = """
 - Using the Q Methodology, rate the statements following a Fixed Quasi-Normal Distribution between 1 and {0}."""
 
 
+def get_models():
+    return pd.read_csv(LLM_INFO_PATH)
+
+
 def get_model_info(model):
-    df = pd.read_csv(LLM_INFO)
+    df = pd.read_csv(LLM_INFO_PATH)
     model_data = df[df["model"] == model].to_dict(orient="records")
     if model_data:
         return model_data[0]
     else:
-        raise ValueError(f"Model {model} not found in {LLM_INFO}")
+        raise ValueError(f"Model {model} not found in {LLM_INFO_PATH}")
 
 
 def get_provider(model):
@@ -383,7 +387,7 @@ def get_or_create_progress_tracker(survey_names):
 
     sys.stdout.write("Updating data generation progress...")
     sys.stdout.flush()
-    df = pd.read_csv(LLM_INFO)
+    df = pd.read_csv(LLM_INFO_PATH)
     for _, row in df.iterrows():
         provider = row["provider"]
         model = row["model"]
