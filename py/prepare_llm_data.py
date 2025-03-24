@@ -1,8 +1,11 @@
 import pandas as pd
 import os
 
+from utils import LLM_INFO_PATH
+from surveys import SURVEYS_PATH
 
-def get_models(file_path="private/llms_v2.csv"):
+
+def get_models(file_path=LLM_INFO_PATH):
     # Read the CSV file
     df = pd.read_csv(file_path)
 
@@ -20,13 +23,13 @@ def get_models(file_path="private/llms_v2.csv"):
     return df[["provider", "model", "has_data"]]
 
 
-def get_models_with_data(file_path="private/llms_v2.csv"):
+def get_models_with_data(file_path=LLM_INFO_PATH):
     df = get_models(file_path)
     df = df[df["has_data"] == True]
     return list(df[["provider", "model"]].itertuples(index=False, name=None))
 
 
-def get_survey_names(file_path="data/surveys_v2.xlsx"):
+def get_survey_names(file_path=SURVEYS_PATH):
     # Load the Excel file
     excel_file = pd.ExcelFile(file_path)
 

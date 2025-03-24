@@ -8,15 +8,15 @@ requests = "*"
 pandas = "*"
 openai = "*"
 openpyxl = "*"
-anthropic = "*"
 google-generativeai = "*"
 llamaapi = "*"
 tenacity = "*"
-cohere = "*"
 mistralai = "*"
 ollama = "*"
 boto3 = "*"
 google-genai = "*"
+anthropic = "*"
+cohere = "*"
 
 [dev-packages]
 

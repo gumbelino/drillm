@@ -1,3 +1,4 @@
+import os
 from openai import OpenAI
 
 from utils import (
@@ -14,8 +15,7 @@ from utils import (
 
 # define openai client to access API
 client = OpenAI(
-    organization="org-5vaJcJj36BER6kXQMdkKKpZP",
-    project="proj_k8Gv8E3GjDirposW9zEqvdfq",
+    api_key=os.environ["DEEPSEEK_API_KEY"], base_url="https://api.deepseek.com"
 )
 
 
@@ -24,7 +24,7 @@ def generate_data(
     p_prompt,
     c_prompt,
     cuid,
-    model="gpt-4o",
+    model="deepseek-chat",
     temperature=0,
     reason=False,
 ):

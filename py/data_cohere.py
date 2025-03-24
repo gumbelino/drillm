@@ -1,69 +1,147 @@
-from datetime import datetime, timezone
 import cohere
 import os
 
-from utils import parse_numbers_from_string
+from utils import (
+    CONSIDERATIONS,
+    POLICIES,
+    PROMPT_R,
+    REASONS,
+    get_utc_time,
+    log_request,
+    parse_numbers_from_response,
+    parse_reasoning_from_response,
+    get_provider,
+)
 
-PROVIDER = "cohere"
-
-co = cohere.ClientV2(api_key=os.environ["COHERE_API_KEY"])
+client = cohere.ClientV2(os.environ.get("COHERE_API_KEY"))
 
 
-def get_llm_data(p_prompt, c_prompt, model="command-r-plus-08-2024"):
+def generate_data(
+    mp,
+    p_prompt,
+    c_prompt,
+    cuid,
+    model="command-r7b-12-2024",
+    temperature=0,
+    reason=False,
+):
 
-    print(f"Getting data from {PROVIDER}")
+    # get current time
+    date = get_utc_time()
+
+    # get provider
+    provider = get_provider(model)
 
     # build initial message
     messages = [
-        {
-            "role": "user",
-            "content": c_prompt,
-        },
+        {"role": "user", "content": c_prompt},
     ]
 
-    print("> Getting consideration ratings...")
-
-    # get response for first message
-    res = co.chat(model=model, messages=messages)
-
-    cost = res.usage.tokens.input_tokens + res.usage.tokens.output_tokens
+    # send first message
+    res = client.chat(model=model, messages=messages, temperature=temperature)
 
     c_response = res.message.content[0].text
 
+    # get cost
+    input_tokens = res.usage.tokens.input_tokens
+    output_tokens = res.usage.tokens.output_tokens
+
+    # log request history to file
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        CONSIDERATIONS,
+        c_prompt,
+        c_response,
+        res.usage.tokens.input_tokens,
+        res.usage.tokens.output_tokens,
+        model,
+    )
+
     # append response to messages
     messages.append(
-        {
-            "role": "assistant",
-            "content": c_response,
-        }
+        {"role": "assistant", "content": c_response},
     )
 
     # append policies prompt
     messages.append(
-        {
-            "role": "user",
-            "content": p_prompt,
-        }
+        {"role": "user", "content": p_prompt},
     )
 
-    print("> Getting policies rankings...")
-
-    # get response for second message
-    res = co.chat(model=model, messages=messages)
+    # get p prompt response
+    res = client.chat(model=model, messages=messages, temperature=temperature)
 
     p_response = res.message.content[0].text
 
-    # print("c_response", c_response)
-    # print("p_response", p_response.text)
+    # get cost
+    input_tokens += res.usage.tokens.input_tokens
+    output_tokens += res.usage.tokens.output_tokens
+
+    # log request history to file
+    log_request(
+        cuid,
+        date,
+        provider,
+        model,
+        temperature,
+        mp,
+        POLICIES,
+        p_prompt,
+        p_response,
+        res.usage.tokens.input_tokens,
+        res.usage.tokens.output_tokens,
+        model,
+    )
+
+    if reason:
+
+        # append response to messages
+        messages.append(
+            {"role": "assistant", "content": p_response},
+        )
+
+        # append reasoning prompt
+        messages.append(
+            {"role": "user", "content": PROMPT_R},
+        )
+
+        res = client.chat(model=model, messages=messages, temperature=temperature)
+        r_response = res.message.content[0].text
+
+        reason_text = parse_reasoning_from_response(r_response)
+
+        # get cost
+        input_tokens += res.usage.tokens.input_tokens
+        output_tokens += res.usage.tokens.output_tokens
+
+        # log request history to file
+        log_request(
+            cuid,
+            date,
+            provider,
+            model,
+            temperature,
+            mp,
+            REASONS,
+            PROMPT_R,
+            r_response,
+            res.usage.tokens.input_tokens,
+            res.usage.tokens.output_tokens,
+            model,
+        )
+
+    else:
+        reason_text = "Reasoning was not requested."
 
     # parse ranks from response
-    c_ranks = parse_numbers_from_string(c_response)
-    p_ranks = parse_numbers_from_string(p_response)
+    c_ranks = parse_numbers_from_response(c_response)
+    p_ranks = parse_numbers_from_response(p_response)
 
-    # calculate cost
-    cost += res.usage.tokens.input_tokens + res.usage.tokens.output_tokens
+    # set meta columns
+    meta = [date, provider, model, temperature, input_tokens, output_tokens]
 
-    # set columns
-    meta = [datetime.now(timezone.utc), model, PROVIDER, int(cost)]
-
-    return p_ranks, c_ranks, meta
+    return p_ranks, c_ranks, reason_text, meta

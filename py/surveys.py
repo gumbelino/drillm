@@ -3,6 +3,11 @@ import pandas as pd
 SURVEYS_PATH = "data/surveys_v5.xlsx"
 
 
+def get_survey_names(file_path=SURVEYS_PATH):
+    xls = pd.ExcelFile(file_path)
+    return xls.sheet_names
+
+
 def get_surveys_data(file_path=SURVEYS_PATH):
     xls = pd.ExcelFile(file_path)
     sheets = {}
