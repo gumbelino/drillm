@@ -1,27 +1,27 @@
 survey,case,N,llm_sd
-fnqcj,FNQCJ,17,0.13236180490796468
-gbr,GBR,16,0.1315590821734711
-zh_uster,USTER,17,0.12969190907047454
-ccps,CCPS ACT Deliberative,17,0.126300021645991
-zh_winterthur,Winterthur,16,0.11367362468145936
-valsamoggia,Valsamoggia,16,0.1108160650508355
-auscj,HGE Deliberative Group,16,0.09343017413474083
-auscj,HGE Control Group,16,0.09282397166520484
-zukunft,Zukunft,17,0.0900734397536017
-biobanking_wa,WA Citizens,17,0.08973796447729719
-ds_bellinzona,Bellinzona,17,0.08299805338412812
-biobanking_mayo_ubc,Mayo,16,0.07871913712381769
-ds_aargau,Aargau,17,0.06979068201179905
-bep,BEP,16,0.06645492368604579
-uppsala_speaks,Activate,17,0.06390377619936868
-zh_thalwil,Thalwill,17,0.062394971739385886
-uppsala_speaks,UPSA Control Group,17,0.05528497969211831
-forestera,Forest Lay Citizen,17,0.05356757861356926
-fremantle,Fremantle,16,0.052757826524343375
-uppsala_speaks,Standard,17,0.05225169544042694
-biobanking_wa,WA Stakeholder,17,0.05099060673608966
-energy_futures,CSIRO NSW,17,0.04655598463053164
-biobanking_mayo_ubc,UBC Bio,16,0.04036178598624345
-energy_futures,CSIRO WA,17,0.038975499691411106
-forestera,Forest Stakeholder,17,0.032555435144079006
-acp,Citizen Parliamentarian,17,0.03235816676274592
+gbr,GBR,18,0.143031620528249
+fnqcj,FNQCJ,19,0.126406277283779
+zh_uster,USTER,19,0.12438071520992668
+ccps,CCPS ACT Deliberative,19,0.12035034462793981
+ds_bellinzona,Bellinzona,19,0.11053519827157385
+zh_winterthur,Winterthur,18,0.10986941733921338
+valsamoggia,Valsamoggia,18,0.10581857281792852
+auscj,HGE Control Group,18,0.09298096521962157
+auscj,HGE Deliberative Group,18,0.09106385400080023
+zukunft,Zukunft,19,0.08577132856736022
+biobanking_wa,WA Citizens,19,0.0854371098700012
+fremantle,Fremantle,18,0.0779966402841279
+biobanking_mayo_ubc,Mayo,18,0.07658099274695457
+ds_aargau,Aargau,19,0.0746106647352092
+uppsala_speaks,Activate,19,0.07383536323268841
+bep,BEP,18,0.06435424604743792
+zh_thalwil,Thalwill,19,0.0642359557078156
+uppsala_speaks,UPSA Control Group,19,0.05723152073462271
+uppsala_speaks,Standard,19,0.05287453656563174
+biobanking_wa,WA Stakeholder,19,0.05097419734016722
+forestera,Forest Lay Citizen,19,0.05051669799437078
+energy_futures,CSIRO NSW,19,0.04926621604422586
+energy_futures,CSIRO WA,19,0.042662969542826897
+biobanking_mayo_ubc,UBC Bio,18,0.038442511540724256
+acp,Citizen Parliamentarian,19,0.033037048244158915
+forestera,Forest Stakeholder,19,0.03219025699674006

@@ -56,7 +56,7 @@ surveys_success = {survey_name: 0 for survey_name in surveys}
 # execurtion params
 iterations = 10
 llm_provider = data_anthropic
-model = "claude-3-haiku-20240307"
+model = "claude-3-5-haiku-20241022"
 temperature = 0
 
 model_info = get_model_info(model)
@@ -221,6 +221,7 @@ print(f"Elapsed time: {et_summary:.2f}{et_summary_unit}")
 print(f"Average time per completion: {time_per_completion:.2f}s")
 print(f"=============================================\n")
 
+# FIXME: flaky function!
 log_execution(
     provider,
     model,
