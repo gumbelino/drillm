@@ -1,5 +1,6 @@
 from utils import (
     get_models,
+    get_provider_info,
     get_utc_time,
     OUTPUT_DIR,
     PROGRESS_FILE,
@@ -12,7 +13,7 @@ import pandas as pd
 
 # get surveys data
 surveys = get_survey_names()
-surveys.remove("template")
+surveys.remove("template")  ## removes survey "template" from progress
 models = get_models()
 
 progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
@@ -28,6 +29,7 @@ for _, model_info in models.sort_values("model").iterrows():
 
     provider = model_info.provider
     model = model_info.model
+    api = model_info.api
 
     for survey in surveys:
 
@@ -44,10 +46,11 @@ for _, model_info in models.sort_values("model").iterrows():
         progress_data = {
             "provider": provider,
             "model": model,
+            "api": api,
             "survey": survey,
             "completions": num_rows,
             "completions left": TOTAL_ITERATIONS - num_rows,
-            "done": True if num_rows == TOTAL_ITERATIONS else False,
+            "done": True if num_rows >= TOTAL_ITERATIONS else False,
             "last updated": get_utc_time(),
         }
 
@@ -58,13 +61,18 @@ for _, model_info in models.sort_values("model").iterrows():
 
 progress_df.to_csv(progress_file_path, index=False)
 
-progress_df = progress_df[progress_df["completions"] > 0]
-progress_df = progress_df.sort_values("completions")
+# print model summaries
+for provider in sorted(set(models.provider)):
 
-summary = (
-    progress_df.groupby(["provider", "model"])["completions"]
-    .sum()
-    .sort_values(ascending=False)
-)
+    print(f"\n== SUMMARY for {provider} == ")
+    provider_info = get_provider_info(provider)
 
-print(summary)
+    summary = (
+        progress_df[progress_df["provider"] == provider]
+        .join(provider_info.set_index("model"), rsuffix="_r", on="model")
+        .groupby(["model", "api_r", "total_estimate"])["completions"]
+        .agg(["max", "min"])
+        .sort_values(by=["total_estimate", "max"])
+        .reset_index()
+    )
+    print(summary)

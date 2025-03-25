@@ -5,10 +5,11 @@ import random
 import sys
 import numpy as np
 
-TOTAL_ITERATIONS = 100
+TOTAL_ITERATIONS = 20
 LLM_INFO_PATH = "private/llms_v3.csv"
 OUTPUT_DIR = "llm_data"
 PROGRESS_FILE = "progress.csv"
+EXEC_LOG_FILE = "exec_log.csv"
 META_DATA = [
     "cuid",
     "created_at",
@@ -98,6 +99,20 @@ def get_provider(model):
     return model_info["provider"]
 
 
+def get_api(model):
+    model_info = get_model_info(model)
+    return model_info["api"]
+
+
+def get_provider_info(provider):
+    df = pd.read_csv(LLM_INFO_PATH)
+    provider_data = df[df["provider"] == provider]
+    if not provider_data.empty:
+        return provider_data[["model", "api", "total_estimate"]]
+    else:
+        raise ValueError(f"Provider {provider} not found in {LLM_INFO_PATH}")
+
+
 def update_progress(progress_df, provider, model, survey):
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
 
@@ -116,9 +131,17 @@ def update_progress(progress_df, provider, model, survey):
             f"No matching entry found in progress file for {provider}/{model}/{survey}. Appending a new row."
         )
 
+        try:
+            model_info = get_model_info(model)
+            api = model_info["api"]
+        except Exception as e:
+            print(f"{model} does not exist in {LLM_INFO_PATH}: {e}")
+            api = ""
+
         new_row = {
             "provider": provider,
             "model": model,
+            "api": api,
             "survey": survey,
             "completions": 1,
             "completions left": TOTAL_ITERATIONS - 1,
@@ -132,7 +155,7 @@ def update_progress(progress_df, provider, model, survey):
         # Increment the completions and update the completions left
         df.loc[mask, "completions"] += 1
         df.loc[mask, "completions left"] -= 1
-        df.loc[mask, "done"] = df.loc[mask, "completions left"] == 0
+        df.loc[mask, "done"] = df.loc[mask, "completions left"] <= 0
         df.loc[mask, "last updated"] = get_utc_time()
 
     # Save the updated dataframe back to the CSV file
@@ -253,6 +276,7 @@ def log_request(
 
 
 def log_execution(
+    exec_date,
     provider,
     model,
     temperature,
@@ -269,8 +293,12 @@ def log_execution(
     surveys_exec,
     surveys_success,
 ):
-    log_file_path = os.path.join(OUTPUT_DIR, "exec_log.csv")
+
+    # get output file path
+    log_file_path = os.path.join(OUTPUT_DIR, EXEC_LOG_FILE)
+
     log_data = {
+        "start time": exec_date,
         "provider": provider,
         "model": model,
         "temperature": temperature,
@@ -370,7 +398,6 @@ def get_prompts(policies, considerations, likert, q_method):
     return prompt_p, prompt_c
 
 
-# FIXME: need to update this function to read all files from all
 def get_or_create_progress_tracker(survey_names):
 
     # create progress tracker file
