@@ -21,6 +21,7 @@ library(vote) # might need to manually install: https://cran.r-project.org/doc/m
 SURVEY_FILE <- "data/surveys_v5.xlsx"
 EXEC_LOG_FILE <- "llm_data/exec_log.csv"
 LLMS_FILE <- "private/llms_v3.csv"
+HUMAN_DATA_FILE <- "data/total dataset_clean.csv"
 OUTPUT_DIR <- "analysis"
 
 # create output directory if it doesn't exist
@@ -485,7 +486,7 @@ It takes `r round(as.numeric(elapsed_time),2)` `r units(elapsed_time)` to run th
 ```{r human data}
 
 # Import the CSV file into a data frame
-human_data <- read_csv("data/total dataset_clean.csv", show_col_types = FALSE)
+human_data <- read_csv(HUMAN_DATA_FILE, show_col_types = FALSE)
 
 # Rename columns to be consistent with LLM data
 human_data <- human_data %>%
@@ -501,23 +502,48 @@ human_data <- human_data %>%
   left_join(study_survey_map, by = c("Study" = "study")) %>%
   relocate(survey, .after = "Study")
 
-# rename column names for consistency
-# colnames(human_data) <- lapply(colnames(human_data), tolower)
+```
 
-human_data
 
+## Generate random participants
+```{r generate random}
+ 
+# TODO testing
 
 ```
 
 
-
-## Original DRI analysis
+## DRI Analysis
 ```{r DRI}
 
 dri_calc <- function(data, v1, v2) {
   lambda <- 1 - (sqrt(2) / 2)
   dri <- 2 * (((1 - mean(abs((data[[v1]] - data[[v2]]) / sqrt(2)
   ))) - (lambda)) / (1 - (lambda))) - 1
+  
+  return(dri)
+}
+
+dri_calc_v2 <- function(data, v1, v2) {
+  # Calculate orthogonal distance for each pair
+  d <- abs((data[[v1]] - data[[v2]]) / sqrt(2))
+  
+  # Define lambda as in the original
+  lambda <- 1 - (sqrt(2) / 2)  # ??? 0.293
+  
+  # Calculate penalty: 0.5 if both correlations are in [0, 0.2], 1 otherwise
+  penalty <- ifelse(data[[v1]] >= 0 & data[[v1]] <= 0.2 & #0.3
+                      data[[v2]] >= 0 & data[[v2]] <= 0.2, # 0.3
+                    0, 1)#0.4
+  
+  # Adjusted consistency per pair
+  consistency <- (1 - d) * penalty
+  
+  # Average consistency across all pairs
+  avg_consistency <- mean(consistency)
+  
+  # Scale to [-1, 1] as in the original
+  dri <- 2 * ((avg_consistency - lambda) / (1 - lambda)) - 1
   
   return(dri)
 }
@@ -625,6 +651,19 @@ get_ind_DRI <- function(IC) {
       v1 = 'R2',
       v2 = 'Q2'
     )
+    
+    # calculate updated DRI
+    DRIInd$DRIPreV2[i] <- dri_calc_v2(
+      data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
+      v1 = 'R1',
+      v2 = 'Q1'
+    )
+    DRIInd$DRIPostV2[i] <- dri_calc_v2(
+      data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
+      v1 = 'R2',
+      v2 = 'Q2'
+    )
+    
   }
   
   return(DRIInd)
@@ -637,13 +676,19 @@ get_case_DRI <- function(IC, type="human_only") {
   DRI_PRE <- dri_calc(data = IC, v1 = 'R1', v2 = 'Q1')
   DRI_POST <- dri_calc(data = IC, v1 = 'R2', v2 = 'Q2')
   
+  ## Group DRI level V2 ##
+  DRI_PRE_V2 <- dri_calc_v2(data = IC, v1 = 'R1', v2 = 'Q1')
+  DRI_POST_V2 <- dri_calc_v2(data = IC, v1 = 'R2', v2 = 'Q2')
+  
   #CaseDRI Dataframe
   DRI.Case <- data.frame(
     survey = survey,
     case = case,
     type = type,
     DRI_PRE,
-    DRI_POST
+    DRI_PRE_V2,
+    DRI_POST,
+    DRI_POST_V2
   )
   
   #Tests for groups
@@ -655,8 +700,7 @@ get_case_DRI <- function(IC, type="human_only") {
                                        IC$IC_PRE,
                                        paired = TRUE,
                                        alternative = "two.side")
-  #cumdist_pre_post <- cvm_test(IC$IC_PRE, IC$IC_POST, nboots = 1000)not necessary
-  
+
   #Adding the results to case data
   DRI.Case$DRI_one_tailed_p <- DRIOverallSig$p.value
   DRI.Case$DRI_twoside_p <- DRIOverallSig_twoside$p.value
@@ -761,6 +805,7 @@ for (case_study in 1:nrow(mini_publics)) {
     next
   }
 
+  # iterate through each llm
   for (llm in 1:nrow(llms)) {
     
     provider <- llms[llm,]$provider
@@ -817,6 +862,8 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ```
 
+## DRI Benchmark
+
 ```{r benchmark index}
 
 DRI_benchmark <- DRIInd.LLMs %>%
@@ -857,13 +904,18 @@ ggsave(paste(OUTPUT_DIR, "benchmark.png", sep = "/"), plot, width = 10, height =
 
 ```
 
-
+# LLM data execution analysis
 ```{r execution analysis}
 
-# Read the sheet names of the Excel file
+# read exec log
+# NOTE: not all executions were logged due to technical issues
+# so the number of completions in this log will not add up to those in llm_data
 exec_log <- read_csv(EXEC_LOG_FILE, show_col_types = FALSE)
 
 # TODO
+estimate_cost <- sum(exec_log["total cost ($)"])
+
+num_errors <- (exec_log$`num iterations` * exec_log$`num surveys`) - exec_log$`num fail completions` - exec_log$`num completions`
 
 ```
 

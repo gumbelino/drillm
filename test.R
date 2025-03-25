@@ -1,88 +1,77 @@
 
-library(boot)
+library(readxl)
+library(tidyverse)
 
-# Function to calculate mode of data, same as stat_function
-calc_mode <- function(data) {
-  as.numeric(names(sort(table(data), decreasing = TRUE)[1]))
-}
 
-bootstrap_mode <- function(data, n_bootstrap = 1000) {
+process_excel_file <- function(file_path) {
+  # Load all sheets from the Excel file
+  sheet_names <- excel_sheets(file_path)
   
-  # Return NA if data contains any NA
-  if (any(is.na(data))) {
-    return(NA)
+  # Iterate over each sheet in the workbook
+  for (sheet_name in sheet_names) {
+    cat("Processing sheet:", sheet_name, "\n")
+    
+    # Read the current sheet into a data frame
+    df <- read_excel(file_path, sheet = sheet_name)
+    
+    # Check if required columns exist
+    required_columns <- c("considerations", "scale_max", "q-method")
+    missing_cols <- setdiff(required_columns, colnames(df))
+    if (length(missing_cols) > 0) {
+      cat(
+        "Sheet",
+        sheet_name,
+        "is missing the following columns:",
+        paste(missing_cols, collapse = ", "),
+        "\n\n"
+      )
+      next
+    }
+    
+    # Calculate the number of non-NA rows in "considerations" column
+    n_c <- sum(!is.na(df$considerations))
+    
+    # Calculate the number of non-NA rows in "policies" column
+    n_p <- sum(!is.na(df$policies))
+    
+    # Extract integer values from "scale_max" column, assuming they are already integers
+    scale_max <- as.integer(na.omit(df$scale_max))
+    
+    # Extract logical (boolean) values from "q-method" column
+    q_method <- as.logical(na.omit(df$`q-method`))
+    
+    # Print the results for each sheet
+    cat("Sheet:", sheet_name, "\n")
+    cat("Number of considerations:", n_c, "\n")
+    cat("Number of policies:", n_p, "\n")
+    cat("Integer value from 'scale_max' column:", scale_max, "\n")
+    cat("Logical value from 'q-method' column:", q_method, "\n\n")
+    cat(rep("-", 40), "\n")
+    
+    
+    ### Make random survey
+    # Generate data for C1:C50 with Likert scale values (1 to 7) randomly assigned
+    c_df <- data.frame(t(replicate(n_c, sample(1:scale_max, 1, replace = TRUE))))
+    c_df[1, (n_c + 1):50] <- NA
+    colnames(c_df) <- paste0("C", 1:50)
+    
+    # Generate data for P1:P10 with random unique ranks 1 to 7 for each row
+    p_df <- data.frame(t(apply(matrix(0, nrow = 1, ncol = n_p), 1, function(x)
+      sample(1:n_p))))#if you increase RF options also need to increase number of ranks
+    p_df[1, (n_p + 1):10] <- NA
+    colnames(p_df) <- paste0("P", 1:10)
+    
+    # Combine the two datasets into one data frame
+    dataset <- as.data.frame(cbind(c_df, p_df))
+    dataset <- dataset %>%
+      mutate(survey = sheet_name) %>%
+      relocate(survey, .before = 1)
+    
   }
-  
-  # Define the statistic function for bootstrapping to find mode
-  stat_function <- function(data, indices) {
-    as.numeric(names(sort(table(data[indices]), decreasing = TRUE)[1]))
-  }
-  
-  # Perform bootstrap
-  results <- boot(data = data, statistic = stat_function, R = n_bootstrap)
-  
-  # Calculate bootstrapped mode
-  b_mode <- calc_mode(results$t)
-  
-  # Return the bootstrapped modes
-  return(b_mode)
 }
 
-# Example usage:
-# bootstrap_mode(c(1, 2, 3, 4, 5, 5))
+# Example usage
+process_excel_file(SURVEY_FILE)
 
-# Example usage:
-test <- c(1, 2, 3, 4, 5, 5)
-calc_mode(test)
-mode <- bootstrap_mode(test)
-b_mode <- calc_mode(modes)
-
-
-aggregate_llm_considerations <- function(considerations) {
-  # Ensure there are columns to aggregate
-  if (ncol(considerations) == 0) {
-    return(tibble())
-  }
   
-  # Calculate the mode for each column
-  mode_considerations <- considerations %>%
-    summarise(across(everything(), bootstrap_mode))
   
-  return(mode_considerations)
-  
-}
-
-df <- tibble(
-  C1 = c(1, 2, 3, 4, 5, 5),
-  C2 = c(1, 1, 1, 4, 5, 5),
-  C3 = c(1, 2, 2, 2, 5, 5),
-  C4 = NA
-)
-
-df
-
-aggregate_llm_considerations(df)
-
-
-
-print(modes)
-
-
-# Define a function to calculate column means
-column_modes <- function(data, indices) {
-  # Subset the data based on bootstrap sample indices
-  d <- data[indices, ]
-  
-  # Calculate and return the mean of each column
-  colModes(d)
-}
-
-# Perform bootstrapping with 1000 replications
-set.seed(123)  # For reproducibility
-boot_results <- boot(data = df, statistic = column_modes, R = 1000)
-
-# View results
-print(boot_results)
-
-print(boot_results$)
-

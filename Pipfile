@@ -17,6 +17,7 @@ boto3 = "*"
 google-genai = "*"
 anthropic = "*"
 cohere = "*"
+together = "*"
 
 [dev-packages]
 

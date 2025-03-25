@@ -17,6 +17,9 @@ from utils import (
 # define openai client to access API
 client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
 
+# mistral experimental has a rate limit of 1 request/sec
+RPS = 1
+
 
 def generate_data(
     mp,
@@ -64,8 +67,7 @@ def generate_data(
         res.model,
     )
 
-    # mistral has a rate limit of 1 request/sec
-    time.sleep(1)
+    # time.sleep(RPS)
 
     # append response to messages
     messages.append(
@@ -102,10 +104,9 @@ def generate_data(
         res.model,
     )
 
-    if reason:
+    # time.sleep(RPS)
 
-        # mistral has a rate limit of 1 request/sec
-        time.sleep(1)
+    if reason:
 
         # append response to messages
         messages.append(
@@ -143,6 +144,8 @@ def generate_data(
             res.usage.completion_tokens,
             res.model,
         )
+
+        # time.sleep(RPS)
 
     else:
         reason_text = "Reasoning was not requested."
