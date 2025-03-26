@@ -61,10 +61,33 @@ for _, model_info in models.sort_values("model").iterrows():
 
 progress_df.to_csv(progress_file_path, index=False)
 
+summary = (
+    progress_df.groupby(["provider", "api", "model"])["completions"]
+    .agg(["max", "min"])
+    .sort_values(by=["provider"])
+    .reset_index()
+)
+
+num_models = len(summary)
+has_data = len(summary[summary["max"] > 0])
+is_done = len(summary[summary["min"] >= 30])
+no_data_providers = ", ".join(
+    [p for p in sorted(set(summary[summary["max"] == 0].api))]
+)
+print("=" * 80)
+print(f"Number of models: {num_models}")
+print(
+    f"Number of models with some data (>0 iterations for any survey): {has_data} ({round(has_data*100/num_models)}%)"
+)
+print(
+    f"Number of models done (>=30 iterations per survey): {is_done} ({round(is_done*100/num_models)}%)"
+)
+print(f"APIs with models without data: {no_data_providers}")
+
 # print model summaries
 for provider in sorted(set(models.provider)):
 
-    print(f"\n== SUMMARY for {provider} == ")
+    print(f"\n====== SUMMARY for {provider} ======")
     provider_info = get_provider_info(provider)
 
     summary = (
@@ -76,3 +99,4 @@ for provider in sorted(set(models.provider)):
         .reset_index()
     )
     print(summary)
+print("=" * 80)

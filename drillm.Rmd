@@ -31,9 +31,10 @@ if (!dir.exists(OUTPUT_DIR)) {
 
 ```
 
-
 ## Define functions
+
 Maybe move this to it's own package...
+
 ```{r general functions}
 
 create_file_path <- function(provider, model, survey, file_type) {
@@ -42,8 +43,8 @@ create_file_path <- function(provider, model, survey, file_type) {
 
 ```
 
-
 ## Get available LLMs
+
 ```{r models}
 
 # read the CSV file into a data frame and remove duplicates
@@ -84,8 +85,8 @@ for (i in 1:nrow(models)){
 
 There are `r nrow(models %>% filter(has_data))` models with data out of `r nrow(models)` (`r round(nrow(models %>% filter(has_data)) * 100 / nrow(models))`%).
 
-
 ## Get available surveys
+
 ```{r survey names}
 
 # read the sheet names of the Excel file
@@ -105,6 +106,7 @@ for (i in 1:length(survey_names)){
 ```
 
 ## Read and format LLM data
+
 ```{r format LLM data}
 
 get_llm_data <- function() {
@@ -237,8 +239,8 @@ write_csv(cost_tokens, paste(OUTPUT_DIR, "cost_tokens.csv", sep = "/"))
 
 ```
 
-
 ## Calculate Cronbach's Alpha
+
 ```{r error=FALSE, warning=FALSE, message=FALSE}
 
 # Initialize an empty list to store the alpha results
@@ -305,6 +307,7 @@ write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 ```
 
 ### Check alpha results per model
+
 ```{r}
 
 # Aggregate alpha_results by model and calculate summary statistics
@@ -324,6 +327,7 @@ alpha_summary <- alpha_results %>%
 ```
 
 ## Define aggregation functions
+
 ```{r aggregation functions}
 
 # function to calculate mode of data, same as stat_function
@@ -415,8 +419,8 @@ aggregate_llm_policies <- function(policies) {
 
 ```
 
-
 ## Aggregate considerations and preferences
+
 ```{r aggregate llm data}
 
 aggregate_llm_data <- function(data) {
@@ -481,8 +485,8 @@ write_csv(llm_data_aggregated, paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep 
 
 It takes `r round(as.numeric(elapsed_time),2)` `r units(elapsed_time)` to run the aggregation script.
 
-
 ## Read and format human data
+
 ```{r human data}
 
 # Import the CSV file into a data frame
@@ -504,16 +508,16 @@ human_data <- human_data %>%
 
 ```
 
-
 ## Generate random participants
+
 ```{r generate random}
  
 # TODO testing
 
 ```
 
-
 ## DRI Analysis
+
 ```{r DRI}
 
 dri_calc <- function(data, v1, v2) {
@@ -784,6 +788,11 @@ for (case_study in 1:nrow(mini_publics)) {
     DRIPost = mean(DRIInd$DRIPost)
   )
   
+  human_ind_DRI_meanV2 <- tibble(
+    DRIPreV2 = mean(DRIInd$DRIPreV2),
+    DRIPostV2 = mean(DRIInd$DRIPostV2)
+  )
+  
   # Global dataframes for depositing results
   # initialize *.Global
   if (case_study == 1) {
@@ -822,6 +831,10 @@ for (case_study in 1:nrow(mini_publics)) {
     DRIInd.LLM.Model$human_only_DRIPre_mean <- human_ind_DRI_mean$DRIPre
     DRIInd.LLM.Model$human_only_DRIPost_mean <- human_ind_DRI_mean$DRIPost
     
+    ## DRI V2
+    DRIInd.LLM.Model$human_only_DRIPre_meanV2 <- human_ind_DRI_meanV2$DRIPreV2
+    DRIInd.LLM.Model$human_only_DRIPost_meanV2 <- human_ind_DRI_meanV2$DRIPostV2
+    
     get_bm_index <- function(diff) {
       bm_index <- (diff + 2) / 4
       return(bm_index)
@@ -832,7 +845,13 @@ for (case_study in 1:nrow(mini_publics)) {
              DRIPost_diff = DRIPost - human_only_DRIPost_mean) %>%
       
       # benchmark index = use DRIPost & normalize it to be >= 0
-      mutate(bm_index = get_bm_index(DRIPost_diff))
+      mutate(bm_index = get_bm_index(DRIPost_diff)) %>%
+    
+          mutate(DRIPre_diffV2 = DRIPreV2 - human_only_DRIPre_meanV2,
+             DRIPost_diffV2 = DRIPostV2 - human_only_DRIPost_meanV2) %>%
+      
+      # benchmark index = use DRIPost & normalize it to be >= 0
+      mutate(bm_indexV2 = get_bm_index(DRIPost_diffV2))
       
     
     DRIInd.LLMs[[length(DRIInd.LLMs) + 1]] <- DRIInd.LLM.Model
@@ -892,7 +911,7 @@ DRI_benchmark %>%
 
 DRIInd.LLMs %>%
   mutate(label = paste(provider, model, sep="/")) %>%
-  ggplot(aes(x = reorder(label, bm_index, FUN = median), y = bm_index)) +
+  ggplot(aes(x = reorder(label, bm_indexV2, FUN = median), y = bm_indexV2)) +
   geom_boxplot() +
   coord_flip() +
   theme_minimal() +
@@ -900,11 +919,12 @@ DRIInd.LLMs %>%
         plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(-0.1, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
-ggsave(paste(OUTPUT_DIR, "benchmark.png", sep = "/"), plot, width = 10, height = 6)
+ggsave(paste(OUTPUT_DIR, "benchmarkV2.png", sep = "/"), plot, width = 10, height = 6)
 
 ```
 
 # LLM data execution analysis
+
 ```{r execution analysis}
 
 # read exec log
@@ -918,4 +938,3 @@ estimate_cost <- sum(exec_log["total cost ($)"])
 num_errors <- (exec_log$`num iterations` * exec_log$`num surveys`) - exec_log$`num fail completions` - exec_log$`num completions`
 
 ```
-
