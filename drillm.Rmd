@@ -363,8 +363,8 @@ bootstrap_mode <- function(data, n_bootstrap = 1000) {
 
 aggregate_llm_considerations <- function(considerations) {
   
-  # ensure there are columns to aggregate
-  if (ncol(considerations) < 2) {
+  # ensure there are at least 2 rows to aggregate
+  if (nrow(considerations) < 2) {
     return(considerations)
   }
   
@@ -378,7 +378,7 @@ aggregate_llm_considerations <- function(considerations) {
 
 aggregate_llm_policies <- function(policies) {
   
-  # ensure there are at least 2 columns to aggregate
+  # ensure there are at least 2 rows to aggregate
   if (nrow(policies) < 2) {
     return(policies)
   }
@@ -480,6 +480,8 @@ print(head(llm_data_aggregated))
 
 # write summary to file
 write_csv(llm_data_aggregated, paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep = "/"))
+
+round(as.numeric(elapsed_time),2)
 
 ```
 
