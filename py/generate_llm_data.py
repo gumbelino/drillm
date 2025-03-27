@@ -57,7 +57,7 @@ def get_llm_provider(model):
         raise (f"The API for {model} is not setup!")
 
 
-def generate_data(model, iterations, temperature=0):
+def generate_data(model, iterations, temperature=0, only_survey=None):
 
     # execurtion params
     model_info = get_model_info(model)
@@ -90,7 +90,9 @@ def generate_data(model, iterations, temperature=0):
     surveys_success = {survey_name: 0 for survey_name in surveys}
 
     # testing params
-    subset_surveys = []  # ["0.Template", "3.ACP", "6.Biobanking"]
+    subset_surveys = (
+        [only_survey] if only_survey else []
+    )  # ["0.Template", "3.ACP", "6.Biobanking"]
     skip_surveys = [s for s in surveys if s[0] == "~"]  # remove those that start with ~
     skip_surveys += ["template"]  # ["0.Template"]
 
@@ -116,6 +118,7 @@ def generate_data(model, iterations, temperature=0):
     print(f"\nGenerating data for: {surveys_exec}")
     print(f"LLM provider: {provider}")
     print(f"Model: {model}")
+    print(f"Temperature: {temperature}")
 
     # iterate over each survey
     for i, survey in enumerate(surveys_exec):
@@ -283,12 +286,22 @@ def main():
     # Define expected command-line arguments
     parser.add_argument("model", type=str, help="model name")
     parser.add_argument("iterations", type=int, help="number of iterations")
+    parser.add_argument(
+        "--temp", type=float, required=False, default=0, help="temperature"
+    )
+    parser.add_argument(
+        "--survey",
+        type=str,
+        required=False,
+        default=None,
+        help="single survey to generate data for",
+    )
 
     # Parse the arguments
     args = parser.parse_args()
 
     # Call the generate_data function with parsed arguments
-    generate_data(args.model, args.iterations)
+    generate_data(args.model, args.iterations, args.temp, args.survey)
 
 
 if __name__ == "__main__":
