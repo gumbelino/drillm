@@ -3,9 +3,12 @@ import pandas as pd
 SURVEYS_PATH = "data/surveys_v5.xlsx"
 
 
-def get_survey_names(file_path=SURVEYS_PATH):
+def get_survey_names(file_path=SURVEYS_PATH, no_template=False):
     xls = pd.ExcelFile(file_path)
-    return xls.sheet_names
+    survey_names = xls.sheet_names
+    if no_template:
+        survey_names.remove("template")
+    return survey_names
 
 
 def get_surveys_data(file_path=SURVEYS_PATH):

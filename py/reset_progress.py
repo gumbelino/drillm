@@ -1,5 +1,7 @@
 import argparse
+import math
 from utils import (
+    get_current_time,
     get_model_info,
     get_models,
     get_provider_info,
@@ -13,13 +15,14 @@ from surveys import get_survey_names
 import os
 import pandas as pd
 
+# get surveys data
+surveys = get_survey_names(no_template=True)
+models = get_models()
+
+MAX_ITERATIONS = TOTAL_ITERATIONS * len(surveys)
+
 
 def reset_progress(quiet=False):
-
-    # get surveys data
-    surveys = get_survey_names()
-    surveys.remove("template")  ## removes survey "template" from progress
-    models = get_models()
 
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
     progress_df = pd.DataFrame()
@@ -101,13 +104,20 @@ def reset_progress(quiet=False):
             progress_df[progress_df["provider"] == provider]
             .join(provider_info.set_index("model"), rsuffix="_r", on="model")
             .groupby(["model", "api_r", "total_estimate"])["completions"]
-            .agg(["max", "min"])
-            .sort_values(by=["total_estimate", "max"])
+            .agg(["max", "min", "sum"])
+            .sort_values(by=["min", "total_estimate"])
             .reset_index()
         )
 
         summary["left"] = TOTAL_ITERATIONS - summary["min"]
         summary["left"] = ["DONE" if x <= 0 else f"{x}" for x in summary["left"]]
+
+        summary["prog"] = summary["sum"] * 100 / MAX_ITERATIONS
+
+        summary["prog"] = [
+            "-" if x["left"] == "DONE" else f"{int(x["prog"])}%"
+            for _, x in summary.iterrows()
+        ]
 
         summary["cost_left"] = [
             (
@@ -137,11 +147,6 @@ def print_model_summary(model, progress_df):
 
     print(f"\n====== SUMMARY for {model_info["provider"]}/{model} ======")
 
-    print(model_info)
-    print(f"API: {model_info["api"]}")
-    if not model_info["comment"] == "nan":
-        print(f"Comment: {model_info["comment"]}")
-
     summary = (
         progress_df[progress_df["model"] == model]
         .sort_values(by=["completions"])
@@ -149,6 +154,17 @@ def print_model_summary(model, progress_df):
     )
 
     summary["left"] = [f"{x}" if x > 0 else "DONE" for x in summary["completions left"]]
+
+    total_estimate = model_info["total_estimate"]
+    left = sum([int(x) if x.isdigit() else 0 for x in summary.left])
+    ratio = left / MAX_ITERATIONS
+
+    print(f"API: {model_info["api"]}")
+    print(
+        f"Estimate total cost left: {total_estimate*ratio:.2} USD out of {total_estimate} USD"
+    )
+
+    print(f"Comment: {model_info["comment"]}\n")
 
     summary["python_cmd"] = [
         "-" if x["left"] == "DONE" else f"{model} {x["left"]} --survey {x["survey"]}"
