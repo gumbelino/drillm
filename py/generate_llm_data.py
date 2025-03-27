@@ -5,6 +5,7 @@ from surveys import get_surveys_data, get_policies_and_considerations
 from utils import (
     check_params,
     get_api,
+    get_current_time,
     get_model_info,
     get_or_create_output,
     get_prompts,
@@ -34,6 +35,7 @@ import data_mistral
 import data_ollama
 import data_deepseek
 import data_anthropic
+import data_alibaba
 
 
 def get_llm_provider(model):
@@ -53,6 +55,8 @@ def get_llm_provider(model):
         return data_mistral
     elif api == "OpenAI API":
         return data_openai
+    elif api == "Alibaba Cloud":
+        return data_alibaba
     else:
         raise (f"The API for {model} is not setup!")
 
@@ -222,6 +226,12 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
     end_time = time.time()
 
     elapsed_time = end_time - start_time
+
+    # Calculate hours, minutes, and seconds
+    et_hours = int(elapsed_time // 3600)
+    et_minutes = int((elapsed_time % 3600) // 60)
+    et_seconds = int(elapsed_time % 60)
+
     num_completions = num_success + num_invalid
     time_per_completion = elapsed_time / num_completions if num_completions > 0 else 0
     success_rate = (
@@ -249,10 +259,11 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
         f"Successful LLM completions: {sum([surveys_success[s] for s in surveys_success])}"
     )
     print(f"Success rate: {success_rate}%")
-    et_summary = elapsed_time if elapsed_time < 60 else elapsed_time / 60
-    et_summary_unit = "s" if elapsed_time < 60 else "min"
-    print(f"Elapsed time: {et_summary:.2f}{et_summary_unit}")
+    print(
+        f"Elapsed time: {et_hours} hour(s), {et_minutes} minute(s), and {et_seconds} second(s)"
+    )
     print(f"Average time per completion: {time_per_completion:.2f}s")
+    print(f"Finished on: {get_current_time()}")
     print(f"=============================================\n")
 
     log_execution(

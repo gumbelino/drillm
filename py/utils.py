@@ -458,6 +458,12 @@ def get_utc_time():
     return datetime.now(timezone.utc)
 
 
+def get_current_time():
+    current_time = datetime.now()
+    formatted_time = current_time.strftime("%A, %B %d, %Y at %I:%M:%S %p")
+    return formatted_time
+
+
 def print_progress():
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
 
