@@ -5,7 +5,7 @@ import random
 import sys
 import numpy as np
 
-TOTAL_ITERATIONS = 20
+TOTAL_ITERATIONS = 30
 LLM_INFO_PATH = "private/llms_v3.csv"
 OUTPUT_DIR = "llm_data"
 PROGRESS_FILE = "progress.csv"

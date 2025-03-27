@@ -246,12 +246,18 @@ write_csv(cost_tokens, paste(OUTPUT_DIR, "cost_tokens.csv", sep = "/"))
 # Initialize an empty list to store the alpha results
 alpha_results <- list()
 
+models_with_data <- llm_data %>%
+  distinct(provider, model) 
+
 # Iterate over each unique provider/model combination
-for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"))) {
+for (row in 1:nrow(models_with_data)) {
+  
+  provider <- models_with_data[row, ]$provider
+  model <- models_with_data[row, ]$model
   
   # filter the data for the current provider/model
   provider_model_data <- llm_data %>%
-    filter(paste(provider, model, sep = "/") == provider_model)
+    filter(provider == !!provider, model == !!model)
   
   # iterate over each survey
   for (survey_name in unique(provider_model_data$survey)) {
@@ -282,13 +288,26 @@ for (provider_model in unique(paste(llm_data$provider, llm_data$model, sep = "/"
       alpha_policies <- NA
     }
     
+    
+    if (nrow(policies_data) > 1 & nrow(considerations_data) > 1) {
+      all_data <- cbind(considerations_data, policies_data)
+      alpha_all <- alpha(all_data,
+                              check.keys = TRUE,
+                              warnings = FALSE)$total$raw_alpha
+    } else {
+      alpha_all <- NA
+    }
+    
+    
     # Store the results in the list
     alpha_results[[length(alpha_results) + 1]] <- tibble(
-      provider_model = provider_model,
+      provider = provider,
+      model = model,
       survey = survey_name,
       N = nrow(considerations_data),
       alpha_considerations = alpha_considerations,
-      alpha_policies = alpha_policies
+      alpha_policies = alpha_policies,
+      alpha_all = alpha_all
     )
   }
 }
@@ -312,8 +331,10 @@ write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 
 # Aggregate alpha_results by model and calculate summary statistics
 alpha_summary <- alpha_results %>%
-  group_by(provider_model) %>%
+  group_by(provider, model) %>%
   summarise(
+    N = sum(N),
+    mean_alpha_all = mean(alpha_all, na.rm = TRUE),
     min_alpha_considerations = min(alpha_considerations, na.rm = TRUE),
     max_alpha_considerations = max(alpha_considerations, na.rm = TRUE),
     mean_alpha_considerations = mean(alpha_considerations, na.rm = TRUE),
@@ -321,7 +342,8 @@ alpha_summary <- alpha_results %>%
     min_alpha_policies = min(alpha_policies, na.rm = TRUE),
     max_alpha_policies = max(alpha_policies, na.rm = TRUE),
     mean_alpha_policies = mean(alpha_policies, na.rm = TRUE),
-    std_alpha_policies = sd(alpha_policies, na.rm = TRUE)
+    std_alpha_policies = sd(alpha_policies, na.rm = TRUE),
+
   )
 
 ```
@@ -887,41 +909,103 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ```{r benchmark index}
 
+
 DRI_benchmark <- DRIInd.LLMs %>%
   group_by(provider, model) %>%
-  summarise(N = n(), .groups = "drop",
-            agg_bm_index = mean(bm_index)) %>%
+  summarise(
+    N = n(),
+    .groups = "drop",
+    agg_bm_index = mean(bm_indexV2, na.rm = TRUE)
+  ) %>%
+  filter(N == max(N)) %>% # only include models with all surveys
   arrange(desc(agg_bm_index))
 
-llm_sd <- DRIInd.LLMs %>%
-  group_by(survey, case) %>%
-  summarise(N = n(), .groups = "drop",
-            llm_sd = sd(bm_index)) %>%
-  arrange(desc(llm_sd))
-
-write_csv(llm_sd, paste(OUTPUT_DIR, "llm_sd.csv", sep = "/"))
 
 DRI_benchmark %>%
-  mutate(label = paste(provider, model, sep="/")) %>%
-  ggplot(aes(x = reorder(label, desc(agg_bm_index)), y = agg_bm_index)) +
+  mutate(label = paste(provider, model, sep = "/")) %>%
+  ggplot(aes(
+    x = reorder(label, agg_bm_index),
+    y = agg_bm_index,
+    fill = provider
+  )) +
   geom_bar(stat = "identity") +
-  geom_text(aes(label = round(agg_bm_index, 3)), vjust = -0.3) +
+  coord_flip() +
+  geom_text(aes(label = round(agg_bm_index, 3)), hjust = -0.3, size = 3) +
   theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1),
-        plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(0, 1)) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "none"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
+ggsave(
+  paste(OUTPUT_DIR, "benchmarkV1.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
 DRIInd.LLMs %>%
-  mutate(label = paste(provider, model, sep="/")) %>%
-  ggplot(aes(x = reorder(label, bm_indexV2, FUN = median), y = bm_indexV2)) +
+  filter(model %in% DRI_benchmark$model) %>% # only include models with all surveys
+  mutate(label = paste(provider, model, sep = "/")) %>%
+  ggplot(aes(
+    x = reorder(label, bm_indexV2, FUN = median, na.rm = TRUE),
+    y = bm_indexV2,
+    color = provider
+  )) +
   geom_boxplot() +
   coord_flip() +
   theme_minimal() +
-  theme(
-        plot.background = element_rect(fill = "white")) + scale_y_continuous(limits = c(-0.1, 1)) +
+  theme(plot.background = element_rect(fill = "white"),
+        legend.position = "none") + scale_y_continuous(limits = c(-0.1, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
-ggsave(paste(OUTPUT_DIR, "benchmarkV2.png", sep = "/"), plot, width = 10, height = 6)
+ggsave(
+  paste(OUTPUT_DIR, "benchmarkV2.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+
+## Trying a 2-dimension benchmark
+DRI_benchmark <- full_join(alpha_results, DRIInd.LLMs, by = c("provider", "model", "survey")) %>%
+  filter(model %in% DRI_benchmark$model) # only include models with all surveys
+
+
+DRI_benchmark %>%
+  #  filter(provider == "google") %>%
+  #mutate(label = paste(provider, model, sep = "/")) %>%
+  group_by(provider, model, .groups = "drop") %>%
+  summarise(
+    mean_alpha = mean(alpha_all, na.rm = TRUE),
+    mean_bm_index = mean(bm_indexV2, na.rm = TRUE),
+    se_alpha = sd(alpha_all, na.rm = TRUE),
+    se_bm_index = sd(bm_indexV2, na.rm = TRUE)
+    
+  ) %>%
+  ggplot(aes(x = mean_alpha, y = mean_bm_index, color = provider)) +
+  geom_point(size = 5) + # Adjust size as needed
+  #geom_errorbar(aes(ymin = mean_bm_index - se_bm_index, ymax = mean_bm_index + se_bm_index), width = 0.02) + # Error bars for y-axis
+  #geom_errorbarh(aes(xmin = mean_alpha - se_alpha, xmax = mean_alpha + se_alpha), height = 0.02) + # Error bars for x-axis
+  geom_text(aes(label = model), vjust = -2, size = 2) + # Add labels above each dot
+  #scale_x_continuous(limits = c(0, 1)) +
+  #scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "Cronbach's alpha (mean)", y = "DRI Benchmark Index (mean)", color = "Provider") +
+  theme_minimal() +
+  theme(plot.background = element_rect(fill = "white"),
+        legend.position = "none") -> plot# Remove text from color legend
+# Set the theme to minimal
+
+
+ggsave(
+  paste(OUTPUT_DIR, "benchmarkV3.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
 
 ```
 
