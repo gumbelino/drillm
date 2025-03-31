@@ -18,6 +18,8 @@ client = OpenAI(
     project="proj_k8Gv8E3GjDirposW9zEqvdfq",
 )
 
+R_EFFORT = "high"
+
 
 def generate_data(
     mp,
@@ -42,7 +44,10 @@ def generate_data(
 
     # send first message
     res = client.chat.completions.create(
-        model=model, messages=messages, temperature=temperature
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        # reasoning_effort=R_EFFORT,
     )
 
     c_response = res.choices[0].message.content
@@ -79,7 +84,10 @@ def generate_data(
 
     # get p prompt response
     res = client.chat.completions.create(
-        model=model, messages=messages, temperature=temperature
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        # reasoning_effort=R_EFFORT,
     )
 
     p_response = res.choices[0].message.content
@@ -117,7 +125,10 @@ def generate_data(
         )
 
         res = client.chat.completions.create(
-            model=model, messages=messages, temperature=temperature
+            model=model,
+            messages=messages,
+            temperature=temperature,
+            # reasoning_effort=R_EFFORT,
         )
         r_response = res.choices[0].message.content
 
