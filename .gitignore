@@ -5,4 +5,5 @@
 private/
 data/
 billing/
-llm_data*
+llm_data/*
+llm_data_*/*
