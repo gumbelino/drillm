@@ -24,6 +24,8 @@ LLMS_FILE <- "private/llms_v3.csv"
 HUMAN_DATA_FILE <- "data/total dataset_clean.csv"
 OUTPUT_DIR <- "analysis"
 
+MAX_ITERATIONS <- 30
+
 # create output directory if it doesn't exist
 if (!dir.exists(OUTPUT_DIR)) {
   dir.create(OUTPUT_DIR, recursive = TRUE)
@@ -149,6 +151,11 @@ get_llm_data <- function() {
           break
         }
         
+        # only read first X iterations, where X = MAX_ITERATIONS
+        temp_data <- temp_data %>%
+          arrange(created_at) %>%
+          head(MAX_ITERATIONS)
+        
         # select the relevant columns based on file type
         if (file_type == "considerations") {
           # initialize survey_data
@@ -258,7 +265,6 @@ for (row in 1:nrow(models_with_data)) {
   # filter the data for the current provider/model
   provider_model_data <- llm_data %>%
     filter(provider == !!provider, model == !!model)
-  
   # iterate over each survey
   for (survey_name in unique(provider_model_data$survey)) {
     
@@ -1018,9 +1024,69 @@ ggsave(
 # so the number of completions in this log will not add up to those in llm_data
 exec_log <- read_csv(EXEC_LOG_FILE, show_col_types = FALSE)
 
-# TODO
-estimate_cost <- sum(exec_log["total cost ($)"])
+# fill missing columns
+exec_log <- exec_log %>%
+  arrange(model) %>%
+  mutate(
+    fixed_num_errors = (`num surveys` * `num iterations`) - (`num fail completions` + `num success completions`)
+  ) %>%
+  relocate(fixed_num_errors, .before = `num errors`) %>%
+  
+  # remove trial columns 
+  filter(is.na(`template success rate (%)`)) %>%
+  select(-`template success rate (%)`) %>%
+  
+  # remove models with no completion data
+  filter(`num completions` > 0)
+  
 
-num_errors <- (exec_log$`num iterations` * exec_log$`num surveys`) - exec_log$`num fail completions` - exec_log$`num completions`
+exec_models <- exec_log %>%
+  group_by(provider, model) %>%
+  summarise(
+    num_exec = n(),
+    total_cost_USD = sum(`total cost ($)`, na.rm = TRUE),
+    total_time_min = sum(`total elapsed time (min)`, na.rm = TRUE),
+    num_completions = sum(`num completions`, na.rm = TRUE),
+    num_success = sum(`num success completions`, na.rm = TRUE),
+    num_error = sum(fixed_num_errors, na.rm = TRUE),
+    num_fail = sum(`num fail completions`, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  mutate(
+    fail_rate = num_fail / num_completions,
+    success_rate = num_success / num_completions,
+    cost_per_completion = total_cost_USD / num_completions,
+    cost_per_success = total_cost_USD / num_success,
+    time_per_completion_s = total_time_min / num_completions * 60
+  )
+
+
+exec_models_surveys <- exec_log %>%
+  pivot_longer(19:38, names_to = "survey", values_to = "success_rate", values_drop_na = TRUE) %>%
+  mutate(
+    success_iterations = round(success_rate / 100 * `num iterations`),
+    survey = str_extract(survey, "([^ ]+)\\s*") %>%
+           trimws()
+
+  ) %>%
+  group_by(provider, model, survey) %>%
+  summarise(
+    num_execs = n(),
+    num_success = sum(success_iterations, na.rm = TRUE),
+    num_iterations = sum(`num iterations`, na.rm = TRUE),
+    success_rate = num_success / num_iterations,
+    .groups = "drop"
+  )
+
+exec_surveys <- exec_models_surveys %>%
+  group_by(survey) %>%
+  summarise(
+    num_execs = sum(num_execs),
+    num_iterations = sum(num_iterations),
+    num_success = sum(num_success),
+    success_rate = num_success/num_iterations,
+    .groups = "drop"
+  )
+
 
 ```
