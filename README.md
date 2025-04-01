@@ -8,6 +8,8 @@ Requirements:
 
 ## Getting started
 
+Open terminal
+
 Step 1. Install homebrew
 
 Step 2. Install python
@@ -22,7 +24,7 @@ Step 4. Clone git repo
 
 git clone https://github.com/gumbelino/drillm
 
-Follow instructions
+Step 5. Run setup script
 
 Install git
 Install python
