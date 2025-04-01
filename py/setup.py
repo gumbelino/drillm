@@ -5,8 +5,11 @@ import sys
 
 def install_pip():
     """Ensure pip is installed."""
+    print("Checking for pip installation...")
     try:
         import pip
+
+        print("pip is already installed.")
     except ImportError:
         print("Installing pip...")
         subprocess.check_call([sys.executable, "-m", "ensurepip"])
@@ -34,7 +37,7 @@ def setup_pyenv():
         return
 
     # Install dependencies from Pipfile
-    subprocess.check_call(["pip", "install", "pipenv"])
+    subprocess.check_call(["pip3", "install", "pipenv"])
     subprocess.check_call(["pipenv", "install"])
 
 
