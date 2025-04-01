@@ -1088,5 +1088,10 @@ exec_surveys <- exec_models_surveys %>%
     .groups = "drop"
   )
 
+# write summary to file
+write_csv(exec_models, paste(OUTPUT_DIR, "exec_models.csv", sep = "/"))
+write_csv(exec_surveys, paste(OUTPUT_DIR, "exec_surveys.csv", sep = "/"))
+write_csv(exec_models_surveys, paste(OUTPUT_DIR, "exec_models_surveys.csv", sep = "/"))
+
 
 ```
