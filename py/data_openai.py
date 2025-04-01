@@ -1,3 +1,4 @@
+import re
 from openai import OpenAI
 
 from utils import (
@@ -18,7 +19,22 @@ client = OpenAI(
     project="proj_k8Gv8E3GjDirposW9zEqvdfq",
 )
 
-R_EFFORT = "high"
+# default reasoning effort
+R_EFFORT = "medium"
+
+
+def send_message(model, messages, temperature):
+
+    # check if model contains "o{digit}" such as o1-mini, o1
+    # NOTE: temperature parameter is not used
+    if re.search(r"o\d", model):
+        return client.chat.completions.create(model=model, messages=messages)
+
+    return client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+    )
 
 
 def generate_data(
@@ -43,11 +59,10 @@ def generate_data(
     ]
 
     # send first message
-    res = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        # reasoning_effort=R_EFFORT,
+    res = send_message(
+        model,
+        messages,
+        temperature,
     )
 
     c_response = res.choices[0].message.content
@@ -83,11 +98,10 @@ def generate_data(
     )
 
     # get p prompt response
-    res = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=temperature,
-        # reasoning_effort=R_EFFORT,
+    res = send_message(
+        model,
+        messages,
+        temperature,
     )
 
     p_response = res.choices[0].message.content
@@ -124,12 +138,12 @@ def generate_data(
             {"role": "user", "content": PROMPT_R},
         )
 
-        res = client.chat.completions.create(
-            model=model,
-            messages=messages,
-            temperature=temperature,
-            # reasoning_effort=R_EFFORT,
+        res = send_message(
+            model,
+            messages,
+            temperature,
         )
+
         r_response = res.choices[0].message.content
 
         reason_text = parse_reasoning_from_response(r_response)
