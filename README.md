@@ -26,6 +26,5 @@ git clone https://github.com/gumbelino/drillm
 
 Step 5. Run setup script
 
-Install git
-Install python
-Install pipenv
+install pip
+install pyenv
