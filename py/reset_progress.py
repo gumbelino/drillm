@@ -137,6 +137,13 @@ def reset_progress(quiet=False):
             for _, x in summary.iterrows()
         ]
 
+        # exclude done models
+        summary = summary[summary["left"] != "DONE"]
+
+        if summary.empty:
+            print(f"DONE!")
+            continue
+
         print(summary)
     print("=" * 80)
 
