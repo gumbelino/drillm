@@ -1,9 +1,8 @@
-import os
-import cohere
+import anthropic
 
-co = cohere.ClientV2(os.environ.get("COHERE_API_KEY"))
-response = co.chat(
-    model="command-a-03-2025", messages=[{"role": "user", "content": "hello world!"}]
-)
+client = anthropic.Anthropic()
 
-print(response.message.content[0].text)
+models = client.models.list()
+
+for model in models:
+    print(model.id)
