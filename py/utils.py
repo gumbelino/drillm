@@ -5,7 +5,6 @@ import random
 import sys
 import numpy as np
 
-TOTAL_ITERATIONS = 30
 LLM_INFO_PATH = "private/llms_v3.csv"
 OUTPUT_DIR = "llm_data"
 PROGRESS_FILE = "progress.csv"
@@ -81,8 +80,10 @@ Q_METHOD_INSTRUCTION = """
 - Using the Q Methodology, rate the statements following a Fixed Quasi-Normal Distribution between 1 and {0}."""
 
 
-def get_models():
-    return pd.read_csv(LLM_INFO_PATH)
+def get_models(include_all=True):
+    models = pd.read_csv(LLM_INFO_PATH)
+    models = models if include_all else models[models["included"] == True]
+    return models
 
 
 def get_model_info(model):
@@ -134,6 +135,7 @@ def update_progress(progress_df, provider, model, survey):
         try:
             model_info = get_model_info(model)
             api = model_info["api"]
+            min_iterations = model_info["min_iterations"]
         except Exception as e:
             print(f"{model} does not exist in {LLM_INFO_PATH}: {e}")
             api = ""
@@ -144,9 +146,10 @@ def update_progress(progress_df, provider, model, survey):
             "api": api,
             "survey": survey,
             "completions": 1,
-            "completions left": TOTAL_ITERATIONS - 1,
+            "min_iterations": min_iterations,
+            "completions_left": min_iterations - 1,
             "done": False,
-            "last updated": get_utc_time(),
+            "last_updated": get_utc_time(),
         }
 
         df.loc[len(df)] = new_row
@@ -154,9 +157,9 @@ def update_progress(progress_df, provider, model, survey):
     else:
         # Increment the completions and update the completions left
         df.loc[mask, "completions"] += 1
-        df.loc[mask, "completions left"] -= 1
-        df.loc[mask, "done"] = df.loc[mask, "completions left"] <= 0
-        df.loc[mask, "last updated"] = get_utc_time()
+        df.loc[mask, "completions_left"] -= 1
+        df.loc[mask, "done"] = df.loc[mask, "completions_left"] <= 0
+        df.loc[mask, "last_updated"] = get_utc_time()
 
     # Save the updated dataframe back to the CSV file
     df.to_csv(progress_file_path, index=False)
@@ -418,6 +421,8 @@ def get_or_create_progress_tracker(survey_names):
     for _, row in df.iterrows():
         provider = row["provider"]
         model = row["model"]
+        min_iterations = row["min_iterations"]
+
         for survey in survey_names:
             # check only policies file, assume all are the same length
             policy_file = f"{POLICIES}.csv"
@@ -426,17 +431,20 @@ def get_or_create_progress_tracker(survey_names):
             if os.path.exists(file_path):
                 s_df = pd.read_csv(file_path)
                 num_rows = len(s_df)
+                last_updated = s_df["created_at"].max()
             else:
                 num_rows = 0
+                last_updated = get_utc_time()
 
             progress_data = {
                 "provider": provider,
                 "model": model,
                 "survey": survey,
                 "completions": num_rows,
-                "completions left": TOTAL_ITERATIONS - num_rows,
-                "done": True if num_rows == TOTAL_ITERATIONS else False,
-                "last updated": get_utc_time(),
+                "min_iterations": min_iterations,
+                "completions_left": min_iterations - num_rows,
+                "done": True if num_rows >= min_iterations else False,
+                "last_updated": last_updated,
             }
             progress_df = pd.DataFrame([progress_data])
 
@@ -499,7 +507,7 @@ def check_params(progress_df, provider, model, surveys_exec, iterations):
         (progress_df["provider"] == provider)
         & (progress_df["model"] == model)
         & (progress_df["survey"].isin(surveys_exec))
-        & (progress_df["completions left"] < iterations)
+        & (progress_df["completions_left"] < iterations)
     ]
 
     if selection.any(axis=None):
