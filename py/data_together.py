@@ -28,6 +28,7 @@ T_MODELS = {
     "llama3.1:405B-turbo": "meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo",
     "llama3.3:70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
     "llama2:13b": "meta-llama/Llama-2-13b-chat-hf",
+    "llama2:70b": "meta-llama/Llama-2-70b-hf",
 }
 
 

@@ -9,7 +9,6 @@ from utils import (
     OUTPUT_DIR,
     PROGRESS_FILE,
     POLICIES,
-    TOTAL_ITERATIONS,
 )
 from surveys import get_survey_names
 import os
@@ -17,9 +16,7 @@ import pandas as pd
 
 # get surveys data
 surveys = get_survey_names(no_template=True)
-models = get_models()
-
-MAX_ITERATIONS = TOTAL_ITERATIONS * len(surveys)
+models = get_models(include_all=False)
 
 
 def reset_progress(quiet=False):
@@ -38,6 +35,9 @@ def reset_progress(quiet=False):
         model = model_info.model
         api = model_info.api
 
+        min_iterations = model_info.min_iterations
+        total_iterations = min_iterations * len(surveys)
+
         for survey in surveys:
 
             # check only policies file, assume all are the same length
@@ -47,8 +47,10 @@ def reset_progress(quiet=False):
             if os.path.exists(file_path):
                 s_df = pd.read_csv(file_path)
                 num_rows = len(s_df)
+                last_updated = s_df["created_at"].max()
             else:
                 num_rows = 0
+                last_updated = get_utc_time()
 
             progress_data = {
                 "provider": provider,
@@ -56,9 +58,10 @@ def reset_progress(quiet=False):
                 "api": api,
                 "survey": survey,
                 "completions": num_rows,
-                "completions left": TOTAL_ITERATIONS - num_rows,
-                "done": True if num_rows >= TOTAL_ITERATIONS else False,
-                "last updated": get_utc_time(),
+                "min_iterations": min_iterations,
+                "completions_left": min_iterations - num_rows,
+                "done": True if num_rows >= min_iterations else False,
+                "last_updated": last_updated,
             }
 
             if progress_df.empty:
@@ -72,7 +75,7 @@ def reset_progress(quiet=False):
         return progress_df
 
     summary = (
-        progress_df.groupby(["provider", "api", "model"])["completions"]
+        progress_df.groupby(["provider", "api", "model", "done"])["completions"]
         .agg(["max", "min"])
         .sort_values(by=["provider"])
         .reset_index()
@@ -80,7 +83,7 @@ def reset_progress(quiet=False):
 
     num_models = len(summary)
     has_data = len(summary[summary["max"] > 0])
-    is_done = len(summary[summary["min"] >= TOTAL_ITERATIONS])
+    is_done = len(summary[summary["done"] == True])
     no_data_providers = ", ".join(
         [p for p in sorted(set(summary[summary["max"] == 0].api))]
     )
@@ -90,7 +93,7 @@ def reset_progress(quiet=False):
         f"Number of models with some data (>0 iterations for any survey): {has_data} ({round(has_data*100/num_models)}%)"
     )
     print(
-        f"Number of models done (>={TOTAL_ITERATIONS} iterations per survey): {is_done} ({round(is_done*100/num_models)}%)"
+        f"Number of models done (>=min_iterations per survey): {is_done} ({round(is_done*100/num_models)}%)"
     )
     print(f"APIs with models without data: {no_data_providers}")
 
@@ -103,16 +106,20 @@ def reset_progress(quiet=False):
         summary = (
             progress_df[progress_df["provider"] == provider]
             .join(provider_info.set_index("model"), rsuffix="_r", on="model")
-            .groupby(["model", "api_r", "total_estimate"])["completions"]
+            .groupby(["model", "api_r", "total_estimate", "min_iterations"])[
+                "completions"
+            ]
             .agg(["max", "min", "sum"])
             .sort_values(by=["min", "total_estimate"])
             .reset_index()
         )
 
-        summary["left"] = TOTAL_ITERATIONS - summary["min"]
+        summary["left"] = summary["min_iterations"] - summary["min"]
         summary["left"] = ["DONE" if x <= 0 else f"{x}" for x in summary["left"]]
 
-        summary["prog"] = summary["sum"] * 100 / MAX_ITERATIONS
+        summary["prog"] = (
+            summary["sum"] * 100 / (summary["min_iterations"] * len(surveys))
+        )
 
         summary["prog"] = [
             "-" if x["left"] == "DONE" else f"{int(x["prog"])}%"
@@ -123,7 +130,7 @@ def reset_progress(quiet=False):
             (
                 "-"
                 if x["left"] == "DONE"
-                else f"{round((x["total_estimate"] / TOTAL_ITERATIONS) * int(x["left"]), 2)} USD"
+                else f"{round((x["total_estimate"] / x["min_iterations"]) * int(x["left"]), 2)} USD"
             )
             for _, x in summary.iterrows()
         ]
@@ -160,11 +167,11 @@ def print_model_summary(model, progress_df):
         .reset_index()
     )
 
-    summary["left"] = [f"{x}" if x > 0 else "DONE" for x in summary["completions left"]]
+    summary["left"] = [f"{x}" if x > 0 else "DONE" for x in summary["completions_left"]]
 
     total_estimate = model_info["total_estimate"]
     left = sum([int(x) if x.isdigit() else 0 for x in summary.left])
-    ratio = left / MAX_ITERATIONS
+    ratio = left / model_info["min_iterations"]
 
     print(f"API: {model_info["api"]}")
     print(
