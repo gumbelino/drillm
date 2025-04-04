@@ -10,6 +10,7 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+library(knitr)
 library(reticulate)
 library(tidyverse)
 library(readxl)
@@ -38,11 +39,13 @@ if (!dir.exists(OUTPUT_DIR)) {
 
 ```
 
-## Define functions
+# Preparing data for analysis
+
+## Define helper functions
 
 Maybe move this to it's own package...
 
-```{r general functions}
+```{r helper functions}
 
 create_file_path <- function(provider, model, survey, file_type) {
   file.path("llm_data", provider, model, survey, paste0(file_type, ".csv"))
@@ -109,9 +112,9 @@ for (i in 1:nrow(models)){
 
 There are `r nrow(models %>% filter(has_data))` models with data out of `r nrow(models)` (`r round(nrow(models %>% filter(has_data)) * 100 / nrow(models))`%).
 
-## Get available surveys
+## Surveys
 
-```{r survey names}
+```{r surveys}
 
 # read the sheet names of the Excel file
 survey_names <- excel_sheets(SURVEY_FILE)
@@ -119,13 +122,65 @@ survey_names <- excel_sheets(SURVEY_FILE)
 # remove invalid and "template" 
 survey_names <- sort(survey_names[!grepl("^~", survey_names) & survey_names != "template"])
 
+get_surveys <- function(survey_names) {
+  
+  surveys <- list()
+  
+  # Iterate over each sheet in the workbook
+  for (survey_name in survey_names) {
+
+    # Read the current sheet into a data frame
+    df <- read_excel(SURVEY_FILE, sheet = survey_name)
+    
+    # Check if required columns exist
+    required_columns <- c("considerations", "policies", "scale_max", "q-method")
+    missing_cols <- setdiff(required_columns, colnames(df))
+    if (length(missing_cols) > 0) {
+      cat(
+        "Sheet",
+        survey_name,
+        "is missing the following columns:",
+        paste(missing_cols, collapse = ", "),
+        "\n\n"
+      )
+      next
+    }
+    
+    # Calculate the number of non-NA rows in "considerations" column
+    n_c <- sum(!is.na(df$considerations))
+    
+    # Calculate the number of non-NA rows in "policies" column
+    n_p <- sum(!is.na(df$policies))
+    
+    # Extract integer values from "scale_max" column, assuming they are already integers
+    scale_max <- as.integer(na.omit(df$scale_max))
+    
+    # Extract logical (boolean) values from "q-method" column
+    q_method <- as.logical(na.omit(df$`q-method`))
+    
+    surveys[[length(surveys) + 1]] <- tibble(
+      survey = survey_name,
+      considerations = n_c,
+      policies = n_p,
+      scale_max,
+      q_method,
+    )
+    
+  }
+  
+  surveys <- bind_rows(surveys)
+  surveys
+  
+}
+
+
+surveys <- get_surveys(survey_names)
+
+
 # define file types
 file_types <- c("considerations", "policies", "reasons")
 
-# print ordered survey names
-for (i in 1:length(survey_names)){
-  cat(paste0(i, ". ", survey_names[i], "\n"))
-}
+kable(surveys %>% arrange(survey), caption = "Surveys")
 
 ```
 
@@ -268,8 +323,8 @@ write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
 
 ```
 
-
 ## Cost analysis
+
 ```{r cost analysis}
 
 # calculate costs in tokens
@@ -325,10 +380,9 @@ cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
 
 ```
 
-
 ## Execution analysis
 
-_NOTE: Execution data is NOT completely accurate. A few (3-5) executions failed and, as a result, we have no record of it._
+*NOTE: Execution data is NOT completely accurate. A few (3-5) executions failed and, as a result, we have no record of it.*
 
 ```{r execution analysis}
 
@@ -424,6 +478,7 @@ write_csv(exec_total, paste(OUTPUT_DIR, "exec_total.csv", sep = "/"))
 ```
 
 ## Time & costs to complete data collection
+
 ```{r data left}
 
 data_left <- models %>%
@@ -446,11 +501,11 @@ write_csv(data_left, paste(OUTPUT_DIR, "data_left.csv", sep = "/"))
 
 ```
 
-
 ## Compile model info
-```{r}
 
-models_summary <- models %>%
+```{r model info, results = 'asis'}
+
+included_models_summary <- models %>%
   filter(included) %>%
   select(
     provider,
@@ -466,10 +521,15 @@ models_summary <- models %>%
     comment
   )
 
-write_csv(models_summary, paste(OUTPUT_DIR, "models_summary.csv", sep = "/"))
+write_output_csv(included_models_summary, "models_summary.csv")
+
+excluded_models <- models %>% filter(!included) %>% select(provider, model, reason)
+
+cat("\n", nrow(excluded_models), "out of", nrow(models), "were excluded from the analysis for the following reasons.\n\n")
+
+kable(excluded_models %>% arrange(provider, model), caption = "Excluded models and reasons")
 
 ```
-
 
 ## Calculate Cronbach's Alpha
 
@@ -876,7 +936,7 @@ get_random_data <- function(sheet_names, file_path=SURVEY_FILE) {
     df <- read_excel(file_path, sheet = sheet_name)
     
     # Check if required columns exist
-    required_columns <- c("considerations", "scale_max", "q-method")
+    required_columns <- c("considerations", "policies", "scale_max", "q-method")
     missing_cols <- setdiff(required_columns, colnames(df))
     if (length(missing_cols) > 0) {
       cat(
@@ -1439,4 +1499,64 @@ ggsave(
 
 ```
 
+```{r}
+
+models_summary %>%
+  mutate(label = paste(provider, model, sep = "/")) %>%
+  ggplot(aes(
+    x = reorder(label, fail_rate),
+    y = fail_rate,
+    fill = provider
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_text(aes(label = paste0(round(fail_rate * 100, 1), "%")), hjust = -0.3, size = 3) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "none"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "Models", y = "Fail rate") -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/error_rate.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+```
+
+
+```{r}
+
+models_summary %>%
+  mutate(label = paste(provider, model, sep = "/")) %>%
+  ggplot(aes(
+    x = reorder(label, cost_per_completion),
+    y = cost_per_completion,
+    fill = provider
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_text(aes(label = paste0(round(cost_per_completion, 3), " USD")), hjust = -0.1, size = 3) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.background = element_rect(fill = "white"),
+    legend.position = "none"
+  ) +
+  scale_y_continuous(limits = c(0, 1)) +
+  labs(x = "Models", y = "Cost per completion") -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/cost_per_completion.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+```
 
