@@ -16,7 +16,7 @@ import pandas as pd
 
 # get surveys data
 surveys = get_survey_names(no_template=True)
-models = get_models(include_all=False)
+models = get_models(include_all=True)
 
 
 def reset_progress(quiet=False):

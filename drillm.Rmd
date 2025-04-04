@@ -25,6 +25,9 @@ HUMAN_DATA_FILE <- "data/total dataset_clean.csv"
 EXPENSES_FILE <- "billing/transaction_history.xlsx"
 OUTPUT_DIR <- "analysis"
 
+ALPHA_RESULTS_FILE <- "alpha_results.csv"
+AGGREGATION_RESULTS_FILE <- "llm_data_aggregated.csv"
+
 MAX_ITERATIONS <- 30
 
 
@@ -43,6 +46,18 @@ Maybe move this to it's own package...
 
 create_file_path <- function(provider, model, survey, file_type) {
   file.path("llm_data", provider, model, survey, paste0(file_type, ".csv"))
+}
+
+output.file.exists <- function(file_name) {
+  file.exists(paste(OUTPUT_DIR, file_name, sep = "/"))
+}
+
+read_output_csv <- function(file_name) {
+  read_csv(paste(OUTPUT_DIR, file_name, sep = "/"), show_col_types = FALSE)
+}
+
+write_output_csv <- function(data, file_name) {
+  write_csv(data, paste(OUTPUT_DIR, file_name, sep = "/"))
 }
 
 now_utc <- function() {
@@ -307,7 +322,6 @@ api_costs <- models %>%
 write_csv(api_costs, paste(OUTPUT_DIR, "api_costs.csv", sep = "/"))
 
 cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
-cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
 
 ```
 
@@ -386,16 +400,28 @@ exec_surveys <- exec_models_surveys %>%
     .groups = "drop"
   )
 
+exec_total <- models %>%
+  summarise(
+    hours = sum(total_time_min, na.rm = TRUE) / 60,
+    cost_USD = sum(total_cost, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+exec_total <- as.data.frame(t(exec_total))
+colnames(exec_total) <- c("measure")
+
 # write summary to file
 write_csv(exec_models, paste(OUTPUT_DIR, "exec_models.csv", sep = "/"))
 write_csv(exec_surveys, paste(OUTPUT_DIR, "exec_surveys.csv", sep = "/"))
 write_csv(exec_models_surveys, paste(OUTPUT_DIR, "exec_models_surveys.csv", sep = "/"))
+write_csv(exec_total, paste(OUTPUT_DIR, "exec_total.csv", sep = "/"))
+
 
 
 ```
 
 ## Time & costs to complete data collection
-```{r}
+```{r data left}
 
 data_left <- models %>%
   filter(!done, included) %>%
@@ -454,6 +480,10 @@ alpha_results <- list()
 models_with_data <- llm_data %>%
   distinct(provider, model) 
 
+if (output.file.exists(ALPHA_RESULTS_FILE)) {
+  last_alpha_results <- read_output_csv(ALPHA_RESULTS_FILE)
+}
+
 # Iterate over each unique provider/model combination
 for (row in 1:nrow(models_with_data)) {
   provider <- models_with_data[row, ]$provider
@@ -465,6 +495,7 @@ for (row in 1:nrow(models_with_data)) {
   
   # iterate over each survey
   for (survey_name in unique(provider_model_data$survey)) {
+    
     # filter the data for the current survey
     survey_data <- provider_model_data %>%
       filter(survey == !!survey_name) %>%
@@ -472,6 +503,24 @@ for (row in 1:nrow(models_with_data)) {
       # get only first x iterations, where x = MAX_ITERATIONS
       arrange(created_at) %>%
       head(MAX_ITERATIONS)
+    
+    # SKIP THIS ITERATION IF PREVIOUS RECORD EXISTS
+    # get date of the most data generation
+    last_updated <- max(survey_data$created_at, na.rm = TRUE)
+    
+    # if there is a previous record
+    if (exists("last_alpha_results")) {
+      last_alpha <- last_alpha_results %>% filter(model == !!model, survey == !!survey_name)
+      
+      ## and last record is still valid, save it and skip
+      ## valid records are more recent than the latest data generated
+      if (nrow(last_alpha) == 1 && (last_alpha$created_at > last_updated)) {
+        alpha_results[[length(alpha_results) + 1]] <- last_alpha
+        next
+      } else {
+        cat("updating:", model, "/", survey_name, "\n")
+      }
+    }
     
     # Calculate Cronbach's Alpha for considerations (C1..C50)
     considerations_data <- survey_data %>% select(C1:C50)
@@ -543,6 +592,7 @@ for (row in 1:nrow(models_with_data)) {
       model = model,
       survey = survey_name,
       N = nrow(considerations_data),
+      created_at = now_utc(),
       alpha_considerations = alpha_considerations,
       alpha_policies = alpha_policies,
       alpha_all = alpha_all
@@ -684,10 +734,16 @@ aggregate_llm_policies <- function(policies) {
 
 ```{r aggregate llm data}
 
+
 aggregate_llm_data <- function(data) {
   
+  # get last aggregation results, if it exists
+  if (output.file.exists(AGGREGATION_RESULTS_FILE)) {
+    last_aggr_results <- read_output_csv(AGGREGATION_RESULTS_FILE)
+  }
+  
   # initialize an empty list to store the alpha results
-  aggregation_results <- list()
+  aggr_results <- list()
   
   # iterate over each unique provider/model/survey combination
   for (row in 1:nrow(llm_surveys)) {
@@ -699,10 +755,29 @@ aggregate_llm_data <- function(data) {
     # filter the data for the current survey
     survey_data <- data %>%
       filter(model == !!model, survey == !!survey) %>%
-    
+      
       # get only first x iterations, where x = MAX_ITERATIONS
       arrange(created_at) %>%
       head(MAX_ITERATIONS)
+    
+    # SKIP THIS ITERATION IF PREVIOUS RECORD EXISTS
+    # get date of the most data generation
+    last_updated <- max(survey_data$created_at, na.rm = TRUE)
+    
+    # if there is a previous record
+    if (exists("last_aggr_results")) {
+      last_aggr <- last_aggr_results %>% filter(model == !!model, survey == !!survey)
+      
+      ## and last record is still valid, save it and skip
+      ## valid records are more recent than the latest data generated
+      if (nrow(last_aggr) == 1 &&
+          (last_aggr$created_at > last_updated)) {
+        aggr_results[[length(aggr_results) + 1]] <- last_aggr
+        next
+      } else {
+        cat("updating:", model, "/", survey, "\n")
+      }
+    }
     
     # aggregate considerations C1:C50
     considerations_data <- survey_data %>% select(C1:C50)
@@ -713,7 +788,7 @@ aggregate_llm_data <- function(data) {
     aggregated_policies <- aggregate_llm_policies(policies_data)
     
     # store the results in the list
-    aggregation_result <- tibble(
+    aggr_result <- tibble(
       provider = provider,
       model = model,
       survey = survey,
@@ -723,14 +798,14 @@ aggregate_llm_data <- function(data) {
       aggregated_policies,
     )
     
-    aggregation_results[[length(aggregation_results) + 1]] <- aggregation_result
+    aggr_results[[length(aggr_results) + 1]] <- aggr_result
     
   }
   
   # Combine all results into a single data frame
-  aggregation_results <- bind_rows(aggregation_results)
+  aggr_results <- bind_rows(aggr_results)
   
-  return(aggregation_results)
+  return(aggr_results)
   
 }
 
@@ -739,14 +814,20 @@ llm_data_aggregated <- aggregate_llm_data(llm_data)
 time_end <- Sys.time()
 elapsed_time <- difftime(time_end, time_start, units = "auto")
 
-print(paste("Aggregation of", nrow(llm_data), "LLM responses across", length(unique(llm_data$survey)) ,"surveys completed in", round(as.numeric(elapsed_time),2), units(elapsed_time)))
-
-print(head(llm_data_aggregated))
+print(
+  paste(
+    "Aggregation of",
+    nrow(llm_data),
+    "LLM responses across",
+    length(unique(llm_data$survey)) ,
+    "surveys completed in",
+    round(as.numeric(elapsed_time), 2),
+    units(elapsed_time)
+  )
+)
 
 # write summary to file
-write_csv(llm_data_aggregated, paste(OUTPUT_DIR, "llm_data_aggregated.csv", sep = "/"))
-
-round(as.numeric(elapsed_time),2)
+write_output_csv(llm_data_aggregated, AGGREGATION_RESULTS_FILE)
 
 ```
 
