@@ -45,6 +45,12 @@ create_file_path <- function(provider, model, survey, file_type) {
   file.path("llm_data", provider, model, survey, paste0(file_type, ".csv"))
 }
 
+now_utc <- function() {
+   now <- Sys.time()
+   attr(now, "tzone") <- "UTC"
+   now
+}
+
 ```
 
 ## Get available LLMs
@@ -299,6 +305,9 @@ api_costs <- models %>%
   arrange(desc(credits_paid))
 
 write_csv(api_costs, paste(OUTPUT_DIR, "api_costs.csv", sep = "/"))
+
+cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
+cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
 
 ```
 
@@ -709,7 +718,7 @@ aggregate_llm_data <- function(data) {
       model = model,
       survey = survey,
       N = N,
-      date = Sys.time(),
+      created_at = now_utc(),
       aggregated_considerations,
       aggregated_policies,
     )
