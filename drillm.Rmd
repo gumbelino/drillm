@@ -328,6 +328,8 @@ cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
 
 ## Execution analysis
 
+_NOTE: Execution data is NOT completely accurate. A few (3-5) executions failed and, as a result, we have no record of it._
+
 ```{r execution analysis}
 
 # read exec log
@@ -409,6 +411,7 @@ exec_total <- models %>%
 
 exec_total <- as.data.frame(t(exec_total))
 colnames(exec_total) <- c("measure")
+exec_total <- rownames_to_column(exec_total, "metric")
 
 # write summary to file
 write_csv(exec_models, paste(OUTPUT_DIR, "exec_models.csv", sep = "/"))
@@ -1423,7 +1426,7 @@ DRI_benchmark %>%
   labs(x = "Cronbach's alpha (mean)", y = "DRI Benchmark Index (mean)", color = "Provider") +
   theme_minimal() +
   theme(plot.background = element_rect(fill = "white"),
-        legend.position = "none") -> plot# Remove text from color legend
+        legend.position = "none") -> plot # Remove text from color legend
 # Set the theme to minimal
 
 
