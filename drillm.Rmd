@@ -1513,11 +1513,9 @@ models_summary %>%
   geom_text(aes(label = paste0(round(fail_rate * 100, 1), "%")), hjust = -0.3, size = 3) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
     plot.background = element_rect(fill = "white"),
     legend.position = "none"
   ) +
-  scale_y_continuous(limits = c(0, 1)) +
   labs(x = "Models", y = "Fail rate") -> plot
 
 ggsave(
@@ -1544,11 +1542,9 @@ models_summary %>%
   geom_text(aes(label = paste0(round(cost_per_completion, 3), " USD")), hjust = -0.1, size = 3) +
   theme_minimal() +
   theme(
-    axis.text.x = element_text(angle = 45, hjust = 1),
     plot.background = element_rect(fill = "white"),
     legend.position = "none"
   ) +
-  scale_y_continuous(limits = c(0, 1)) +
   labs(x = "Models", y = "Cost per completion") -> plot
 
 ggsave(
@@ -1560,3 +1556,60 @@ ggsave(
 
 ```
 
+
+```{r}
+
+models_summary %>%
+  mutate(label = paste(provider, model, sep = "/")) %>%
+  ggplot(aes(
+    x = reorder(label, time_per_completion_s),
+    y = time_per_completion_s,
+    fill = provider
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() + 
+  geom_text(aes(label = paste0(round(time_per_completion_s), "s")), hjust = -0.1, size = 3) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "none"
+  ) +
+  labs(x = "Models", y = "Time per completion (s)") -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/time_per_completion.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+```
+
+
+```{r}
+
+models_summary %>%
+  mutate(label = paste(provider, model, sep = "/")) %>%
+  ggplot(aes(
+    x = reorder(label, total_cost),
+    y = total_cost,
+    fill = provider
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() + 
+  geom_text(aes(label = paste0(round(total_cost), " USD")), hjust = -0.1, size = 3) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "none"
+  ) +
+  labs(x = "Models", y = "Time per completion (s)") -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/time_per_completion.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+```
