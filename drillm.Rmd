@@ -2,13 +2,16 @@
 title: 'Triage Against the Machine: Can AI Reason Deliberatively?'
 author: "Francesco Veri, Gustavo Umbelino"
 date: "`r Sys.Date()`"
+bibliography: bibliography/refs.bib
+link-citations: true
+csl: bibliography/apsa.csl
 output:
   pdf_document: default
   html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE)
 
 library(knitr)
 library(reticulate)
@@ -39,12 +42,6 @@ if (!dir.exists(OUTPUT_DIR)) {
 
 ```
 
-# Preparing data for analysis
-
-## Define helper functions
-
-Maybe move this to it's own package...
-
 ```{r helper functions}
 
 create_file_path <- function(provider, model, survey, file_type) {
@@ -71,48 +68,23 @@ now_utc <- function() {
 
 ```
 
-## Get available LLMs
+# Large-Language Models (LLMs) Preview
 
 ```{r models}
 
 # get models info
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
-# initialize a vector to store the 'has_data' values
-has_data_flags <- logical(nrow(models))
-
-# iterate over each row in the models data frame
-for (i in 1:nrow(models)) {
-  provider <- models$provider[i]
-  model <- models$model[i]
-  
-  # create the data path
-  path <- paste0("llm_data/", provider, "/", model)
-  
-  # check if the path exists and set the 'has_data' flag accordingly
-  has_data_flags[i] <- file.exists(path)
-}
-
-# add the 'has_data' column to the models data frame
-models <- models %>%
-  mutate(has_data = has_data_flags) %>%
-  arrange(provider, model)
-
-# print rows where has_data is TRUE
-if (!any(models$has_data)) {
-  warn("No data available!")
-}
-
-# print ordered survey names
-for (i in 1:nrow(models)){
-  cat(paste0(i, ". ", models[i,]$provider, "/", models[i,]$model, if(models[i,]$has_data) " | has data" else "", "\n"))
-}
+models %>%
+  select(provider, model, type) %>% 
+  arrange(provider, model) %>%
+  kable(caption = "LLMs", row.names = TRUE)
 
 ```
 
-There are `r nrow(models %>% filter(has_data))` models with data out of `r nrow(models)` (`r round(nrow(models %>% filter(has_data)) * 100 / nrow(models))`%).
+We started the analysis with `r nrow(models)` models, but some models were dropped after data collection. The models and reason for dropping are discussed later on [Excluded Models].
 
-## Surveys
+# Surveys
 
 ```{r surveys}
 
@@ -180,11 +152,12 @@ surveys <- get_surveys(survey_names)
 # define file types
 file_types <- c("considerations", "policies", "reasons")
 
-kable(surveys %>% arrange(survey), caption = "Surveys")
+surveys %>% arrange(survey) %>%
+  kable(caption = "Surveys", row.names = TRUE)
 
 ```
 
-## Read and format LLM data
+# LLM Data Collection
 
 ```{r format LLM data}
 
@@ -196,11 +169,8 @@ get_llm_data <- function() {
   # iterate over each survey
   for (survey_name in survey_names) {
     
-    # iterate over each row in the models data frame where has_data is TRUE
+    # iterate over each row in the models data frame
     for (i in 1:nrow(models)) {
-      if (!models$has_data[i]) {
-        next
-      }
       
       provider <- models$provider[i]
       model <- models$model[i]
@@ -323,9 +293,11 @@ write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
 
 ```
 
-## Cost analysis
+We collected a total of `r nrow(llm_data)` valid LLM responses across `r nrow(surveys)` surveys.
 
-```{r cost analysis}
+## Cost
+
+```{r cost analysis, results = 'asis'}
 
 # calculate costs in tokens
 cost_tokens <- llm_data %>%
@@ -359,6 +331,7 @@ api_costs <- api_costs %>%
 api_costs <- models %>% 
   group_by(api) %>% 
   summarise(
+    num_models = n(),
     credits_used = sum(total_cost, na.rm = TRUE),
     estimate = sum(total_estimate, na.rm = TRUE)) %>% 
   full_join(api_costs, by="api") %>%
@@ -367,6 +340,7 @@ api_costs <- models %>%
   ) %>%
   select(
     api, 
+    num_models,
     credits_paid, 
     credits_used, 
     credits_left, 
@@ -376,15 +350,19 @@ api_costs <- models %>%
 
 write_csv(api_costs, paste(OUTPUT_DIR, "api_costs.csv", sep = "/"))
 
-cat("Total spent: USD", sum(api_costs$credits_paid, na.rm = TRUE))
+cat("We spent a total of", sum(api_costs$credits_paid, na.rm = TRUE), "USD. The cost breakdown per API is below.")
+
+api_costs %>%
+  filter(!is.na(api)) %>%
+  select(api, num_models, credits_paid) %>%
+  arrange(desc(credits_paid)) %>%
+  kable(caption = "Costs by API")
 
 ```
 
-## Execution analysis
+## Time
 
-*NOTE: Execution data is NOT completely accurate. A few (3-5) executions failed and, as a result, we have no record of it.*
-
-```{r execution analysis}
+```{r execution analysis, results = 'asis'}
 
 # read exec log
 # NOTE: not all executions were logged due to technical issues
@@ -463,6 +441,13 @@ exec_total <- models %>%
     .groups = "drop"
   )
 
+first_date <- min(llm_data$created_at)
+last_date <- max(llm_data$created_at)
+
+data_collection_days <- as.numeric(round(difftime(last_date, first_date, units = c("days"))))
+
+cat("It took a total of", round(exec_total$hours), "hours^[Execution data is mostly accurate. Only a few (3-5) executions failed and, as a result, we have no record of it.] across", data_collection_days, "days to complete data collection. Most of it was done in parallel. The first LLM response was collected on", format(min(llm_data$created_at), "%A, %b %d, %Y"), "and latest on", format(max(llm_data$created_at), "%A, %b %d, %Y."))
+
 exec_total <- as.data.frame(t(exec_total))
 colnames(exec_total) <- c("measure")
 exec_total <- rownames_to_column(exec_total, "metric")
@@ -476,8 +461,6 @@ write_csv(exec_total, paste(OUTPUT_DIR, "exec_total.csv", sep = "/"))
 
 
 ```
-
-## Time & costs to complete data collection
 
 ```{r data left}
 
@@ -501,7 +484,7 @@ write_csv(data_left, paste(OUTPUT_DIR, "data_left.csv", sep = "/"))
 
 ```
 
-## Compile model info
+## Excluded Models
 
 ```{r model info, results = 'asis'}
 
@@ -531,7 +514,228 @@ kable(excluded_models %>% arrange(provider, model), caption = "Excluded models a
 
 ```
 
-## Calculate Cronbach's Alpha
+## Execution Summary Plots
+
+### Fail rate
+
+```{r fail rate, fig.width=10,fig.height=6}
+
+
+max_value <- max(included_models_summary$fail_rate)
+buffer <- (max_value - min(included_models_summary$fail_rate)) * 0.1
+
+included_models_summary %>%
+  ggplot(aes(
+    x = reorder(model, fail_rate),
+    y = fail_rate,
+    fill = provider,
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_text(aes(label = paste0(round(fail_rate * 100, 1), "%")),
+            hjust = -0.1, 
+            size = 3) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "bottom right",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+  ) +
+  labs(x = "Models", y = "Fail rate") +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0)),
+    breaks = seq(0, max_value + buffer, by = round((
+      max_value + buffer
+    ) / 10, 2)),
+    limits = c(0, max_value + buffer),
+  ) -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/fail_rate.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+plot
+
+```
+
+### Cost per completion
+
+```{r cost-completion, fig.width=10,fig.height=6}
+
+
+max_value <- max(included_models_summary$cost_per_completion)
+buffer <- (max_value - min(included_models_summary$cost_per_completion)) * 0.1
+
+included_models_summary %>%
+  ggplot(aes(
+    x = reorder(model, cost_per_completion),
+    y = cost_per_completion,
+    fill = provider,
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_text(aes(label = round(cost_per_completion, 4)),
+            hjust = -0.1, 
+            size = 3) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "bottom right",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+  ) +
+  labs(x = "Models", y = "Cost per completion (USD)") +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.02)),
+    breaks = seq(0, max_value + buffer, by = round((
+      max_value + buffer
+    ) / 10, 4)),
+    limits = c(0, max_value + buffer),
+  ) -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/cost_per_completion.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+plot
+
+```
+
+### Total cost
+
+```{r total cost, fig.width=10,fig.height=6}
+
+
+max_value <- max(included_models_summary$total_cost)
+buffer <- (max_value - min(included_models_summary$total_cost)) * 0.1
+
+included_models_summary %>%
+  ggplot(aes(
+    x = reorder(model, total_cost),
+    y = total_cost,
+    fill = provider,
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_text(aes(label = round(total_cost, 2)),
+            hjust = -0.1, 
+            size = 3) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "bottom right",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+  ) +
+  labs(x = "Models", y = "Total cost (USD)") +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.02)),
+    breaks = seq(0, max_value + buffer, by = round((
+      max_value + buffer
+    ) / 10)),
+    limits = c(0, max_value + buffer),
+  ) -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/total_cost.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+plot
+
+```
+
+### Time per completion
+
+```{r time-completion, fig.width=10,fig.height=6}
+
+max_value <- max(included_models_summary$time_per_completion_s)
+buffer <- (max_value - min(included_models_summary$time_per_completion_s)) * 0.1
+
+included_models_summary %>%
+  ggplot(aes(
+    x = reorder(model, time_per_completion_s),
+    y = time_per_completion_s,
+    fill = provider,
+  )) +
+  geom_bar(stat = "identity") +
+  coord_flip() +
+  geom_text(aes(label = round(time_per_completion_s, 2)),
+            hjust = -0.1, 
+            size = 3) +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "bottom right",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.border = element_blank(),
+  ) +
+  labs(x = "Models", y = "Time per completion (s)") +
+  scale_y_continuous(
+    expand = expansion(mult = c(0, 0.02)),
+    breaks = seq(0, max_value + buffer, by = round((
+      max_value + buffer
+    ) / 10)),
+    limits = c(0, max_value + buffer),
+  ) -> plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots/time_per_completion_s.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+plot
+
+```
+
+### Cost/Time per completion
+
+```{r cost-time-completion, fig.width=10,fig.height=6, results = 'asis'}
+
+included_models_summary %>%
+  group_by(provider, model, .groups = "drop") %>%
+  ggplot(aes(x = time_per_completion_s, y = cost_per_completion, color = provider)) +
+  geom_point(size = 5) + # Adjust size as needed
+  geom_text(aes(label = model), vjust = -2, size = 2) + # Add labels above each dot
+  labs(x = "Time per completion (s)", y = "Cost per completion (USD)", color = "Provider") +
+  theme_minimal() +
+  theme(plot.background = element_rect(fill = "white"),
+        legend.position = "none") -> plot 
+
+plot 
+
+cat("\n\nZoomed in to cost < 0.01 USD and time < 12 s.\n\n")
+
+included_models_summary %>%
+  filter(cost_per_completion < 0.01 & time_per_completion_s < 12) %>%
+  group_by(provider, model, .groups = "drop") %>%
+  ggplot(aes(x = time_per_completion_s, y = cost_per_completion, color = provider)) +
+  geom_point(size = 5) + # Adjust size as needed
+  geom_text(aes(label = model), vjust = -2, size = 2) + # Add labels above each dot
+  labs(x = "Time per completion (s)", y = "Cost per completion (USD)", color = "Provider") +
+  theme_minimal() +
+  theme(plot.background = element_rect(fill = "white"),
+        legend.position = "none") -> plot 
+
+plot 
+```
+
+## Internal Consistency of Responses
 
 We calculate Cronbach's Alpha from the top `r MAX_ITERATIONS`
 
@@ -700,7 +904,9 @@ alpha_summary <- alpha_results %>%
 
 ```
 
-## Define aggregation functions
+# Aggregation
+
+We then aggregated LLM data into 1 response per model/survey. Based on [@motoki_more_2024], we bootstrap considerations 1000 times.
 
 ```{r aggregation functions}
 
@@ -1030,10 +1236,13 @@ rand_data <- get_random_data(survey_names)
 
 ```
 
-## DRI Analysis
+# DRI Analysis
 
-```{r DRI}
+We begin by defining DRI calculation functions
 
+```{r DRI functions, echo=TRUE}
+
+# original DRI formula
 dri_calc <- function(data, v1, v2) {
   lambda <- 1 - (sqrt(2) / 2)
   dri <- 2 * (((1 - mean(abs((data[[v1]] - data[[v2]]) / sqrt(2)
@@ -1042,17 +1251,19 @@ dri_calc <- function(data, v1, v2) {
   return(dri)
 }
 
+# updated DRI formula
+# FIXME: only accounts for negligible positive correlations, but not negative ones
 dri_calc_v2 <- function(data, v1, v2) {
   # Calculate orthogonal distance for each pair
   d <- abs((data[[v1]] - data[[v2]]) / sqrt(2))
   
   # Define lambda as in the original
-  lambda <- 1 - (sqrt(2) / 2)  # ??? 0.293
+  lambda <- 1 - (sqrt(2) / 2)
   
   # Calculate penalty: 0.5 if both correlations are in [0, 0.2], 1 otherwise
   penalty <- ifelse(data[[v1]] >= 0 & data[[v1]] <= 0.2 & #0.3
                       data[[v2]] >= 0 & data[[v2]] <= 0.2, # 0.3
-                    0, 1)#0.4
+                    0, 1)
   
   # Adjusted consistency per pair
   consistency <- (1 - d) * penalty
@@ -1065,6 +1276,28 @@ dri_calc_v2 <- function(data, v1, v2) {
   
   return(dri)
 }
+
+# updated DRI formula: penalizes both negligible positive and negative correlations in a scalar way.
+dri_calc_v3 <- function(data, v1, v2){
+  d <- abs((data[[v1]] - data[[v2]]) / sqrt(2))
+  lambda <- 1 - (sqrt(2) / 2)
+  
+  # Scalar penalty based on strength of signal (|r| and |q|)
+  penalty <- ifelse(pmax(abs(data[[v1]]), abs(data[[v2]])) <= 0.2,
+                    pmax(abs(data[[v1]]), abs(data[[v2]])) / 0.2,
+                    1)
+  
+  consistency <- (1 - d) * penalty
+  avg_consistency <- mean(consistency)
+  
+  dri <- 2 * ((avg_consistency - lambda) / (1 - lambda)) - 1
+  return(dri)
+}
+
+
+```
+
+```{r DRI}
 
 get_IC <- function(data, survey, case) {
   
@@ -1170,13 +1403,25 @@ get_ind_DRI <- function(IC) {
       v2 = 'Q2'
     )
     
-    # calculate updated DRI
+    # calculate updated DRI V2
     DRIInd$DRIPreV2[i] <- dri_calc_v2(
       data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
       v1 = 'R1',
       v2 = 'Q1'
     )
     DRIInd$DRIPostV2[i] <- dri_calc_v2(
+      data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
+      v1 = 'R2',
+      v2 = 'Q2'
+    )
+    
+    # calculate updated DRI V3
+    DRIInd$DRIPreV3[i] <- dri_calc_v3(
+      data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
+      v1 = 'R1',
+      v2 = 'Q1'
+    )
+    DRIInd$DRIPostV3[i] <- dri_calc_v3(
       data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
       v1 = 'R2',
       v2 = 'Q2'
@@ -1198,15 +1443,26 @@ get_case_DRI <- function(IC, type="human_only") {
   DRI_PRE_V2 <- dri_calc_v2(data = IC, v1 = 'R1', v2 = 'Q1')
   DRI_POST_V2 <- dri_calc_v2(data = IC, v1 = 'R2', v2 = 'Q2')
   
+  ## Group DRI level V3 ##
+  DRI_PRE_V3 <- dri_calc_v3(data = IC, v1 = 'R1', v2 = 'Q1')
+  DRI_POST_V3 <- dri_calc_v3(data = IC, v1 = 'R2', v2 = 'Q2')
+  
+  # cat(survey, case, type, "\n")
+  # cat(DRI_PRE, DRI_POST, "\n")
+  # cat(DRI_PRE_V2, DRI_POST_V2, "\n")
+  # cat(DRI_PRE_V3, DRI_POST_V3, "\n")
+  
   #CaseDRI Dataframe
-  DRI.Case <- data.frame(
+  DRI.Case <- tibble(
     survey = survey,
     case = case,
     type = type,
     DRI_PRE,
     DRI_PRE_V2,
+    DRI_PRE_V3,
     DRI_POST,
-    DRI_POST_V2
+    DRI_POST_V2,
+    DRI_POST_V3,
   )
   
   #Tests for groups
@@ -1249,8 +1505,6 @@ get_ind_LLM_DRI <- function(data, provider, model) {
 }
 
 add_llm_participant <- function(data, provider, model, survey) {
-  
-  # print(paste("adding", paste(provider, model, survey, sep = "/"), "to human data."))
   
   # get llm data
   llm_participant <- llm_data_aggregated %>%
@@ -1307,6 +1561,11 @@ for (case_study in 1:nrow(mini_publics)) {
     DRIPostV2 = mean(DRIInd$DRIPostV2)
   )
   
+  human_ind_DRI_meanV3 <- tibble(
+    DRIPreV3 = mean(DRIInd$DRIPreV3),
+    DRIPostV3 = mean(DRIInd$DRIPostV3)
+  )
+  
   # Global dataframes for depositing results
   # initialize *.Global
   if (case_study == 1) {
@@ -1342,12 +1601,17 @@ for (case_study in 1:nrow(mini_publics)) {
     DRIInd.LLM <- get_ind_DRI(IC.LLM)
     DRIInd.LLM.Model <- get_ind_LLM_DRI(DRIInd.LLM, provider, model)
     
+    ## DRI V1
     DRIInd.LLM.Model$human_only_DRIPre_mean <- human_ind_DRI_mean$DRIPre
     DRIInd.LLM.Model$human_only_DRIPost_mean <- human_ind_DRI_mean$DRIPost
     
     ## DRI V2
     DRIInd.LLM.Model$human_only_DRIPre_meanV2 <- human_ind_DRI_meanV2$DRIPreV2
     DRIInd.LLM.Model$human_only_DRIPost_meanV2 <- human_ind_DRI_meanV2$DRIPostV2
+    
+    ## DRI V3
+    DRIInd.LLM.Model$human_only_DRIPre_meanV3 <- human_ind_DRI_meanV3$DRIPreV3
+    DRIInd.LLM.Model$human_only_DRIPost_meanV3 <- human_ind_DRI_meanV3$DRIPostV3
     
     get_bm_index <- function(diff) {
       bm_index <- (diff + 2) / 4
@@ -1357,15 +1621,17 @@ for (case_study in 1:nrow(mini_publics)) {
     DRIInd.LLM.Model <- DRIInd.LLM.Model %>%
       mutate(DRIPre_diff = DRIPre - human_only_DRIPre_mean,
              DRIPost_diff = DRIPost - human_only_DRIPost_mean) %>%
-      
-      # benchmark index = use DRIPost & normalize it to be >= 0
       mutate(bm_index = get_bm_index(DRIPost_diff)) %>%
     
-          mutate(DRIPre_diffV2 = DRIPreV2 - human_only_DRIPre_meanV2,
+      ## benchmark V2
+      mutate(DRIPre_diffV2 = DRIPreV2 - human_only_DRIPre_meanV2,
              DRIPost_diffV2 = DRIPostV2 - human_only_DRIPost_meanV2) %>%
-      
-      # benchmark index = use DRIPost & normalize it to be >= 0
-      mutate(bm_indexV2 = get_bm_index(DRIPost_diffV2))
+      mutate(bm_indexV2 = get_bm_index(DRIPost_diffV2)) %>%
+    
+      ## benchmark V3
+      mutate(DRIPre_diffV3 = DRIPreV3 - human_only_DRIPre_meanV3,
+             DRIPost_diffV3 = DRIPostV3 - human_only_DRIPost_meanV3) %>%
+      mutate(bm_indexV3 = get_bm_index(DRIPost_diffV3))
       
     
     DRIInd.LLMs[[length(DRIInd.LLMs) + 1]] <- DRIInd.LLM.Model
@@ -1405,7 +1671,7 @@ DRI_benchmark <- DRIInd.LLMs %>%
   summarise(
     N = n(),
     .groups = "drop",
-    agg_bm_index = mean(bm_indexV2, na.rm = TRUE)
+    agg_bm_index = mean(bm_indexV3, na.rm = TRUE)
   ) %>%
   filter(N == max(N)) %>% # only include models with all surveys
   arrange(desc(agg_bm_index))
@@ -1441,7 +1707,7 @@ DRIInd.LLMs %>%
   filter(model %in% DRI_benchmark$model) %>% # only include models with all surveys
   mutate(label = paste(provider, model, sep = "/")) %>%
   ggplot(aes(
-    x = reorder(label, bm_indexV2, FUN = median, na.rm = TRUE),
+    x = reorder(label, bm_indexV3, FUN = median, na.rm = TRUE),
     y = bm_indexV2,
     color = provider
   )) +
@@ -1471,23 +1737,18 @@ DRI_benchmark %>%
   group_by(provider, model, .groups = "drop") %>%
   summarise(
     mean_alpha = mean(alpha_all, na.rm = TRUE),
-    mean_bm_index = mean(bm_indexV2, na.rm = TRUE),
+    mean_bm_index = mean(bm_indexV3, na.rm = TRUE),
     se_alpha = sd(alpha_all, na.rm = TRUE),
-    se_bm_index = sd(bm_indexV2, na.rm = TRUE)
+    se_bm_index = sd(bm_indexV3, na.rm = TRUE)
     
   ) %>%
   ggplot(aes(x = mean_alpha, y = mean_bm_index, color = provider)) +
   geom_point(size = 5) + # Adjust size as needed
-  #geom_errorbar(aes(ymin = mean_bm_index - se_bm_index, ymax = mean_bm_index + se_bm_index), width = 0.02) + # Error bars for y-axis
-  #geom_errorbarh(aes(xmin = mean_alpha - se_alpha, xmax = mean_alpha + se_alpha), height = 0.02) + # Error bars for x-axis
   geom_text(aes(label = model), vjust = -2, size = 2) + # Add labels above each dot
-  #scale_x_continuous(limits = c(0, 1)) +
-  #scale_y_continuous(limits = c(0, 1)) +
   labs(x = "Cronbach's alpha (mean)", y = "DRI Benchmark Index (mean)", color = "Provider") +
   theme_minimal() +
   theme(plot.background = element_rect(fill = "white"),
         legend.position = "none") -> plot # Remove text from color legend
-# Set the theme to minimal
 
 
 ggsave(
@@ -1499,117 +1760,4 @@ ggsave(
 
 ```
 
-```{r}
-
-models_summary %>%
-  mutate(label = paste(provider, model, sep = "/")) %>%
-  ggplot(aes(
-    x = reorder(label, fail_rate),
-    y = fail_rate,
-    fill = provider
-  )) +
-  geom_bar(stat = "identity") +
-  coord_flip() +
-  geom_text(aes(label = paste0(round(fail_rate * 100, 1), "%")), hjust = -0.3, size = 3) +
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "white"),
-    legend.position = "none"
-  ) +
-  labs(x = "Models", y = "Fail rate") -> plot
-
-ggsave(
-  paste(OUTPUT_DIR, "plots/error_rate.png", sep = "/"),
-  plot,
-  width = 10,
-  height = 6
-)
-
-```
-
-
-```{r}
-
-models_summary %>%
-  mutate(label = paste(provider, model, sep = "/")) %>%
-  ggplot(aes(
-    x = reorder(label, cost_per_completion),
-    y = cost_per_completion,
-    fill = provider
-  )) +
-  geom_bar(stat = "identity") +
-  coord_flip() +
-  geom_text(aes(label = paste0(round(cost_per_completion, 3), " USD")), hjust = -0.1, size = 3) +
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "white"),
-    legend.position = "none"
-  ) +
-  labs(x = "Models", y = "Cost per completion") -> plot
-
-ggsave(
-  paste(OUTPUT_DIR, "plots/cost_per_completion.png", sep = "/"),
-  plot,
-  width = 10,
-  height = 6
-)
-
-```
-
-
-```{r}
-
-models_summary %>%
-  mutate(label = paste(provider, model, sep = "/")) %>%
-  ggplot(aes(
-    x = reorder(label, time_per_completion_s),
-    y = time_per_completion_s,
-    fill = provider
-  )) +
-  geom_bar(stat = "identity") +
-  coord_flip() + 
-  geom_text(aes(label = paste0(round(time_per_completion_s), "s")), hjust = -0.1, size = 3) +
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "white"),
-    legend.position = "none"
-  ) +
-  labs(x = "Models", y = "Time per completion (s)") -> plot
-
-ggsave(
-  paste(OUTPUT_DIR, "plots/time_per_completion.png", sep = "/"),
-  plot,
-  width = 10,
-  height = 6
-)
-
-```
-
-
-```{r}
-
-models_summary %>%
-  mutate(label = paste(provider, model, sep = "/")) %>%
-  ggplot(aes(
-    x = reorder(label, total_cost),
-    y = total_cost,
-    fill = provider
-  )) +
-  geom_bar(stat = "identity") +
-  coord_flip() + 
-  geom_text(aes(label = paste0(round(total_cost), " USD")), hjust = -0.1, size = 3) +
-  theme_minimal() +
-  theme(
-    plot.background = element_rect(fill = "white"),
-    legend.position = "none"
-  ) +
-  labs(x = "Models", y = "Time per completion (s)") -> plot
-
-ggsave(
-  paste(OUTPUT_DIR, "plots/time_per_completion.png", sep = "/"),
-  plot,
-  width = 10,
-  height = 6
-)
-
-```
+### References
