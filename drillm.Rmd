@@ -77,7 +77,7 @@ now_utc <- function() {
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
 models %>%
-  select(provider, model, type) %>% 
+  select(provider, model, type, version) %>% 
   arrange(provider, model) %>%
   kable(caption = "LLMs", row.names = TRUE)
 
@@ -447,7 +447,7 @@ last_date <- max(llm_data$created_at)
 
 data_collection_days <- as.numeric(round(difftime(last_date, first_date, units = c("days"))))
 
-cat("It took a total of", round(exec_total$hours), "hours^[Execution data is mostly accurate. Only a few (3-5) executions failed and, as a result, we have no record of it.] across", data_collection_days, "days to complete data collection. Most of it was done in parallel. The first LLM response was collected on", format(min(llm_data$created_at), "%A, %b %d, %Y"), "and latest on", format(max(llm_data$created_at), "%A, %b %d, %Y."))
+cat("It took a total of", round(exec_total$hours), "hours^[Execution data is mostly accurate. Only a few (3-5) executions failed and, as a result, we have no record of it.] across", data_collection_days, "days to complete data collection. Most of it was done in parallel. The first LLM response was collected on", format(min(llm_data$created_at), "%A, %b %d, %Y"), "and latest on", format(max(llm_data$created_at), "%A, %b %d, %Y.\n\n"))
 
 exec_total <- as.data.frame(t(exec_total))
 colnames(exec_total) <- c("measure")
@@ -506,7 +506,7 @@ write_csv(data_left, paste(OUTPUT_DIR, "data_left.csv", sep = "/"))
 ```{r model info, results = 'asis'}
 
 included_models_summary <- models %>%
-  filter(included) %>%
+  filter(included, done) %>%
   select(
     provider,
     model,
@@ -521,6 +521,9 @@ included_models_summary <- models %>%
     comment
   )
 
+# only use included models for analysis
+llm_data <- llm_data %>% filter(model %in% included_models_summary$model)
+
 write_output_csv(included_models_summary, "models_summary.csv")
 
 excluded_models <- models %>% filter(!included) %>% select(provider, model, reason)
@@ -528,6 +531,8 @@ excluded_models <- models %>% filter(!included) %>% select(provider, model, reas
 cat("\n", nrow(excluded_models), "out of", nrow(models), "were excluded from the analysis for the following reasons.\n\n")
 
 kable(excluded_models %>% arrange(provider, model), caption = "Excluded models and reasons")
+
+
 
 ```
 
@@ -821,7 +826,7 @@ for (row in 1:nrow(models_with_data)) {
       # if (c_all_equal) {
       #   alpha_considerations <- 1
       # } else {
-        alpha_considerations <- alpha(
+        alpha_considerations <- psych::alpha(
           considerations_data,
           check.keys = TRUE,
           warnings = FALSE,
@@ -848,7 +853,7 @@ for (row in 1:nrow(models_with_data)) {
 
       # normal case, calculate alpha
       else {
-        alpha_policies <- alpha(
+        alpha_policies <- psych::alpha(
           policies_data,
           check.keys = TRUE,
           warnings = FALSE,
@@ -860,7 +865,7 @@ for (row in 1:nrow(models_with_data)) {
     
     if (nrow(policies_data) > 1 && nrow(considerations_data) > 1) {
       all_data <- cbind(considerations_data, policies_data)
-      alpha_all <- alpha(
+      alpha_all <- psych::alpha(
         all_data,
         check.keys = TRUE,
         warnings = FALSE,
@@ -925,7 +930,7 @@ alpha_summary %>%
   mutate(considerations = round(mean_alpha_considerations,2),
          policies = round(mean_alpha_policies,2),
          all = round(mean_alpha_all, 2)) %>%
-  select(provider, model, all, considerations, policies) %>%
+  select(provider, model, N, all, considerations, policies) %>%
   arrange(all) %>%
   kable(caption = "Alpha summary across models, mean across surveys", row.names = TRUE)
 
@@ -1151,7 +1156,7 @@ human_data %>%
   kable(caption = "Number of participants in each case study", row.names = TRUE)
 ```
 
-We collected `r nrow(human_data)` across `r length(unique(human_data$Case))` case studies.
+We collected `r nrow(human_data)` human responses across `r length(unique(human_data$Case))` case studies, including pre-post deliberation responses.
 
 # Randomly Generated Data
 
@@ -1262,7 +1267,37 @@ get_random_data <- function(sheet_names, file_path=SURVEY_FILE) {
 # Example usage
 rand_data <- get_random_data(survey_names)
 
+
 ```
+
+Then, we generated `r nrow(rand_data)` random reseponses for each survey. 
+
+```{r q-method}
+
+q_data <- data.frame(rand_data %>% filter(survey == "fremantle") %>% select(C1:C50) %>% t)
+
+colnames(q_data) <- "C"
+
+# Plot the histogram for the distribution of numbers in this row
+q_data %>% ggplot(aes(x = C)) +
+  geom_histogram(bins = 7, fill = "blue", color = "black") +
+  labs(title = "Fremantle Random Distribution",
+       x = "Number",
+       y = "Frequency")
+
+q_data <- data.frame(rand_data %>% filter(survey == "valsamoggia") %>% select(C1:C50) %>% t)
+
+colnames(q_data) <- "C"
+
+# Plot the histogram for the distribution of numbers in this row
+q_data %>% ggplot(aes(x = C)) +
+  geom_histogram(bins = 7, fill = "blue", color = "black") +
+  labs(title = "Valsamoggia Random Distribution",
+       x = "Number",
+       y = "Frequency")
+
+```
+
 
 # DRI Analysis
 
@@ -1541,7 +1576,7 @@ add_llm_participant <- function(data, provider, model, survey) {
   
   # check if it exists
   if (nrow(llm_participant) == 0) {
-    warn(paste("No human participant found for", paste(provider, model, survey, sep = "/")))
+    warn(paste("No participant found for", paste(provider, model, survey, sep = "/")))
   }
   
   # create 2 participants, PRE and POST
@@ -1692,7 +1727,7 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ## DRI Benchmark
 
-```{r benchmark index}
+```{r benchmark index, fig.width=10,fig.height=6}
 
 DRI_benchmark <- DRIInd.LLMs %>%
   filter(model %in% included_models_summary$model) %>%
@@ -1727,6 +1762,8 @@ DRI_benchmark %>%
   scale_y_continuous(limits = c(0, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
+plot
+
 ggsave(
   paste(OUTPUT_DIR, "benchmarkV1.png", sep = "/"),
   plot,
@@ -1749,6 +1786,8 @@ DRIInd.LLMs %>%
         legend.position = "none") + scale_y_continuous(limits = c(-0.1, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
+plot
+
 ggsave(
   paste(OUTPUT_DIR, "benchmarkV2.png", sep = "/"),
   plot,
@@ -1760,7 +1799,6 @@ ggsave(
 ## Trying a 2-dimension benchmark
 DRI_benchmark <- full_join(alpha_results, DRIInd.LLMs, by = c("provider", "model", "survey")) %>%
   filter(model %in% DRI_benchmark$model) # only include models with all surveys
-
 
 DRI_benchmark %>%
   #  filter(provider == "google") %>%
@@ -1781,6 +1819,7 @@ DRI_benchmark %>%
   theme(plot.background = element_rect(fill = "white"),
         legend.position = "none") -> plot # Remove text from color legend
 
+plot
 
 ggsave(
   paste(OUTPUT_DIR, "benchmarkV3.png", sep = "/"),
@@ -1792,6 +1831,7 @@ ggsave(
 ```
 
 # Francesco's DRI Analysis
+
 ```{r francescos analysis}
 
 

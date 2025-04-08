@@ -37,6 +37,7 @@ import data_deepseek
 import data_anthropic
 import data_alibaba
 import data_together
+import data_xai
 
 
 def get_llm_provider(model):
@@ -60,6 +61,8 @@ def get_llm_provider(model):
         return data_alibaba
     elif api == "Together AI":
         return data_together
+    elif api == "xAI API":
+        return data_xai
     else:
         raise (f"The API for {model} is not setup!")
 
