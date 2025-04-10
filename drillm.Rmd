@@ -67,6 +67,10 @@ now_utc <- function() {
    now
 }
 
+remove_NA_cols <- function(data) {
+   data[, colSums(is.na(data)) != nrow(data)]
+}
+
 ```
 
 # Large-Language Models (LLMs) Preview
@@ -522,7 +526,7 @@ included_models_summary <- models %>%
   )
 
 # only use included models for analysis
-llm_data <- llm_data %>% filter(model %in% included_models_summary$model)
+#llm_data <- llm_data %>% filter(model %in% included_models_summary$model)
 
 write_output_csv(included_models_summary, "models_summary.csv")
 
@@ -1122,6 +1126,24 @@ write_output_csv(llm_data_aggregated, AGGREGATION_RESULTS_FILE)
 We aggregated `r nrow(llm_data)` LLM responses into `r nrow(llm_data_aggregated)` responses: 1 response per model per survey.
 
 
+```{r aggr debugging, , results = 'asis'}
+
+for (i in 1:nrow(llm_data_aggregated)) {
+  provider <- llm_data_aggregated[i, ]$provider 
+  model <- llm_data_aggregated[i, ]$model
+  survey <- llm_data_aggregated[i, ]$survey
+  considerations <- llm_data_aggregated[i, ] %>% select(C1:C50)
+  considerations <- remove_NA_cols(considerations)
+  values <- pivot_longer(considerations, cols = everything(), values_to = "values")
+  uniques <- unique(values$values)
+  if (length(uniques) == 1) {
+    cat("WARNING! All considerations of", paste(provider, model, survey, sep="/"), "were aggregated as", uniques, "\n")
+  }
+}
+
+
+```
+
 # Human Data
 
 ```{r human data}
@@ -1279,22 +1301,22 @@ q_data <- data.frame(rand_data %>% filter(survey == "fremantle") %>% select(C1:C
 colnames(q_data) <- "C"
 
 # Plot the histogram for the distribution of numbers in this row
-q_data %>% ggplot(aes(x = C)) +
-  geom_histogram(bins = 7, fill = "blue", color = "black") +
-  labs(title = "Fremantle Random Distribution",
-       x = "Number",
-       y = "Frequency")
+# q_data %>% ggplot(aes(x = C)) +
+#   geom_histogram(bins = 7, fill = "blue", color = "black") +
+#   labs(title = "Fremantle Random Distribution",
+#        x = "Number",
+#        y = "Frequency")
 
 q_data <- data.frame(rand_data %>% filter(survey == "valsamoggia") %>% select(C1:C50) %>% t)
 
 colnames(q_data) <- "C"
 
 # Plot the histogram for the distribution of numbers in this row
-q_data %>% ggplot(aes(x = C)) +
-  geom_histogram(bins = 7, fill = "blue", color = "black") +
-  labs(title = "Valsamoggia Random Distribution",
-       x = "Number",
-       y = "Frequency")
+# q_data %>% ggplot(aes(x = C)) +
+#   geom_histogram(bins = 7, fill = "blue", color = "black") +
+#   labs(title = "Valsamoggia Random Distribution",
+#        x = "Number",
+#        y = "Frequency")
 
 ```
 
@@ -1302,7 +1324,6 @@ q_data %>% ggplot(aes(x = C)) +
 # DRI Analysis
 
 We begin by defining DRI calculation functions.
-
 
 ```{r DRI functions, echo=TRUE}
 
@@ -1360,6 +1381,7 @@ dri_calc_v3 <- function(data, v1, v2){
 
 
 ```
+
 
 ```{r DRI}
 
@@ -1709,7 +1731,18 @@ for (case_study in 1:nrow(mini_publics)) {
 
 DRIInd.LLMs <- bind_rows(DRIInd.LLMs)
 
-missing <-setdiff(unique(llm_data$survey), unique(DRIInd.LLMs$survey))
+## add alpha results to DRIInd.LLMs
+LLM_alpha_DRI <- alpha_results %>%
+  select(provider,
+         model,
+         survey,
+         alpha_all,
+         alpha_considerations,
+         alpha_policies) %>%
+  full_join(DRIInd.LLMs, by = c("provider", "model", "survey")) %>%
+  filter(model %in% included_models_summary$model)
+
+missing <- setdiff(unique(llm_data$survey), unique(DRIInd.LLMs$survey))
 
 if (length(missing) > 0) {
   warn(paste("Missing", missing, "from DRIInd.LLMs!"))
@@ -1720,12 +1753,13 @@ DRI.Global <- DRI.Global %>%
   mutate(DRI_DELTA = DRI_POST - DRI_PRE)
 
 # write summary to file
+write_output_csv(LLM_alpha_DRI, "LLM_alpha_DRI.csv")
 write_csv(DRIInd.LLMs, paste(OUTPUT_DIR, "DRIInd_LLMs.csv", sep = "/"))
 write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ```
 
-## DRI Benchmark
+# DRI Benchmark
 
 ```{r benchmark index, fig.width=10,fig.height=6}
 
@@ -1762,7 +1796,6 @@ DRI_benchmark %>%
   scale_y_continuous(limits = c(0, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
 
-plot
 
 ggsave(
   paste(OUTPUT_DIR, "benchmarkV1.png", sep = "/"),
@@ -1785,8 +1818,6 @@ DRIInd.LLMs %>%
   theme(plot.background = element_rect(fill = "white"),
         legend.position = "none") + scale_y_continuous(limits = c(-0.1, 1)) +
   labs(x = "", y = "DRI benchmark") -> plot
-
-plot
 
 ggsave(
   paste(OUTPUT_DIR, "benchmarkV2.png", sep = "/"),
@@ -1819,8 +1850,6 @@ DRI_benchmark %>%
   theme(plot.background = element_rect(fill = "white"),
         legend.position = "none") -> plot # Remove text from color legend
 
-plot
-
 ggsave(
   paste(OUTPUT_DIR, "benchmarkV3.png", sep = "/"),
   plot,
@@ -1830,7 +1859,6 @@ ggsave(
 
 ```
 
-# Francesco's DRI Analysis
 
 ```{r francescos analysis}
 
@@ -1840,406 +1868,452 @@ library(grid)
 library(Metrics)  # For MAE and RMSE
 library(patchwork)
 
-
-DATA_LLM <- read.csv("analysis/DRIInd_LLMs.csv")
+DATA_LLM <- LLM_alpha_DRI
 
 # Convert case and model to factors
 DATA_LLM$case <- as.factor(DATA_LLM$case)
 DATA_LLM$model <- as.factor(DATA_LLM$model)
-#delta DRIPOSTV2-DRI_POST_HUMAN#
-DATA_LLM$delta_post <- DATA_LLM$DRIPostV2 - DATA_LLM$human_only_DRIPost_meanV2
-DATA_LLM$delta_pre <- DATA_LLM$DRIPreV2 - DATA_LLM$human_only_DRIPre_meanV2
-
+#delta DRIPOSTV3-DRI_POST_HUMAN#
+DATA_LLM$delta_post <- DATA_LLM$DRIPostV3 - DATA_LLM$human_only_DRIPost_meanV3
+DATA_LLM$delta_pre <- DATA_LLM$DRIPreV3 - DATA_LLM$human_only_DRIPre_meanV3
 
 #no outlier humans
-
 DATA_LLM_filtered <- DATA_LLM %>%
   filter(!(case %in% c("Thalwil")))
 
 
 # Subset where DRI is low
-DATA_LLM_hiDRI <- subset(DATA_LLM, human_only_DRIPost_meanV2 > 0.1999999)#below randomness
+DATA_LLM_hiDRI <- subset(DATA_LLM, human_only_DRIPost_meanV3 > 0.1999999) #below randomness
 
 # Subset where DRI is high
-DATA_LLM_lowDRI <- subset(DATA_LLM, human_only_DRIPost_meanV2 <0.2)
+DATA_LLM_lowDRI <- subset(DATA_LLM, human_only_DRIPost_meanV3 <0.2)
 
-###descriptive 1####
-LLM_summary <- DATA_LLM %>%
-  group_by(model,case) %>%
-  summarise(
-    DRI_POST = first(DRIPostV2),
-    DRI_PRE = first(DRIPreV2)  )
-print(LLM_summary)
+```
 
-#model
-LLM_summary_2 <- DATA_LLM %>%
-  group_by(model) %>%
-  summarise(
-    DRI_POST = first(DRIPostV2),
-    DRI_PRE = first(DRIPreV2)  )
-print(LLM_summary_2, n=47)
+
+## Comparison PRE and POST DRI by Provider
+```{r dri provider, fig.width=10,fig.height=6}
 
 #provider
-LLM_summary_3 <- DATA_LLM %>%
+DATA_LLM %>%
   group_by(provider) %>%
   summarise(
-    DRI_POST = first(DRIPostV2),
-    DRI_PRE = first(DRIPreV2)  )
-print(LLM_summary_3, n=47)
-
-####DESCRIPTIVE STATS#####
-#coefficient of variation#
-cv_calc <- function(x) {
-  if (mean(x, na.rm = TRUE) == 0) return(NA)  # Avoid division by zero
-  return((sd(x, na.rm = TRUE) / abs(mean(x, na.rm = TRUE))) * 100)  # CV formula
-}
-
-# Compute CV for each model
-cv_results <- DATA_LLM %>%
-  group_by(model) %>%
-  summarise(
-    CV_DRI_POST = cv_calc(DRIPostV2),
-    CV_DRI_PRE = cv_calc(DRIPreV2)
-  )
-
-mean_results <- DATA_LLM %>%
-  group_by(model) %>%
-  summarise(
-    CV_DRI_POST = mean(DRIPostV2),
-    CV_DRI_PRE = mean(DRIPreV2)
-  )
-variance_results <- DATA_LLM %>%
-  group_by(model) %>%
-  summarise(
-    CV_DRI_POST = var(DRIPostV2),
-    CV_DRI_PRE = var(DRIPreV2)
-  )
-
-
-# Print results#
-print(cv_results, n=46)
-print(mean_results,n=46
-)
-print(variance_results, n=46)
-
-#correlation#
-cor.test(DATA_LLM$DRIPostV2, as.numeric(DATA_LLM$human_only_DRIPost_meanV2))
-
-##PLOTS DESCRIPTIVE####
-
-# Density plot of DRI_PRE by model
-pre_dens<-ggplot(LLM_summary, aes(x = DRI_PRE, fill = model)) +
-  geom_density(alpha = 0.6) +  # Add transparency to better see overlaps
-  theme_minimal() +
-  labs(title = "Density Plot of DRI_PRE by Model",
-       x = "DRI_PRE",
-       y = "Density") +
-  theme(legend.position = "none")  # Remove legend
-
-# Density plot for DRI_POST
-post_dens<-ggplot(LLM_summary, aes(x = DRI_POST, fill = model)) +
-  geom_density(alpha = 0.6) +
-  theme_minimal() +
-  labs(title = "Density Plot of DRI_POST by Model",
-       x = "DRI_POST",
-       y = "Density") +
-  theme(legend.position = "none")
-pre_dens+post_dens
-
-#Plot Provider#
-ggplot(LLM_summary_3, aes(x = DRI_PRE, y = DRI_POST, color = provider, label = provider)) +
-  geom_point(size = 4) +  # Plot points
-  geom_text(vjust = -1, hjust = 0.5, size = 3) +  # Add case labels
-  theme_minimal() + 
-  labs(title = "Comparison of DRI_PRE and DRI_POST by Model",
-       x = "DRI_PRE ",
-       y = "DRI_POST",
-       color = "provider") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
-
-
-#plot models#
-ggplot(LLM_summary_2, aes(x = DRI_PRE, y = DRI_POST, color = model, label = model)) +
-  geom_point(size = 4) +  # Plot points
-  geom_text(vjust = -1, hjust = 0.5, size = 3) +  # Add case labels
+    DRI_POST = first(DRIPostV3),
+    DRI_PRE = first(DRIPreV3)) %>%
+ggplot(aes(x = DRI_PRE, y = DRI_POST, color = provider, label = provider)) +
+  geom_point(size = 5) +  # Plot points
+  geom_text(vjust = -1, hjust = 0.5, size = 4) +  # Add case labels
   theme_minimal() + 
   labs(
-    title = "Comparison of DRI_PRE and DRI_POST by Model",
+       x = "DRI_PRE",
+       y = "DRI_POST",
+       color = "provider") +
+  theme(legend.position = "none")
+```
+
+## Comparison PRE and POST DRI by Model
+```{r dri model, fig.width=10,fig.height=6}
+
+DATA_LLM %>%
+  group_by(model) %>%
+  summarise(DRI_POST = first(DRIPostV3),
+            DRI_PRE = first(DRIPreV3)) %>%
+  
+  ggplot(aes(
+    x = DRI_PRE,
+    y = DRI_POST,
+    color = model,
+    label = model
+  )) +
+  geom_point(size = 4) +
+  geom_text(vjust = -1,
+            hjust = 0.5,
+            size = 3) + 
+  theme_minimal() +
+  labs(
     x = "DRI_PRE",
     y = "DRI_POST",
     color = "Model"
   ) +
-  coord_fixed(xlim = c(-0.5, 0.55), ylim = c(-0.5, 0.55)) +  # Enforce same axis scale
+  coord_fixed(xlim = c(-0.6, 0.8), ylim = c(-0.6, 0.8)) + 
   theme(legend.position = "none")
 
-
-##plot case details##
-LLM_summary_long <- LLM_summary %>%
-  pivot_longer(cols = c(DRI_PRE, DRI_POST), names_to = "Metric", values_to = "Score")
-ggplot(LLM_summary_long, aes(x = case, y = Score, fill = Metric)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  facet_wrap(~ model) +
-  theme_minimal() +
-  labs(
-    title = "Comparison of DRI_PRE and DRI_POST by Case and Model",
-    x = NULL,
-    y = "Score",
-    fill = "Metric"
-  ) +
-  theme(axis.text.x = element_blank())
-
-#Heatmap#
-ggplot(LLM_summary_long, aes(x = case, y = model, fill = Score)) +
-  geom_tile() +
-  facet_wrap(~ Metric) +
-  scale_fill_viridis_c() +
-  theme_minimal() +
-  labs(
-    title = "Heatmap of DRI Scores by Case and Model",
-    x = "Case",
-    y = "Model",
-    fill = "Score"
-  ) +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+```
 
 
-#bar plot pre post aggregated#
+## Heatmap of DRI Scores by Case and Model
+```{r dri heat, fig.width=10,fig.height=6}
 
-LLM_summary_long2 <- LLM_summary_2 %>%
-  pivot_longer(cols = c(DRI_PRE, DRI_POST), names_to = "Metric", values_to = "Score") %>%
-  mutate(Metric = factor(Metric, levels = c("DRI_PRE", "DRI_POST")))
-ggplot(LLM_summary_long2, aes(x = case, y = Score, fill = Metric)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  facet_wrap(~ model) +
-  theme_minimal() +
-  labs(
-    title = "Comparison of DRI_PRE and DRI_POST by Case and Model",
-    x = NULL,
-    y = "Score",
-    fill = "Metric"
-  ) +
-  theme(axis.text.x = element_blank())
-
-##LLM cases DRI Boxplots#
-ggplot(DATA_LLM, aes(x = case, y = DRIPostV2)) +
-  geom_boxplot(fill = "lightblue") +
-  geom_hline(yintercept = 0, linetype = "dotted", color = "red", size = 1) +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Boxplot of DRIPost by Case",
-       x = "Case",
-       y = "DRIPost")
-
-############BENCHMARKING###########
-
-# First calculate the normalizing factor: range of human DRI (optional: use sd instead)
-human_range <- max(DATA_LLM$human_only_DRIPost_meanV2, na.rm = TRUE) - min(DATA_LLM$human_only_DRIPost_meanV2, na.rm = TRUE)
-
-
-# Prepare human-level points
-human_points <- DATA_LLM %>%
-  group_by(case) %>%
-  summarise(DRIPostV2 = first(human_only_DRIPost_meanV2)) %>%
-  mutate(Source = "Human Mean")
-
-#Spearman, Delta, NRMSE, MAE#
-llm_scores <- DATA_LLM %>%
-  filter(!is.na(DRIPostV2) & !is.na(human_only_DRIPost_meanV2) & human_only_DRIPost_meanV2 != 0) %>%
-  mutate(
-    delta_post = as.numeric(delta_post),
-    perc_error = abs((DRIPostV2 - human_only_DRIPost_meanV2) / human_only_DRIPost_meanV2)
-  ) %>%
-  group_by(model) %>%
+DATA_LLM %>%
+  group_by(model, case) %>%
   summarise(
-    MAE = mae(DRIPostV2, human_only_DRIPost_meanV2),
-    RMSE = rmse(DRIPostV2, human_only_DRIPost_meanV2),
-    MAPE = mean(perc_error) * 100,  # mean absolute % error
-    NMAE = MAE / human_range,   # normalized MAE by range
-    NRMSE = RMSE / human_range,
-    Spearman = cor(DRIPostV2, human_only_DRIPost_meanV2, method = "spearman"),
-    delta = mean(delta_post, na.rm = TRUE),
+    DRI_PRE = first(DRIPreV3),
+    DRI_POST = first(DRIPostV3),
     .groups = "drop"
   ) %>%
-  arrange(NRMSE)#arrange from the smallest NRMSE -> lower than 0.2 good, lower than 0.1 very good
-
-print(llm_scores, n=46)
-#MAE on average, the model's prediction is XXX units off from the human DRI score
-#RMSE the root-mean-squared error is XXX, meaning larger mistakes are penalized more than small ones
-#MAPE on average, the model's predictions deviate from human scores by XX% of the human value 
-#NMAE the MAE is XX% (XX*100) of the full human DRI range - this is a normalized, scale-free error
-#RMSE is XX% of the total range of human DRI scores - again, showing significant error relative to variability among humans
-#Spearman the model preserves the rank order of human judgments (correlation ??? X.XX)
-#Delta difference in DRI
-
-# Use select() safely with dplyr's namespace
-llm_scores_long <- llm_scores %>%
-  dplyr::select(model,  delta) %>%#MAE, RMSE, NRMSE, Spearman,
-  pivot_longer(cols = -model, names_to = "Metric", values_to = "Score")
-
-#####PLOTS BENCHMARKS####
-#plot delta#
-ggplot(llm_scores_long, aes(x = reorder(model, Score), y = Score, color = Metric)) +
-  geom_point(size = 3) +
-  geom_hline(yintercept = 0, linetype = "dotted", color = "red") +  # vertical line at x=0 (after flip)
-  facet_wrap(~ Metric, scales = "free_y") +
-  coord_flip() +
-  theme_minimal() +
+  # Pivot data
+  pivot_longer(
+    cols = c(DRI_PRE, DRI_POST),
+    names_to = "Metric",
+    values_to = "Score"
+  ) %>%
+  
+  # Plot
+  ggplot(aes(x = case, y = model, fill = Score)) +
+  geom_tile() +
+  facet_wrap( ~ Metric) +
+  scale_fill_viridis_c() +
   labs(
-    title = "delta DRI: LLM Performance Compared to Human-Level DRI_POST",
-    x = "Model",
-    y = "Score",
-    color = "Metric"
-  ) +
+       x = "Case",
+       y = "Model",
+       fill = "Score") +
+  theme_minimal() +
   theme(
-    axis.text.y = element_text(size = 8),
-    legend.position = "none",
-    strip.text = element_text(face = "bold")
+    axis.text.x = element_text(
+      angle = 90,
+      vjust = 0.5,
+      size = 10,
+      hjust = 1
+    ),
+    # Larger, clearer x-axis text
+    axis.text.y = element_text(size = 6, hjust = 1),
+    # Larger, clearer y-axis text
+    axis.title.x = element_text(size = 8, margin = margin(t = 10)),
+    # Larger x-axis title, spaced
+    axis.title.y = element_text(size = 8, margin = margin(r = 10)),
+    # Larger y-axis title, spaced
+    plot.margin = margin(15, 15, 15, 15)                                        # Extra margin around plot
   )
 
-#plot Spearman correlation#
-llm_scores_long <- llm_scores %>%
-  dplyr::select(model,  Spearman) %>%#MAE, RMSE, NRMSE, ,
-  pivot_longer(cols = -model, names_to = "Metric", values_to = "Score")
+```
 
+## Boxplot of LLM DRI Post by Case
+```{r dri post human, fig.width=10,fig.height=6}
 
-ggplot(llm_scores_long, aes(x = reorder(model, Score), y = Score, color = Metric)) +
-  geom_point(size = 3, color = 'blue') +
-  geom_hline(yintercept = 1, linetype = "dotted", color = "red") +  # vertical line at x=0 (after flip)
-  facet_wrap(~ Metric, scales = "free_y") +
-  coord_flip() +
-  theme_minimal() +
-  labs(
-    title = "Spearman correlation: LLM Performance Compared to Human-Level DRI_POST",
-    x = "Model",
-    y = "Score",
-    color = "Metric"
+DATA_LLM %>% 
+  ggplot(aes(x = case, y = DRIPostV3)) +
+  geom_boxplot(fill = "lightblue") +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "red", size = 1) +
+  
+  # Add red diamond with color mapping for legend
+  stat_summary(
+    aes(y = human_only_DRIPost_meanV3, color = "Human DRI mean"),
+    fun = mean,
+    geom = "point",
+    shape = 18,
+    size = 3.5
   ) +
+  
+  # Define color in legend
+  scale_color_manual(
+    name = "",
+    values = c("Human DRI mean" = "red")
+  ) +
+  
+  theme_minimal() +
   theme(
-    axis.text.y = element_text(size = 8),
-    legend.position = "none",
-    strip.text = element_text(face = "bold")
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "top"
+  ) +
+  labs(
+    x = "Case",
+    y = "DRIPost"
   )
+```
 
-#plot NRMSE#
-llm_scores_long <- llm_scores %>%
-  dplyr::select(model,  NRMSE) %>%#MAE, RMSE, NRMSE, ,
-  pivot_longer(cols = -model, names_to = "Metric", values_to = "Score")
+## LLM Performance Metrics Against Human DRI Post-Scores
 
+```{r llm performance}
 
-ggplot(llm_scores_long, aes(x = reorder(model, Score), y = Score, color = Metric)) +
-  geom_point(size = 3, color = 'darkgreen') +
-  geom_hline(yintercept = 0, linetype = "dotted", color = "red") +  # vertical line at x=0 (after flip)
-  facet_wrap(~ Metric, scales = "free_y") +
-  coord_flip() +
-  theme_minimal() +
-  labs(
-    title = "RMSE correlation: LLM Performance Compared to Human-Level DRI_POST",
-    x = "Model",
-    y = "Score",
-    color = "Metric"
-  ) +
-  theme(
-    axis.text.y = element_text(size = 8),
-    legend.position = "none",
-    strip.text = element_text(face = "bold"))
-
-# Ensure Difference column exists
-DATA_LLM <- DATA_LLM %>%
-  mutate(Difference = DRIPostV2 - human_only_DRIPost_meanV2)
-
-# Check if the Difference column is correctly created
-head(DATA_LLM$Difference)
-
-ggplot(DATA_LLM, aes(x = Difference, fill = model)) +
-  geom_density(alpha = 0.3) +  # Density plot
-  geom_vline(xintercept = 0, linetype = "dashed", color = "red") +  # Reference line at 0
-  theme_minimal() +
-  labs(title = "Distribution of Differences (DRIPost - DRI_POST_MEAN_H) per Model",
-       x = "Difference", y = "Density") +
-  facet_wrap(~ model, scales = "fixed") +  # Ensure all models have the same axis
-  xlim(-3, 1) +  # Set x-axis limits
-  ylim(0, 2.8
-  ) +
-  theme(legend.position="none")  # Set y-axis limits
-
-
-#####Benchmarking without HUMAN DRI OUTLIERS####
-
-# First calculate the normalizing factor: range of human DRI (optional: use sd instead)
-human_range_out <- max(DATA_LLM_hiDRI$human_only_DRIPost_meanV2, na.rm = TRUE) - min(DATA_LLM_hiDRI$human_only_DRIPost_meanV2, na.rm = TRUE)
-human_range_out
-
-
-llm_scores_out <- DATA_LLM_hiDRI %>%
-  filter(!is.na(DRIPostV2) & !is.na(human_only_DRIPost_meanV2) & human_only_DRIPost_meanV2 != 0) %>%
+llm_scores <- DATA_LLM %>%
+  filter(
+    !is.na(DRIPostV3) &
+      !is.na(human_only_DRIPost_meanV3) &
+      human_only_DRIPost_meanV3 != 0
+  ) %>%
   mutate(
     delta_post = as.numeric(delta_post),
-    perc_error = abs((DRIPostV2 - human_only_DRIPost_meanV2) / human_only_DRIPost_meanV2)
+    perc_error = abs((DRIPostV3 - human_only_DRIPost_meanV3) / human_only_DRIPost_meanV3
+    )
   ) %>%
   group_by(model) %>%
   summarise(
-    MAE = mae(DRIPostV2, human_only_DRIPost_meanV2),
-    RMSE = rmse(DRIPostV2, human_only_DRIPost_meanV2),
-    MAPE = mean(perc_error) * 100,  # mean absolute % error
-    NMAE = MAE / human_range_out,   # normalized MAE by range
-    NRMSE = RMSE / human_range_out,
-    Spearman = cor(DRIPostV2, human_only_DRIPost_meanV2, method = "spearman"),
+    MAE = mae(DRIPostV3, human_only_DRIPost_meanV3),
+    RMSE = rmse(DRIPostV3, human_only_DRIPost_meanV3),
+    MAPE = mean(perc_error) * 100,
+    # Mean Absolute Percentage Error
+    human_range = max(human_only_DRIPost_meanV3) - min(human_only_DRIPost_meanV3),
+    NMAE = MAE / human_range,
+    NRMSE = RMSE / human_range,
+    Spearman = cor(DRIPostV3, human_only_DRIPost_meanV3, method = "spearman"),
     delta = mean(delta_post, na.rm = TRUE),
     .groups = "drop"
   ) %>%
   arrange(NRMSE)
 
-print(llm_scores_out, n=46)
-
-
-
-######LLM score normalization####
-# Define normalization functions
-normalize_lower_better <- function(x) {
-  if (max(x) == min(x)) {
-    rep(1, length(x))  # All values are the same, so all are best
-  } else {
-    (max(x) - x) / (max(x) - min(x))
-  }
-}
-
-normalize_higher_better <- function(x) {
-  if (max(x) == min(x)) {
-    rep(1, length(x))  # All values are the same, so all are best
-  } else {
-    (x - min(x)) / (max(x) - min(x))
-  }
-}
-
-# Compute normalized scores
-llm_scores$normalized_NRMSE <- normalize_lower_better(llm_scores$NRMSE)
-llm_scores$normalized_Spearman <- normalize_higher_better(llm_scores$Spearman)
-llm_scores$normalized_Delta <- normalize_lower_better(llm_scores$delta)
-
-# Compute aggregate index
-llm_scores$aggregate_index <- rowMeans(llm_scores[, c("normalized_NRMSE", "normalized_Spearman", "normalized_Delta")])
-
-# Optionally, sort and display
-llm_scores_sorted <- llm_scores[order(llm_scores$aggregate_index, decreasing = TRUE), ]
-print(llm_scores_sorted, n=49)
-
-
-######wilcoxon####
-# Compute effect size for each model
-wilcox_results <- DATA_LLM %>%
-  group_by(model) %>%
-  summarise(
-    W = wilcox.test(DRIPostV2, human_only_DRIPost_meanV2, paired = FALSE, alternative = 'less')$statistic,
-    p_value = wilcox.test(DRIPostV2, human_only_DRIPost_meanV2, paired = FALSE, alternative = 'less')$p.value,
-    effect_size_r = W / sqrt(n())  # Effect size calculation
-  ) %>%
-  arrange(p_value)  # Sort by significance level
-
-# Print results with effect size
-print(wilcox_results, n=47)
+kable(llm_scores, caption = "LLM Performance Metrics Against Human DRI Post-Scores", digits = 3, col.names = c(
+    model = "Model",
+    MAE = "MAE",
+    RMSE = "RMSE",
+    MAPE = "MAPE (%)",
+    human_range = "Human Range",
+    NMAE = "NMAE",
+    NRMSE = "NRMSE",
+    Spearman = "Spearman",
+    delta = "Delta"
+  ), label = "LLM_metrics")
 
 ```
 
+## PRE vs. POST Aggregate Scores Correlation Across LLMs
+
+
+
+```{r llm metrics normalize, fig.width=10,fig.height=6}
+
+######LLM score normalization####
+llm_scorespre <- DATA_LLM %>%
+  filter(!is.na(DRIPreV3) & !is.na(human_only_DRIPre_meanV3) & human_only_DRIPre_meanV3 != 0) %>%
+  mutate(
+    delta_post = as.numeric(delta_pre),
+    perc_error = abs((DRIPreV3 - human_only_DRIPre_meanV3) / human_only_DRIPre_meanV3)
+  ) %>%
+  group_by(model) %>%
+  summarise(
+    MAE = mae(DRIPreV3, human_only_DRIPre_meanV3),
+    RMSE = rmse(DRIPreV3, human_only_DRIPre_meanV3),
+    MAPE = mean(perc_error) * 100,  # Mean Absolute Percentage Error
+    human_range = max(human_only_DRIPre_meanV3) - min(human_only_DRIPre_meanV3),
+    NMAE = MAE / human_range,
+    NRMSE = RMSE / human_range,
+    Spearman = cor(DRIPreV3, human_only_DRIPre_meanV3, method = "spearman"),
+    delta = mean(delta_pre, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  arrange(NRMSE)
+
+###llm normalize against human whete human RNRMSE = 0, delta = 0, Spearman = 1
+# Lower is better, human ideal = 0
+
+# Lower is better, human ideal = 0, min = 0, max = 1 (values > 1 = 0)
+normalize_lower_better_human_ref <- function(x, human_value = 0, min_value = 0, max_value = 1) {
+  # Clip values to min range, set > max_value to 0 later
+  x <- pmax(min_value, x)
+  # Normalize: 1 at human_value (0), 0 at max_value (1) or beyond
+  score <- 1 - (x - human_value) / (max_value - human_value)
+  score[x > max_value] <- 0  # Anything above 1 gets 0
+  score
+}
+
+# Higher is better, human ideal = 1, min = -1, max = 1
+normalize_higher_better_human <- function(x, human_value = 1, min_value = -1, max_value = 1) {
+  # Clip values to theoretical range [-1, 1]
+  x <- pmax(min_value, pmin(max_value, x))
+  # Normalize: 1 at human_value (1), 0 at min_value (-1)
+  (x - min_value) / (human_value - min_value)
+}
+
+
+normalize_delta_beyond_human <- function(x, human_value = 0) {
+  dev <- abs(x - human_value)
+  baseline_dev <- max(dev, na.rm = TRUE)
+  score <- 1 - dev / baseline_dev
+  # Adjust for values beyond human (e.g., positive delta)
+  score[x > human_value] <- 1 + (x[x > human_value] - human_value) / baseline_dev
+  score[x < -human_value] <- 1 - (abs(x[x < -human_value]) - human_value) / baseline_dev
+  score
+}
+
+
+# Then apply:
+
+human_delta <- 0
+
+
+# Apply to LLM scores
+llm_scores$normalized_NRMSE <- normalize_lower_better_human_ref(llm_scores$NRMSE, human_value = 0)
+llm_scores$normalized_Spearman <- normalize_higher_better_human(llm_scores$Spearman, human_value = 1)
+llm_scores$normalized_Delta <- normalize_delta_beyond_human(llm_scores$delta, human_value = human_delta)
+# lower delta is better
+
+
+llm_scorespre$normalized_NRMSE <- normalize_lower_better_human_ref(llm_scorespre$NRMSE, human_value = 0)
+llm_scorespre$normalized_Spearman <- normalize_higher_better_human(llm_scorespre$Spearman, human_value = 1)
+llm_scorespre$normalized_Delta <- normalize_delta_beyond_human(llm_scorespre$delta, human_value = human_delta) 
+# Compute aggregate score (closer to 1 = more human-like)
+llm_scores$aggregate_index <- rowMeans(llm_scores[, c("normalized_NRMSE", "normalized_Spearman", "normalized_Delta")], na.rm = TRUE)
+
+llm_scorespre$aggregate_index <- rowMeans(llm_scorespre[, c("normalized_NRMSE", "normalized_Spearman", "normalized_Delta")], na.rm = TRUE)
+
+# Sort and display
+llm_scores_sorted <- llm_scores[order(llm_scores$aggregate_index, decreasing = TRUE), ]
+
+llm_scores_sortedpre <- llm_scorespre[order(llm_scorespre$aggregate_index, decreasing = TRUE), ]
+
+
+
+#  Combine PRE and POST data
+combined_scores <- llm_scores_sorted %>%
+  select(model, aggregate_index) %>%
+  rename(POST = aggregate_index) %>%
+  left_join(
+    llm_scores_sortedpre %>%
+      select(model, aggregate_index) %>%
+      rename(PRE = aggregate_index),
+    by = "model"
+  )
+
+# KEEP INTO THE REPORT Create XY scatter plot without legend
+ggplot(combined_scores, aes(x = PRE, y = POST, color = model)) +
+  # Points for each model
+  geom_point(size = 3) +
+  # Model names as labels
+  geom_text(aes(label = model), vjust = -1, hjust = 0.5, size = 3) +
+  # Human benchmark lines
+  geom_vline(xintercept = 1, linetype = "dashed", color = "black", size = 0.5, alpha = 0.7) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "black", size = 0.5, alpha = 0.7) +
+  # Customize
+  labs(
+       x = "PRE Aggregate Index (Human = 1)",
+       y = "POST Aggregate Index (Human = 1)") +
+  theme_minimal() +
+  # Remove legend
+  theme(legend.position = "none") +
+  # Adjust axis limits for visibility
+  scale_x_continuous(limits = c(min(combined_scores$PRE, na.rm = TRUE) - 0.1, max(combined_scores$PRE, na.rm = TRUE) + 0.1)) +
+  scale_y_continuous(limits = c(min(combined_scores$POST, na.rm = TRUE) - 0.1, max(combined_scores$POST, na.rm = TRUE) + 0.1)) +
+  # Diagonal reference line (PRE = POST)
+  geom_abline(slope = 1, intercept = 0, linetype = "dotted", color = "grey", size = 0.5)
+
+
+
+
+```
+
+## Human-Normalized Performance
+
+```{r normalized, fig.width=10,fig.height=6}
+
+# Reshape to long format
+
+  plot_long <- llm_scores_sorted %>%
+  select(model, normalized_NRMSE, normalized_Spearman, normalized_Delta) %>%
+  pivot_longer(
+    cols = starts_with("normalized_"),
+    names_to = "Metric",
+    values_to = "Score"
+  ) %>%
+  mutate(
+    Metric = recode(Metric,
+                    normalized_NRMSE = "NRMSE (Normalized)",
+                    normalized_Spearman = "Spearman (Normalized)",
+                    normalized_Delta = "Delta (Normalized)"),
+    model = factor(model, levels = rev(llm_scores_sorted$model))  # maintain order
+  )
+
+###KEEP INTO THE REPORT#####
+ggplot(plot_long, aes(x = model, y = Score, color = Metric, group = Metric)) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2) +
+  # Human benchmark line (red dotted)
+  geom_hline(yintercept = 1, linetype = "dotted", color = "red", linewidth = 1) +
+  labs(
+    subtitle = "Red dotted line = Human benchmark (Normalized Score for each indicators = 1)",
+    x = "Model",
+    y = "Normalized Score (0-1 scale)",
+    color = "Metric"
+  ) +
+  scale_color_manual(values = c(
+    "NRMSE (Normalized)" = "#FF6666",
+    "Spearman (Normalized)" = "#66CC66",
+    "Delta (Normalized)" = "#3399FF"
+  )) +
+  theme_minimal(base_size = 13) +
+  theme(
+    plot.title = element_text(size = 16, face = "bold", hjust = 0.5),
+    plot.subtitle = element_text(size = 12, hjust = 0.5),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10),
+    axis.text.y = element_text(face = "bold"),
+    legend.position = "top"
+  ) +
+  ylim(0, 1.05)
+```
+
+## LLM Performance by Reasoner Classification
+```{r reasoner, fig.width=10,fig.height=6}
+
+##FIXME: add this to model info
+llm_scores <- llm_scores %>%
+  mutate(
+    # High-level architecture
+    architecture_type = case_when(
+      grepl("command", model, ignore.case = TRUE) ~ "Instruction-tuned Dense Transformer",
+      grepl("gpt-4o|gpt-4o-mini", model, ignore.case = TRUE) ~ "Multimodal Dense Transformer",
+      grepl("gpt-4|gpt-3.5", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("claude-3", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("gemini|gemini-1.5|gemini-2.0", model, ignore.case = TRUE) ~ "Multimodal Hybrid",
+      grepl("mixtral|open-mixtral", model, ignore.case = TRUE) ~ "Mixture of Experts (MoE)",
+      grepl("mistral-large|mistral-small|open-mistral|ministral", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("gemma", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("llama3|llama", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("phi", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("qwen1.5|qwen", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("qwen2", model, ignore.case = TRUE) ~ "Mixture of Experts (MoE)",
+      grepl("deepseek-v2", model, ignore.case = TRUE) ~ "Mixture of Experts (MoE)",
+      grepl("deepseek", model, ignore.case = TRUE) ~ "Dense Transformer",
+      grepl("o1", model, ignore.case = TRUE) ~ "Dense Transformer",  # o1 known, reasoner
+      grepl("o3", model, ignore.case = TRUE) ~ "Unknown",          # Speculative
+      grepl("qwq", model, ignore.case = TRUE) ~ "Unknown",         # Typo or placeholder
+      TRUE ~ "Unknown"
+    ),
+    
+    # Neural design
+    neural_architecture = case_when(
+      grepl("mixtral|open-mixtral|qwen2|deepseek-v2", model, ignore.case = TRUE) ~ "Sparse MoE Decoder",
+      grepl("gpt-4o|gpt-4o-mini|gemini|gemini-1.5|gemini-2.0", model, ignore.case = TRUE) ~ "Multimodal Decoder",
+      grepl("gpt|claude|command|llama|phi|mistral|gemma|qwen|deepseek|o1", model, ignore.case = TRUE) ~ "Dense Decoder-only Transformer",
+      grepl("o3|qwq", model, ignore.case = TRUE) ~ "Other/Unknown",
+      TRUE ~ "Other/Unknown"
+    ),
+    
+    # Reasoner classification
+    is_reasoner = case_when(
+      grepl("o1", model, ignore.case = TRUE) ~ TRUE,           # OpenAI o1: Explicit reasoner
+      grepl("claude-3", model, ignore.case = TRUE) ~ TRUE,     # Claude 3: Strong reasoner
+      grepl("gpt-4o|gpt-4", model, ignore.case = TRUE) ~ TRUE, # GPT-4 variants: Advanced reasoning
+      grepl("mistral-large", model, ignore.case = TRUE) ~ TRUE,# Mistral Large: Some reasoning
+      TRUE ~ FALSE                                             # Others: General-purpose
+    )
+  )
+
+
+# Run one-tailed Wilcoxon test
+wilcox_res <- wilcox.test(
+  aggregate_index ~ is_reasoner,
+  data = llm_scores,
+  alternative = "less"  # or "less", depending on your hypothesis
+)
+
+# Format p-value for annotation
+p_val <- wilcox_res$p.value
+p_label <- paste0("Wilcoxon test (one-tailed)\np = ", signif(p_val, 3))
+ggplot(llm_scores, aes(x = is_reasoner, y = aggregate_index, fill = is_reasoner)) +
+  geom_boxplot(show.legend = TRUE, alpha = 0.8) +
+  geom_jitter(width = 0.2, alpha = 0.6) +
+  geom_hline(yintercept = 1.2, linetype = "dotted", color = "red", linewidth = 1) +
+  annotate("text", 
+           x = 1.5,  # Adjust for better placement if needed
+           y = max(llm_scores$aggregate_index) * 1.05,
+           label = p_label,
+           size = 4.2, hjust = 0.5) +
+  labs(
+    subtitle = "Aggregate Index (Higher = More Human-like; Red line = Human level)",
+    x = "Reasoning LLM architecture",
+    y = "Aggregate Performance Index"
+  ) +
+  theme_minimal(base_size = 13) +
+  coord_flip()
+```
 
 
 ### References

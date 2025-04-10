@@ -1,3 +1,1 @@
 provider,model,completions_total,completions_left,time_left_min,cost_left
-openai,o1,100,41,77.75090909090909,16.489454545454546
-openai,gpt-4.5-preview,200,NA,NA,NA
