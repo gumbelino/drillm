@@ -1,8 +1,7 @@
-import anthropic
+import cohere
 
-client = anthropic.Anthropic()
+co = cohere.Client()
+response = co.models.list()
 
-models = client.models.list()
-
-for model in models:
-    print(model.id)
+for model in response.models:
+    print(model.name)
