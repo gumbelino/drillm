@@ -75,15 +75,15 @@ remove_NA_cols <- function(data) {
 
 # Large-Language Models (LLMs) Preview
 
-```{r models}
+```{r models, warning=FALSE}
 
 # get models info
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
 models %>%
-  select(provider, model, type, version) %>% 
+  select(provider, model, arch, version) %>% 
   arrange(provider, model) %>%
-  kable(caption = "LLMs", row.names = TRUE)
+  kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Architecture", "Version"))
 
 ```
 
@@ -91,7 +91,7 @@ We started the analysis with `r nrow(models)` models, but some models were dropp
 
 # Surveys
 
-```{r surveys}
+```{r surveys, warning=FALSE}
 
 # read the sheet names of the Excel file
 survey_names <- excel_sheets(SURVEY_FILE)
@@ -302,7 +302,7 @@ We collected a total of `r nrow(llm_data)` valid LLM responses across `r nrow(su
 
 ## Cost
 
-```{r cost analysis, results = 'asis'}
+```{r cost analysis, results = 'asis', warning=FALSE}
 
 # calculate costs in tokens
 cost_tokens <- llm_data %>%
@@ -507,14 +507,14 @@ write_csv(data_left, paste(OUTPUT_DIR, "data_left.csv", sep = "/"))
 
 ## Excluded Models
 
-```{r model info, results = 'asis'}
+```{r model info, results = 'asis', warning=FALSE}
 
 included_models_summary <- models %>%
   filter(included, done) %>%
   select(
     provider,
     model,
-    type,
+    arch,
     api,
     done,
     cost_per_completion,
@@ -909,7 +909,7 @@ write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 
 ### Check alpha results per model
 
-```{r}
+```{r, warning=FALSE}
 
 # Aggregate alpha_results by model and calculate summary statistics
 alpha_summary <- alpha_results %>%
@@ -1123,8 +1123,8 @@ elapsed_time <- difftime(time_end, time_start, units = "auto")
 write_output_csv(llm_data_aggregated, AGGREGATION_RESULTS_FILE)
 
 ```
-We aggregated `r nrow(llm_data)` LLM responses into `r nrow(llm_data_aggregated)` responses: 1 response per model per survey.
 
+We aggregated `r nrow(llm_data)` LLM responses into `r nrow(llm_data_aggregated)` responses: 1 response per model per survey.
 
 ```{r aggr debugging, , results = 'asis'}
 
@@ -1137,7 +1137,7 @@ for (i in 1:nrow(llm_data_aggregated)) {
   values <- pivot_longer(considerations, cols = everything(), values_to = "values")
   uniques <- unique(values$values)
   if (length(uniques) == 1) {
-    cat("WARNING! All considerations of", paste(provider, model, survey, sep="/"), "were aggregated as", uniques, "\n")
+    cat("WARNING! All considerations of", paste(provider, model, survey, sep="/"), "were aggregated as", uniques, "\n\n")
   }
 }
 
@@ -1146,7 +1146,7 @@ for (i in 1:nrow(llm_data_aggregated)) {
 
 # Human Data
 
-```{r human data}
+```{r human data, warning=FALSE}
 
 # Import the CSV file into a data frame
 human_data <- read_csv(HUMAN_DATA_FILE, show_col_types = FALSE)
@@ -1292,7 +1292,7 @@ rand_data <- get_random_data(survey_names)
 
 ```
 
-Then, we generated `r nrow(rand_data)` random reseponses for each survey. 
+Then, we generated `r nrow(rand_data)` random reseponses for each survey.
 
 ```{r q-method}
 
@@ -1320,12 +1320,11 @@ colnames(q_data) <- "C"
 
 ```
 
-
 # DRI Analysis
 
 We begin by defining DRI calculation functions.
 
-```{r DRI functions, echo=TRUE}
+```{r DRI functions, echo=TRUE, warning=FALSE}
 
 # original DRI formula
 dri_calc <- function(data, v1, v2) {
@@ -1362,15 +1361,14 @@ dri_calc_v2 <- function(data, v1, v2) {
   return(dri)
 }
 
-# updated DRI formula: penalizes both negligible positive and negative correlations in a scalar way.
-dri_calc_v3 <- function(data, v1, v2){
+# updated DRI formula: penalizes both negligible
+# positive and negative correlations in a scalar way.
+dri_calc_v3 <- function(data, v1, v2) {
   d <- abs((data[[v1]] - data[[v2]]) / sqrt(2))
   lambda <- 1 - (sqrt(2) / 2)
   
   # Scalar penalty based on strength of signal (|r| and |q|)
-  penalty <- ifelse(pmax(abs(data[[v1]]), abs(data[[v2]])) <= 0.2,
-                    pmax(abs(data[[v1]]), abs(data[[v2]])) / 0.2,
-                    1)
+  penalty <- ifelse(pmax(abs(data[[v1]]), abs(data[[v2]])) <= 0.2, pmax(abs(data[[v1]]), abs(data[[v2]])) / 0.2, 1)
   
   consistency <- (1 - d) * penalty
   avg_consistency <- mean(consistency)
@@ -1381,7 +1379,6 @@ dri_calc_v3 <- function(data, v1, v2){
 
 
 ```
-
 
 ```{r DRI}
 
@@ -1761,7 +1758,7 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 # DRI Benchmark
 
-```{r benchmark index, fig.width=10,fig.height=6}
+```{r benchmark index, fig.width=10,fig.height=6, warning=FALSE}
 
 DRI_benchmark <- DRIInd.LLMs %>%
   filter(model %in% included_models_summary$model) %>%
@@ -1859,7 +1856,6 @@ ggsave(
 
 ```
 
-
 ```{r francescos analysis}
 
 
@@ -1890,8 +1886,8 @@ DATA_LLM_lowDRI <- subset(DATA_LLM, human_only_DRIPost_meanV3 <0.2)
 
 ```
 
-
 ## Comparison PRE and POST DRI by Provider
+
 ```{r dri provider, fig.width=10,fig.height=6}
 
 #provider
@@ -1912,6 +1908,7 @@ ggplot(aes(x = DRI_PRE, y = DRI_POST, color = provider, label = provider)) +
 ```
 
 ## Comparison PRE and POST DRI by Model
+
 ```{r dri model, fig.width=10,fig.height=6}
 
 DATA_LLM %>%
@@ -1940,8 +1937,8 @@ DATA_LLM %>%
 
 ```
 
-
 ## Heatmap of DRI Scores by Case and Model
+
 ```{r dri heat, fig.width=10,fig.height=6}
 
 DATA_LLM %>%
@@ -1988,12 +1985,13 @@ DATA_LLM %>%
 ```
 
 ## Boxplot of LLM DRI Post by Case
-```{r dri post human, fig.width=10,fig.height=6}
+
+```{r dri post human, fig.width=10,fig.height=6, warning=FALSE}
 
 DATA_LLM %>% 
   ggplot(aes(x = case, y = DRIPostV3)) +
   geom_boxplot(fill = "lightblue") +
-  geom_hline(yintercept = 0, linetype = "dotted", color = "red", size = 1) +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "red", linewidth = 1) +
   
   # Add red diamond with color mapping for legend
   stat_summary(
@@ -2023,7 +2021,7 @@ DATA_LLM %>%
 
 ## LLM Performance Metrics Against Human DRI Post-Scores
 
-```{r llm performance}
+```{r llm performance, warning=FALSE}
 
 llm_scores <- DATA_LLM %>%
   filter(
@@ -2067,9 +2065,7 @@ kable(llm_scores, caption = "LLM Performance Metrics Against Human DRI Post-Scor
 
 ## PRE vs. POST Aggregate Scores Correlation Across LLMs
 
-
-
-```{r llm metrics normalize, fig.width=10,fig.height=6}
+```{r llm metrics normalize, fig.width=10,fig.height=6, warning=FALSE}
 
 ######LLM score normalization####
 llm_scorespre <- DATA_LLM %>%
@@ -2240,6 +2236,11 @@ ggplot(plot_long, aes(x = model, y = Score, color = Metric, group = Metric)) +
 ```
 
 ## LLM Performance by Reasoner Classification
+
+Architecture types:
+
+-   Transformer-based models [@vaswani2017].
+
 ```{r reasoner, fig.width=10,fig.height=6}
 
 ##FIXME: add this to model info
@@ -2314,6 +2315,5 @@ ggplot(llm_scores, aes(x = is_reasoner, y = aggregate_index, fill = is_reasoner)
   theme_minimal(base_size = 13) +
   coord_flip()
 ```
-
 
 ### References

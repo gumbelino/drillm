@@ -29,6 +29,8 @@ T_MODELS = {
     "llama3.3:70b": "meta-llama/Llama-3.3-70B-Instruct-Turbo-Free",
     "llama2:13b": "meta-llama/Llama-2-13b-chat-hf",
     "llama2:70b": "meta-llama/Llama-2-70b-hf",
+    "llama4-scout": "meta-llama/Llama-4-Scout-17B-16E-Instruct",
+    "llama4-maverick": "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8",
 }
 
 
