@@ -81,9 +81,9 @@ remove_NA_cols <- function(data) {
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
 models %>%
-  select(provider, model, arch, version) %>% 
+  select(provider, model, series, num_parameters, context_length, arch, version) %>% 
   arrange(provider, model) %>%
-  kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Architecture", "Version"))
+  kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Series", "Parameters (B)", "Context Length", "Architecture", "Version"))
 
 ```
 
@@ -514,6 +514,10 @@ included_models_summary <- models %>%
   select(
     provider,
     model,
+    series,
+    version,
+    num_parameters,
+    context_length,
     arch,
     api,
     done,
@@ -2237,9 +2241,13 @@ ggplot(plot_long, aes(x = model, y = Score, color = Metric, group = Metric)) +
 
 ## LLM Performance by Reasoner Classification
 
+
 Architecture types:
 
 -   Transformer-based models [@vaswani2017].
+
+
+Some models are considered "reasoning" models, like , reason using chain-of-thought (CoT) -- this is not a difference in architecture, but in how 
 
 ```{r reasoner, fig.width=10,fig.height=6}
 
