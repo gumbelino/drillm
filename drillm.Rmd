@@ -534,11 +534,11 @@ included_models_summary <- models %>%
 
 write_output_csv(included_models_summary, "models_summary.csv")
 
-excluded_models <- models %>% filter(!included) %>% select(provider, model, reason)
+excluded_models <- models %>% filter(!included) %>% select(provider, model, excluded_reason)
 
 cat("\n", nrow(excluded_models), "out of", nrow(models), "were excluded from the analysis for the following reasons.\n\n")
 
-kable(excluded_models %>% arrange(provider, model), caption = "Excluded models and reasons")
+kable(excluded_models %>% arrange(provider, model), caption = "Excluded models and reasons", col.names = c("Provider", "Model", "Reason for exclusion"))
 
 
 
@@ -1188,7 +1188,6 @@ We collected `r nrow(human_data)` human responses across `r length(unique(human_
 
 ```{r generate random}
  
-
 get_random_data <- function(sheet_names, file_path=SURVEY_FILE) {
   
   rand <- list()
@@ -1296,7 +1295,7 @@ rand_data <- get_random_data(survey_names)
 
 ```
 
-Then, we generated `r nrow(rand_data)` random reseponses for each survey.
+Then, we generated `r nrow(rand_data)` random reseponses, one for each survey.
 
 ```{r q-method}
 
@@ -1761,6 +1760,13 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 ```
 
 # DRI Benchmark
+
+```{r alpha-version correlation}
+
+
+
+```
+
 
 ```{r benchmark index, fig.width=10,fig.height=6, warning=FALSE}
 
