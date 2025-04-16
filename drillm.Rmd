@@ -1824,15 +1824,15 @@ DRIInd.ALL <- DRIInd.Rands %>% mutate(source = "random") %>%
   select(source, survey, case, DRIPreV3, DRIPostV3) %>%
   bind_rows(DRIInd.ALL)
 
-# DRIInd.ALL <- DRI.Global %>%
-#   filter(type == "human_only") %>%
-#   mutate(
-#     source = "human_only_mean", 
-#     DRIPreV3 = DRI_PRE_V3,
-#     DRIPostV3 = DRI_POST_V3
-#   ) %>%
-#   select(source, survey, case, DRIPreV3, DRIPostV3) %>%
-#   bind_rows(DRIInd.ALL)
+DRIInd.ALL <- DRI.Global %>%
+  filter(type == "human_only") %>%
+  mutate(
+    source = "human_only_mean",
+    DRIPreV3 = DRI_PRE_V3,
+    DRIPostV3 = DRI_POST_V3
+  ) %>%
+  select(source, survey, case, DRIPreV3, DRIPostV3) %>%
+  bind_rows(DRIInd.ALL)
 
 # clean data
 DRIInd.ALL <- DRIInd.ALL %>%
@@ -1841,6 +1841,9 @@ DRIInd.ALL <- DRIInd.ALL %>%
     survey = as.factor(survey),
     case = as.factor(case)
   )
+
+
+write_output_csv(DRIInd.ALL, "DRIInd_all.csv")
 
 df <- DRIInd.ALL
 
