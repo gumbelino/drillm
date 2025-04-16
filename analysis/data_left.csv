@@ -1,2 +1,2 @@
 provider,model,completions_total,completions_left,time_left_min,cost_left
-google,gemini-2.5-pro-preview-03-25,600,240,238.05681818181816,13.997727272727271
+google,gemini-2.5-pro-preview-03-25,600,118,117.51397540983606,6.78983606557377

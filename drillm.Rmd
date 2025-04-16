@@ -13,14 +13,14 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 
-library(knitr)
 library(reticulate)
 library(tidyverse)
 library(scales)
 library(readxl)
-library(rlang)
 library(psych)
 library(boot)
+library(car)
+library(dunn.test)
 library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
 
 SURVEY_FILE <- "data/surveys_v5.xlsx"
@@ -83,7 +83,7 @@ models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 models %>%
   select(provider, model, series, num_parameters, context_length, arch, version) %>% 
   arrange(provider, model) %>%
-  kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Series", "Parameters (B)", "Context Length", "Architecture", "Version"))
+  knitr::kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Series", "Parameters (B)", "Context Length", "Architecture", "Version"))
 
 ```
 
@@ -158,7 +158,7 @@ surveys <- get_surveys(survey_names)
 file_types <- c("considerations", "policies", "reasons")
 
 surveys %>% arrange(survey) %>%
-  kable(caption = "Surveys", row.names = TRUE)
+  knitr::kable(caption = "Surveys", row.names = TRUE)
 
 ```
 
@@ -273,8 +273,6 @@ llm_surveys <- llm_data %>%
   group_by(provider, model, survey) %>%
   summarise(
     N = n(),
-    mean_input_tokens = as.integer(mean(input_tokens)),
-    mean_output_tokens = as.integer(mean(output_tokens)),
     .groups = 'drop'
   )
 
@@ -361,7 +359,7 @@ api_costs %>%
   filter(!is.na(api)) %>%
   select(api, num_models, credits_paid) %>%
   arrange(desc(credits_paid)) %>%
-  kable(caption = "Costs by API")
+  knitr::kable(caption = "Costs by API")
 
 ```
 
@@ -530,7 +528,8 @@ included_models_summary <- models %>%
   )
 
 # only use included models for analysis
-#llm_data <- llm_data %>% filter(model %in% included_models_summary$model)
+llm_data <- llm_data %>% filter(model %in% included_models_summary$model)
+llm_surveys <- llm_surveys %>% filter(model %in% included_models_summary$model)
 
 write_output_csv(included_models_summary, "models_summary.csv")
 
@@ -538,7 +537,7 @@ excluded_models <- models %>% filter(!included) %>% select(provider, model, excl
 
 cat("\n", nrow(excluded_models), "out of", nrow(models), "were excluded from the analysis for the following reasons.\n\n")
 
-kable(excluded_models %>% arrange(provider, model), caption = "Excluded models and reasons", col.names = c("Provider", "Model", "Reason for exclusion"))
+knitr::kable(excluded_models %>% arrange(provider, model), caption = "Excluded models and reasons", col.names = c("Provider", "Model", "Reason for exclusion"))
 
 
 
@@ -933,14 +932,13 @@ alpha_summary <- alpha_results %>%
     .groups = "drop"
   )
 
-
 alpha_summary %>%
   mutate(considerations = round(mean_alpha_considerations,2),
          policies = round(mean_alpha_policies,2),
          all = round(mean_alpha_all, 2)) %>%
   select(provider, model, N, all, considerations, policies) %>%
   arrange(all) %>%
-  kable(caption = "Alpha summary across models, mean across surveys", row.names = TRUE)
+  knitr::kable(caption = "Alpha summary across models, mean across surveys", row.names = TRUE)
 
 ```
 
@@ -1157,8 +1155,8 @@ human_data <- read_csv(HUMAN_DATA_FILE, show_col_types = FALSE)
 
 # Rename columns to be consistent with LLM data
 human_data <- human_data %>%
-  rename_with( ~ sub("^U0|^U", "C", .), starts_with("U", ignore.case = FALSE)) %>%
-  rename_with( ~ sub("^Pref", "P", .), starts_with("Pref", ignore.case = FALSE)) %>%
+  rename_with( ~ sub("^U0|^U", "C", .), U01:U50) %>%
+  rename_with( ~ sub("^Pref", "P", .), Pref1:Pref10) %>%
   filter(Study != "Sydney CC Adaptation")
 
 # Read the mapping file
@@ -1169,17 +1167,19 @@ human_data <- human_data %>%
   left_join(study_survey_map, by = c("Study" = "study")) %>%
   relocate(survey, .after = "Study")
 
-
-
-
+# print human data
 human_data %>%
   group_by(Case, survey) %>%
   summarise(
-    participants = n() / 2,  # pre/post deliberation
+    participants = n() / 2,  # account for pre/post deliberation
     .groups = "drop"
   ) %>%
   arrange(survey) %>%
-  kable(caption = "Number of participants in each case study", row.names = TRUE)
+  knitr::kable(
+    caption = "Number of participants in each case study",
+    row.names = TRUE,
+    col.names = c("Case", "Survey", "Participants")
+    )
 ```
 
 We collected `r nrow(human_data)` human responses across `r length(unique(human_data$Case))` case studies, including pre-post deliberation responses.
@@ -1268,7 +1268,7 @@ get_random_data <- function(sheet_names, file_path=SURVEY_FILE) {
     #cat("Valid policies:", p_valid, "\n")
     
     if (!c_valid || !p_valid) {
-      warn(paste("Random generation produced invalid data for", sheet_name))
+      warning(paste("Random generation produced invalid data for", sheet_name))
     }
     
     # Combine the two datasets into one data frame
@@ -1299,7 +1299,10 @@ Then, we generated `r nrow(rand_data)` random reseponses, one for each survey.
 
 ```{r q-method}
 
-q_data <- data.frame(rand_data %>% filter(survey == "fremantle") %>% select(C1:C50) %>% t)
+q_data <- data.frame(rand_data %>%
+                       filter(survey == "fremantle") %>%
+                       select(C1:C50) %>%
+                       t)
 
 colnames(q_data) <- "C"
 
@@ -1590,6 +1593,32 @@ get_ind_LLM_DRI <- function(data, provider, model) {
   return(llm_DRI)
 }
 
+get_ind_rand_DRI <- function(data) {
+  
+  rand_DRI <- data %>%
+    filter(participant == -1) %>%
+    select(-participant)
+
+  return(rand_DRI)
+}
+
+add_random_participant <- function(data, survey) {
+  
+  # get random data
+  rand_participant <- rand_data %>%
+    filter(survey == !!survey)
+  
+  # create 2 participants, PRE and POST
+  rand_participants <- bind_rows(rand_participant, rand_participant)
+  rand_participants$PNum <- -1 # PNum = -1 is random
+  rand_participants$StageID <- c(1,2)
+  
+  data_with_rand <- bind_rows(data, rand_participants)
+  
+  return(data_with_rand)
+  
+}
+
 add_llm_participant <- function(data, provider, model, survey) {
   
   # get llm data
@@ -1598,13 +1627,13 @@ add_llm_participant <- function(data, provider, model, survey) {
   
   # check if it exists
   if (nrow(llm_participant) == 0) {
-    warn(paste("No participant found for", paste(provider, model, survey, sep = "/")))
+    warning(paste("No participant found for", paste(provider, model, survey, sep = "/")))
   }
   
   # create 2 participants, PRE and POST
   llm_participants <- bind_rows(llm_participant, llm_participant)
   llm_participants$PNum <- 0 # PNum = 0 is LLM
-    llm_participants$StageID <- c(1,2)
+  llm_participants$StageID <- c(1,2)
   
   data_with_llm <- bind_rows(data, llm_participants)
   
@@ -1614,6 +1643,7 @@ add_llm_participant <- function(data, provider, model, survey) {
 
 
 DRIInd.LLMs <- list()
+DRIInd.Rands <- list()
 
 # for each study [1:N], N = 26
 for (case_study in 1:nrow(mini_publics)) {
@@ -1626,14 +1656,11 @@ for (case_study in 1:nrow(mini_publics)) {
   data_case_study <- human_data %>% filter(survey == !!survey &
                                              Case == !!case)
   
+  ### HUMAN-ONLY DRI ###
   # intersubject correlations (IC)
   IC <- get_IC(data_case_study, survey, case)
-
-  ## GROUP DRI ##
-  DRI.Case <- get_case_DRI(IC)
- 
-  ## INDIVIDUAL DRI ##
-  DRIInd <- get_ind_DRI(IC)
+  DRI.Case <- get_case_DRI(IC) # group DRI
+  DRIInd <- get_ind_DRI(IC) # individual DRI
   
   # get human average
   # NOTE: this should be the same as human_only group DRI
@@ -1667,6 +1694,22 @@ for (case_study in 1:nrow(mini_publics)) {
     DRI.Global <- rbind(DRI.Global, DRI.Case)
   }
   
+  ##W RANDOM DRI ###
+  type <- "human+random"
+    
+  data_with_random <- add_random_participant(data_case_study, survey)
+  
+  IC.Rand <- get_IC(data_with_random, survey, case)
+  DRI.Case.Rand <- get_case_DRI(IC.Rand, type)
+  DRIInd.Rand <- get_ind_DRI(IC.Rand)
+  DRIInd.Rand.Survey <- get_ind_rand_DRI(DRIInd.Rand)
+  
+  DRIInd.Rands[[length(DRIInd.Rands) + 1]] <- DRIInd.Rand.Survey
+  
+  DRI.Global <- rbind(DRI.Global, DRI.Case.Rand)
+
+  
+  ### LLM DRI ###
   # check if there are LLM data for this survey
   llms <- llm_surveys %>% filter(survey == !!survey)
   if (nrow(llms) == 0) {
@@ -1730,6 +1773,7 @@ for (case_study in 1:nrow(mini_publics)) {
 
 
 DRIInd.LLMs <- bind_rows(DRIInd.LLMs)
+DRIInd.Rands <- bind_rows(DRIInd.Rands)
 
 ## add alpha results to DRIInd.LLMs
 LLM_alpha_DRI <- alpha_results %>%
@@ -1745,7 +1789,7 @@ LLM_alpha_DRI <- alpha_results %>%
 missing <- setdiff(unique(llm_data$survey), unique(DRIInd.LLMs$survey))
 
 if (length(missing) > 0) {
-  warn(paste("Missing", missing, "from DRIInd.LLMs!"))
+  warning(paste("Missing", missing, "from DRIInd.LLMs!"))
 }
 
 # add delta column
@@ -1759,11 +1803,129 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ```
 
+# Hypotheses Testing
+
+## H1. DRI scores of LLMs do not significantly differ from those produced by a random generation process.
+
+### Testing assumptions
+
+We employed a one-way ANOVA (or a Kruskal-Wallis test, depending on the results of the exploratory analysis) between subjects to analyze our results. If normality and homogeneity of variance assumptions are met, we will use ANOVA followed by Tukey’s HSD post-hoc test for pairwise comparisons between LLM/version DRI and random DRI. If assumptions are violated, we will use the non-parametric Kruskal-Wallis test, followed by Dunn’s post-hoc test with Bonferroni correction. 
+
+The independent variable is be the type of participant (e.g., random, model). The dependent variable is the individual-level DRI score.
+
+```{r H1-assumptions, fig.width=10,fig.height=6}
+
+## get data for analysis
+DRIInd.ALL <- DRIInd.LLMs %>%
+  mutate(source = model) %>% 
+  select(source, survey, case, DRIPreV3, DRIPostV3)
+
+DRIInd.ALL <- DRIInd.Rands %>% mutate(source = "random") %>%
+  select(source, survey, case, DRIPreV3, DRIPostV3) %>%
+  bind_rows(DRIInd.ALL)
+
+# DRIInd.ALL <- DRI.Global %>%
+#   filter(type == "human_only") %>%
+#   mutate(
+#     source = "human_only_mean", 
+#     DRIPreV3 = DRI_PRE_V3,
+#     DRIPostV3 = DRI_POST_V3
+#   ) %>%
+#   select(source, survey, case, DRIPreV3, DRIPostV3) %>%
+#   bind_rows(DRIInd.ALL)
+
+# clean data
+DRIInd.ALL <- DRIInd.ALL %>%
+  mutate(
+    source = as.factor(source),
+    survey = as.factor(survey),
+    case = as.factor(case)
+  )
+
+df <- DRIInd.ALL
+
+# 1. Normality assumption: Shapiro-Wilk test for each group
+shapiro_results <- df %>%
+  group_by(source) %>%
+  summarise(shapiro_p = shapiro.test(DRIPostV3)$p.value)
+
+# print(shapiro_results %>% filter(shapiro_p > 0.05))
+
+# 2. Homogeneity of variances: Levene's Test
+levene_test_result <- leveneTest(DRIPostV3 ~ source, data = df)
+
+# print(levene_test_result)
+
+# plot distributions
+ggplot(df, aes(x = DRIPostV3, fill = source)) +
+  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
+  facet_wrap(~ source) +
+  labs(title = "Distribution of DRIPostV3 for Each Source Type",
+       x = "DRIPostV3",
+       y = "Frequency") +
+  theme_minimal() + theme(legend.position="none")
+
+
+```
+
+### Testing hypothesis
+```{r H1-test}
+
+kruskal_test_result <- kruskal.test(DRIPostV3 ~ source, data = df)
+kruskal_test_result
+
+```
+
+
+### Post-hoc tests
+```{r H1-posthoc}
+
+
+if (kruskal_test_result$p.value < 0.05) {
+  # Perform Dunn's test if Kruskal-Wallis test is significant
+  dunn_test_result <- dunn.test(df$DRIPostV3, df$source, method = "bonferroni", kw = FALSE, table = FALSE)
+  
+  dunn_test_result <- as.data.frame(dunn_test_result)
+  
+  random_comp <- dunn_test_result %>%
+    filter(grepl("random", comparisons)) %>%
+    mutate(P.rounded = round(P.adjusted, 3)) %>%
+    mutate(P.formated = ifelse(P.rounded < 0.05, paste0(P.rounded, "*"), P.rounded))
+  
+  # Print the results of Dunn's test with Bonferroni correction
+  random_comp %>% arrange(P.adjusted) %>% select(comparisons, P.formated) %>%
+    knitr::kable(
+      caption = "",
+      col.names = c("Comparisons", "P-adjusted"),
+      digits = 3
+    )
+  
+} else {
+  message("Kruskal-Wallis test is not significant; no need for post-hoc testing.")
+}
+
+```
+
+Some models, `r nrow(random_comp %>% filter(P.adjusted < 0.05))` out of `r nrow(random_comp)`, are significantly different than random.
+
 # DRI Benchmark
 
-```{r alpha-version correlation}
+```{r alpha correlations, echo=FALSE}
 
-
+# testing some correlations
+models %>%
+  full_join(alpha_summary, by=c("provider", "model")) %>%
+  filter(
+    model %in% included_models_summary$model,
+    context_length < 2000000) %>%
+  select(model, context_length, mean_alpha_all) %>%
+  ggplot(aes(x = context_length, y = mean_alpha_all)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(title = "Correlation between Context Length and Mean Alpha All",
+       x = "Context Length",
+       y = "Mean Alpha All") +
+  theme_minimal()
 
 ```
 
@@ -2059,7 +2221,7 @@ llm_scores <- DATA_LLM %>%
   ) %>%
   arrange(NRMSE)
 
-kable(llm_scores, caption = "LLM Performance Metrics Against Human DRI Post-Scores", digits = 3, col.names = c(
+knitr::kable(llm_scores, caption = "LLM Performance Metrics Against Human DRI Post-Scores", digits = 3, col.names = c(
     model = "Model",
     MAE = "MAE",
     RMSE = "RMSE",
@@ -2210,7 +2372,7 @@ ggplot(combined_scores, aes(x = PRE, y = POST, color = model)) +
     values_to = "Score"
   ) %>%
   mutate(
-    Metric = recode(Metric,
+    Metric = dplyr::recode(Metric,
                     normalized_NRMSE = "NRMSE (Normalized)",
                     normalized_Spearman = "Spearman (Normalized)",
                     normalized_Delta = "Delta (Normalized)"),
