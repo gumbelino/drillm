@@ -19,7 +19,7 @@ surveys = get_survey_names(no_template=True)
 models = get_models(include_all=True)
 
 
-def reset_progress(quiet=False):
+def reset_progress(quiet=False, temperature=0):
 
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
     progress_df = pd.DataFrame()
@@ -36,7 +36,6 @@ def reset_progress(quiet=False):
         api = model_info.api
 
         min_iterations = model_info.min_iterations
-        total_iterations = min_iterations * len(surveys)
 
         for survey in surveys:
 
@@ -46,6 +45,10 @@ def reset_progress(quiet=False):
 
             if os.path.exists(file_path):
                 s_df = pd.read_csv(file_path)
+
+                # make sure to check for temp == 0
+                s_df = s_df[s_df["temperature"] == temperature]
+
                 num_rows = len(s_df)
                 last_updated = s_df["created_at"].max()
             else:
@@ -201,16 +204,19 @@ def main():
         default=None,
         help="model name",
     )
+    parser.add_argument(
+        "--temp", type=float, required=False, default=0, help="temperature"
+    )
 
     # Parse the arguments
     args = parser.parse_args()
 
     if args.model:
-        progress_df = reset_progress(quiet=True)
+        progress_df = reset_progress(quiet=True, temperature=args.temp)
         print_model_summary(args.model, progress_df)
 
     else:
-        reset_progress()
+        reset_progress(temperature=args.temp)
 
 
 if __name__ == "__main__":

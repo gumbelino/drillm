@@ -270,14 +270,14 @@ llm_data <- get_llm_data()
 
 # aggregate llm_data by provider, model, and survey and N the number of rows
 llm_surveys <- llm_data %>%
-  group_by(provider, model, survey) %>%
+  group_by(provider, model, temperature, survey) %>%
   summarise(
     N = n(),
     .groups = 'drop'
   )
 
 models <- llm_surveys %>%
-  group_by(provider, model) %>%
+  group_by(provider, model, temperature) %>%
   summarise(
     surveys_with_data = n(),
     min_iterations_completed = min(N, na.rm = TRUE),
@@ -296,6 +296,27 @@ write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
 
 ```
 
+
+## Handle special models
+
+*command-r7b-12-2024-t=1
+*grok-3-beta-r=TRUE
+
+```{r temperature}
+
+# update list of models 
+models <- models %>%
+  mutate(model = ifelse(!is.na(temperature) & temperature != 0, paste(model, temperature, sep = "-t="), model))
+
+# update llm_data
+llm_data[llm_data$temperature == 1,]$model <- paste(llm_data[llm_data$temperature == 1,]$model, "t=1", sep = "-")
+
+# update llm_surveys
+llm_surveys[llm_surveys$temperature == 1,]$model <- paste(llm_surveys[llm_surveys$temperature == 1,]$model, "t=1", sep = "-")
+
+```
+
+
 We collected a total of `r nrow(llm_data)` valid LLM responses across `r nrow(surveys)` surveys.
 
 ## Cost
@@ -304,7 +325,7 @@ We collected a total of `r nrow(llm_data)` valid LLM responses across `r nrow(su
 
 # calculate costs in tokens
 cost_tokens <- llm_data %>%
-  group_by(provider, model) %>%
+  group_by(provider, model, temperature) %>%
   summarise(
     total_iterations_completed = n(),
     total_input_tokens = as.integer(sum(input_tokens)),
@@ -375,6 +396,8 @@ exec_log <- read_csv(EXEC_LOG_FILE, show_col_types = FALSE)
 # fill missing columns
 exec_log <- exec_log %>%
   arrange(model) %>%
+  mutate(model = ifelse(!is.na(temperature) & temperature != 0, paste(model, temperature, sep = "-t="), model)) %>%
+
   mutate(
     fixed_num_errors = (`num surveys` * `num iterations`) - (`num fail completions` + `num success completions`)
   ) %>%
@@ -388,8 +411,10 @@ exec_log <- exec_log %>%
   filter(`num completions` > 0)
   
 
+
+
 exec_models <- exec_log %>%
-  group_by(provider, model) %>%
+  group_by(provider, model, temperature) %>%
   summarise(
     num_exec = n(),
     total_cost_USD = sum(`total cost ($)`, na.rm = TRUE),
@@ -514,6 +539,7 @@ included_models_summary <- models %>%
     model,
     series,
     version,
+    reasoning,
     num_parameters,
     context_length,
     arch,
@@ -1292,6 +1318,8 @@ get_random_data <- function(sheet_names, file_path=SURVEY_FILE) {
 # Example usage
 rand_data <- get_random_data(survey_names)
 
+write_output_csv(rand_data, "random_data.csv")
+
 
 ```
 
@@ -1817,27 +1845,32 @@ The independent variable is be the type of participant (e.g., random, model). Th
 
 ## get data for analysis
 DRIInd.ALL <- DRIInd.LLMs %>%
-  mutate(source = model) %>% 
-  select(source, survey, case, DRIPreV3, DRIPostV3)
+  mutate(source = model) %>%
+  mutate(source_type = "llm") %>%
+  select(source, source_type, survey, case, DRIPreV3, DRIPostV3)
 
-DRIInd.ALL <- DRIInd.Rands %>% mutate(source = "random") %>%
-  select(source, survey, case, DRIPreV3, DRIPostV3) %>%
+DRIInd.ALL <- DRIInd.Rands %>%
+  mutate(source = "random") %>%
+  mutate(source_type = source) %>%
+  select(source, source_type, survey, case, DRIPreV3, DRIPostV3) %>%
   bind_rows(DRIInd.ALL)
 
 DRIInd.ALL <- DRI.Global %>%
   filter(type == "human_only") %>%
   mutate(
     source = "human_only_mean",
+    source_type = "human",
     DRIPreV3 = DRI_PRE_V3,
     DRIPostV3 = DRI_POST_V3
   ) %>%
-  select(source, survey, case, DRIPreV3, DRIPostV3) %>%
+  select(source, source_type, survey, case, DRIPreV3, DRIPostV3) %>%
   bind_rows(DRIInd.ALL)
 
 # clean data
 DRIInd.ALL <- DRIInd.ALL %>%
   mutate(
     source = as.factor(source),
+    source_type = as.factor(source_type),
     survey = as.factor(survey),
     case = as.factor(case)
   )
@@ -1845,28 +1878,45 @@ DRIInd.ALL <- DRIInd.ALL %>%
 
 write_output_csv(DRIInd.ALL, "DRIInd_all.csv")
 
-df <- DRIInd.ALL
+df <- DRIInd.ALL %>% filter(source != "human_only_mean")
 
 # 1. Normality assumption: Shapiro-Wilk test for each group
 shapiro_results <- df %>%
   group_by(source) %>%
   summarise(shapiro_p = shapiro.test(DRIPostV3)$p.value)
 
-# print(shapiro_results %>% filter(shapiro_p > 0.05))
-
 # 2. Homogeneity of variances: Levene's Test
 levene_test_result <- leveneTest(DRIPostV3 ~ source, data = df)
 
-# print(levene_test_result)
-
 # plot distributions
-ggplot(df, aes(x = DRIPostV3, fill = source)) +
-  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
+df %>%
+  full_join(shapiro_results, by = "source") %>%
+  mutate(signif = shapiro_p > 0.05) %>%
+
+  ggplot(aes(x = DRIPostV3, fill = source_type)) +
+  geom_histogram(bins = 30,
+                 alpha = 0.6,
+                 position = "identity") +
   facet_wrap(~ source) +
-  labs(title = "Distribution of DRIPostV3 for Each Source Type",
-       x = "DRIPostV3",
+  labs(title = "Distribution of DRIPostV3 for Each Source Type", 
+       x = "DRIPostV3", 
        y = "Frequency") +
-  theme_minimal() + theme(legend.position="none")
+  theme_minimal() + theme(legend.position = "none") +
+  geom_point(
+    data = . %>% filter(signif),
+    aes(x = -1, y = 5), color = "red", shape = 8, size = 5)
+
+# Assuming your dataframe is named `df`
+df %>% arrange(source_type, source) %>%
+ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DRIPostV3 for Each Source Type",
+       x = "Source",
+       y = "DRIPostV3") +
+  theme_minimal() + 
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, hjust = 1))
 
 
 ```
@@ -1883,7 +1933,6 @@ kruskal_test_result
 ### Post-hoc tests
 ```{r H1-posthoc}
 
-
 if (kruskal_test_result$p.value < 0.05) {
   # Perform Dunn's test if Kruskal-Wallis test is significant
   dunn_test_result <- dunn.test(df$DRIPostV3, df$source, method = "bonferroni", kw = FALSE, table = FALSE)
@@ -1896,10 +1945,13 @@ if (kruskal_test_result$p.value < 0.05) {
     mutate(P.formated = ifelse(P.rounded < 0.05, paste0(P.rounded, "*"), P.rounded))
   
   # Print the results of Dunn's test with Bonferroni correction
-  random_comp %>% arrange(P.adjusted) %>% select(comparisons, P.formated) %>%
+  random_comp %>%
+    arrange(P.adjusted) %>% 
+    mutate(model = str_remove(comparisons, " - random")) %>%
+    select(model, P.formated) %>%
     knitr::kable(
-      caption = "",
-      col.names = c("Comparisons", "P-adjusted"),
+      caption = "Models compared to random",
+      col.names = c("Model", "P-adjusted"),
       digits = 3
     )
   
@@ -1910,6 +1962,147 @@ if (kruskal_test_result$p.value < 0.05) {
 ```
 
 Some models, `r nrow(random_comp %>% filter(P.adjusted < 0.05))` out of `r nrow(random_comp)`, are significantly different than random.
+
+## H2. LLMs' DRI scores will be significantly lower than those obtained from human participants after deliberation.
+
+### Testing assumptions
+```{r H2-assumptions, fig.width=10,fig.height=6}
+
+df <- DRIInd.ALL %>% filter(source != "random")
+
+# 1. Normality assumption: Shapiro-Wilk test for each group
+shapiro_results <- df %>%
+  group_by(source) %>%
+  summarise(shapiro_p = shapiro.test(DRIPostV3)$p.value)
+
+# 2. Homogeneity of variances: Levene's Test
+levene_test_result <- leveneTest(DRIPostV3 ~ source, data = df)
+
+# plot distributions
+df %>%
+  full_join(shapiro_results, by = "source") %>%
+  mutate(signif = shapiro_p > 0.05) %>%
+  ggplot(aes(x = DRIPostV3, fill = source_type)) +
+  geom_histogram(bins = 30,
+                 alpha = 0.6,
+                 position = "identity") +
+  facet_wrap(~ source) +
+  labs(title = "Distribution of DRIPostV3 for Each Source Type", 
+       x = "DRIPostV3", 
+       y = "Frequency") +
+  theme_minimal() + theme(legend.position = "none") +
+  geom_point(
+    data = . %>% filter(signif),
+    aes(x = -1, y = 5), color = "red", shape = 8, size = 5)
+
+# Assuming your dataframe is named `df`
+df %>% arrange(source_type, source) %>%
+ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DRIPostV3 for Each Source Type",
+       x = "Source",
+       y = "DRIPostV3") +
+  theme_minimal() + 
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+```
+### Testing hypothesis
+
+To test H2, we will compare the average individual-level, post-deliberation DRI scores obtained by human participants with the individual-level DRI scores obtained by LLMs both across case studies and across LLM/version.
+
+First, for each case study, we will employ a t-test (or non-parametric equivalent, depending on the results of the exploratory analysis) to analyze our results across case studies. The independent variable is participant type (human-only vs. LLM) and the dependent variable is the individual-level DRI scores.
+
+For each case study...
+
+  human average 
+
+Second, for each LLM/version, we will employ a t-test (or non-parametric equivalent, depending on the results of the exploratory analysis) to analyze our results across LLM/version. The independent variable is participant type (human-only vs. LLM/version) and the dependent variable is the individual-level DRI scores.
+
+
+```{r H2-test}
+
+kruskal_test_result <- kruskal.test(DRIPostV3 ~ source, data = df)
+kruskal_test_result
+
+```
+
+
+### Post-hoc tests
+```{r H2-posthoc}
+
+if (kruskal_test_result$p.value < 0.05) {
+  # Perform Dunn's test if Kruskal-Wallis test is significant
+  dunn_test_result <- dunn.test(df$DRIPostV3, df$source, method = "bonferroni", kw = FALSE, table = FALSE)
+  
+  dunn_test_result <- as.data.frame(dunn_test_result)
+  
+  human_comp <- dunn_test_result %>%
+    filter(grepl("human", comparisons)) %>%
+    mutate(P.rounded = round(P.adjusted, 3)) %>%
+    mutate(P.formated = ifelse(P.rounded < 0.05, paste0(P.rounded, "*"), P.rounded))
+  
+  # Print the results of Dunn's test with Bonferroni correction
+  human_comp %>%
+    arrange(P.adjusted) %>% 
+    mutate(model = str_remove(comparisons, " - human_only_mean")) %>%
+    select(model, P.formated) %>%
+    knitr::kable(
+      caption = "Models compared to human",
+      col.names = c("Model", "P-adjusted"),
+      digits = 3
+    )
+  
+} else {
+  message("Kruskal-Wallis test is not significant; no need for post-hoc testing.")
+}
+
+
+```
+
+
+## H3. LLMs’ DRI scores are improving over time, across each version.
+
+Random slope --
+
+Assume each case
+Multilevel analysis -- each case behave differently
+
+LMER -- 
+
+
+
+To test H3, we will conduct a repeated measures ANOVA (or Friedman test if the assumptions of normality or sphericity are violated) to test for differences in the mean DRI across all versions (e.g., v1, v2, v3) of an LLM across each case study. We will treat different LLM versions as related groups and the individual-level LLM DRI in each case study as a subject. In this within-subjects design, we can assess whether more recent versions of LLMs have a significant impact on the DRI scores they produce.
+
+Dependent variable:
+- DRIPostV3
+
+Independent variable:
+- case
+- series
+
+- Levels
+- version
+
+
+gemini 
+
+```{r}
+
+df <- included_models_summary %>%
+  full_join(DRIInd.LLMs) %>%
+  select(model, series, version, case, DRIPostV3) %>%
+  arrange(version)
+
+```
+
+
+If a significant difference is found, we will conduct a post-hoc analysis using paired t-tests (or Wilcoxon signed-rank tests) for pairwise comparisons, with adjustments for multiple comparisons.
+
+
+
 
 # DRI Benchmark
 
@@ -2418,66 +2611,30 @@ Architecture types:
 -   Transformer-based models [@vaswani2017].
 
 
-Some models are considered "reasoning" models, like , reason using chain-of-thought (CoT) -- this is not a difference in architecture, but in how 
+Some models are considered "reasoning" models, like , reason using chain-of-thought (CoT) -- this is not a difference in architecture 
 
 ```{r reasoner, fig.width=10,fig.height=6}
 
 ##FIXME: add this to model info
-llm_scores <- llm_scores %>%
-  mutate(
-    # High-level architecture
-    architecture_type = case_when(
-      grepl("command", model, ignore.case = TRUE) ~ "Instruction-tuned Dense Transformer",
-      grepl("gpt-4o|gpt-4o-mini", model, ignore.case = TRUE) ~ "Multimodal Dense Transformer",
-      grepl("gpt-4|gpt-3.5", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("claude-3", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("gemini|gemini-1.5|gemini-2.0", model, ignore.case = TRUE) ~ "Multimodal Hybrid",
-      grepl("mixtral|open-mixtral", model, ignore.case = TRUE) ~ "Mixture of Experts (MoE)",
-      grepl("mistral-large|mistral-small|open-mistral|ministral", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("gemma", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("llama3|llama", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("phi", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("qwen1.5|qwen", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("qwen2", model, ignore.case = TRUE) ~ "Mixture of Experts (MoE)",
-      grepl("deepseek-v2", model, ignore.case = TRUE) ~ "Mixture of Experts (MoE)",
-      grepl("deepseek", model, ignore.case = TRUE) ~ "Dense Transformer",
-      grepl("o1", model, ignore.case = TRUE) ~ "Dense Transformer",  # o1 known, reasoner
-      grepl("o3", model, ignore.case = TRUE) ~ "Unknown",          # Speculative
-      grepl("qwq", model, ignore.case = TRUE) ~ "Unknown",         # Typo or placeholder
-      TRUE ~ "Unknown"
-    ),
-    
-    # Neural design
-    neural_architecture = case_when(
-      grepl("mixtral|open-mixtral|qwen2|deepseek-v2", model, ignore.case = TRUE) ~ "Sparse MoE Decoder",
-      grepl("gpt-4o|gpt-4o-mini|gemini|gemini-1.5|gemini-2.0", model, ignore.case = TRUE) ~ "Multimodal Decoder",
-      grepl("gpt|claude|command|llama|phi|mistral|gemma|qwen|deepseek|o1", model, ignore.case = TRUE) ~ "Dense Decoder-only Transformer",
-      grepl("o3|qwq", model, ignore.case = TRUE) ~ "Other/Unknown",
-      TRUE ~ "Other/Unknown"
-    ),
-    
-    # Reasoner classification
-    is_reasoner = case_when(
-      grepl("o1", model, ignore.case = TRUE) ~ TRUE,           # OpenAI o1: Explicit reasoner
-      grepl("claude-3", model, ignore.case = TRUE) ~ TRUE,     # Claude 3: Strong reasoner
-      grepl("gpt-4o|gpt-4", model, ignore.case = TRUE) ~ TRUE, # GPT-4 variants: Advanced reasoning
-      grepl("mistral-large", model, ignore.case = TRUE) ~ TRUE,# Mistral Large: Some reasoning
-      TRUE ~ FALSE                                             # Others: General-purpose
-    )
-  )
 
+
+llm_scores_reason <- llm_scores %>%
+  full_join(included_models_summary, by="model") %>%
+  mutate(
+    is_reasoner = case_when(reasoning == TRUE ~ TRUE, .default = FALSE)
+  )
 
 # Run one-tailed Wilcoxon test
 wilcox_res <- wilcox.test(
   aggregate_index ~ is_reasoner,
-  data = llm_scores,
+  data = llm_scores_reason,
   alternative = "less"  # or "less", depending on your hypothesis
 )
 
 # Format p-value for annotation
 p_val <- wilcox_res$p.value
 p_label <- paste0("Wilcoxon test (one-tailed)\np = ", signif(p_val, 3))
-ggplot(llm_scores, aes(x = is_reasoner, y = aggregate_index, fill = is_reasoner)) +
+ggplot(llm_scores_reason, aes(x = is_reasoner, y = aggregate_index, fill = is_reasoner)) +
   geom_boxplot(show.legend = TRUE, alpha = 0.8) +
   geom_jitter(width = 0.2, alpha = 0.6) +
   geom_hline(yintercept = 1.2, linetype = "dotted", color = "red", linewidth = 1) +
