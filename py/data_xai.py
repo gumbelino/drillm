@@ -21,18 +21,54 @@ client = OpenAI(
 )
 
 
+def is_reasoning(model):
+    if re.search(r"-r=", model):
+        return True
+    return False
+
+
 def send_message(model, messages, temperature):
 
-    # check if model contains "o{digit}" such as o1-mini, o1
-    # NOTE: temperature parameter is not used
-    if re.search(r"o\d", model):
-        return client.chat.completions.create(model=model, messages=messages)
+    if is_reasoning(model):
+
+        # get model and reasoning effort
+        model, reasoning_effort = model.split("-r=")
+
+        return client.chat.completions.create(
+            model=model,
+            reasoning_effort=reasoning_effort,
+            messages=messages,
+            temperature=temperature,
+        )
 
     return client.chat.completions.create(
         model=model,
         messages=messages,
         temperature=temperature,
     )
+
+
+def get_response(model, res):
+    if is_reasoning(model):
+        reasoning_content = res.choices[0].message.reasoning_content
+        response_content = res.choices[0].message.content
+
+        # format response like deepseek
+        return f"<think>{reasoning_content}</think>{response_content}"
+
+    return res.choices[0].message.content
+
+
+def get_request_cost(model, res):
+
+    input_tokens = res.usage.prompt_tokens
+    output_tokens = res.usage.completion_tokens
+
+    # add reasoning tokens to input
+    if is_reasoning(model):
+        input_tokens += res.usage.completion_tokens_details.reasoning_tokens
+
+    return input_tokens, output_tokens
 
 
 def generate_data(
@@ -63,11 +99,10 @@ def generate_data(
         temperature,
     )
 
-    c_response = res.choices[0].message.content
+    c_response = get_response(model, res)
 
     # get cost
-    input_tokens = res.usage.prompt_tokens
-    output_tokens = res.usage.completion_tokens
+    input_tokens, output_tokens = get_request_cost(model, res)
 
     # log request history to file
     log_request(
@@ -102,11 +137,12 @@ def generate_data(
         temperature,
     )
 
-    p_response = res.choices[0].message.content
+    p_response = get_response(model, res)
 
     # get cost
-    input_tokens += res.usage.prompt_tokens
-    output_tokens += res.usage.completion_tokens
+    r_input_tokens, r_output_tokens = get_request_cost(model, res)
+    input_tokens += r_input_tokens
+    output_tokens += r_output_tokens
 
     # log request history to file
     log_request(
@@ -142,13 +178,14 @@ def generate_data(
             temperature,
         )
 
-        r_response = res.choices[0].message.content
+        r_response = get_response(model, res)
 
         reason_text = parse_reasoning_from_response(r_response)
 
         # get cost
-        input_tokens += res.usage.prompt_tokens
-        output_tokens += res.usage.completion_tokens
+        r_input_tokens, r_output_tokens = get_request_cost(model, res)
+        input_tokens += r_input_tokens
+        output_tokens += r_output_tokens
 
         # log request history to file
         log_request(

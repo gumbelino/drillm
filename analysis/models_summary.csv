@@ -1,4 +1,4 @@
-provider,model,series,version,reasoning,num_parameters,context_length,arch,api,done,cost_per_completion,total_cost,fail_rate,time_per_completion_s,total_time_min,comment
+provider,model,series,version,is_reasoner,num_parameters,context_length,arch,api,done,cost_per_completion,total_cost,fail_rate,time_per_completion_s,total_time_min,comment
 anthropic,claude-3-5-haiku-20241022,claude-haiku,2,NA,-,200000,-,Anthropic API,TRUE,0.003987730061349693,2.6086664,0.046012269938650305,6.754601226993865,73.39999999999999,NA
 anthropic,claude-3-5-sonnet-20241022,claude-sonnet,2,NA,-,200000,-,Anthropic API,TRUE,0.01565950920245399,10.208586,0.015337423312883436,9.527300613496932,103.53,"described as ""hybrid reasoning"" model in their website"
 anthropic,claude-3-7-sonnet-20250219,claude-sonnet,3,FALSE,-,200000,-,Anthropic API,TRUE,0.015886627906976744,10.92981,0.00436046511627907,7.15639534883721,82.06,"this is a ""hybrid"" reasoning model, data was generated not in the ""thinking"" mode"
@@ -13,6 +13,7 @@ deepseek,deepseek-chat,deepseek-chat,3,NA,671,128000,MoE,DeepSeek API,TRUE,0.001
 deepseek,deepseek-reasoner,deepseek-reasoner,1,TRUE,671,128000,MoE,DeepSeek API,TRUE,0.00967741935483871,5.99971168,0.0016129032258064516,156.07935483870966,1612.82,this model points at deepseek-r1 at the time of data generation; trained on V3-base
 google,gemini-1.5-flash,gemini,1,NA,-,1000000,MoE,Google Could,TRUE,3.7e-4,0.540384525,0.038,4.1154,68.59,NA
 google,gemini-1.5-flash-8b,gemini,1,NA,8,1048576,MoE,Google Could,TRUE,1.8918918918918917e-4,0.15539445,0.051351351351351354,3.6324324324324326,44.800000000000004,NA
+google,gemini-1.5-flash-8b-t=1,gemini,1,NA,8,1048576,MoE,Google Could,TRUE,1.82370820668693e-4,0.11855118750000002,0.0547112462006079,3.4404255319148933,37.73,NA
 google,gemini-1.5-pro,gemini,1,NA,-,2000000,MoE,Google Could,TRUE,0.006171052631578948,4.696175,0.02894736842105263,6.334736842105264,80.24000000000001,NA
 google,gemini-2.0-flash,gemini,2,NA,-,1000000,-,Google Could,TRUE,5.000000000000001e-4,0.305268,0,3.9439999999999995,39.44,NA
 google,gemini-2.5-pro-preview-03-25,gemini,3,TRUE,-,1048576,-,Google Could,TRUE,0.05803542673107891,36.03198,0.00966183574879227,58.714975845410635,607.7,thinking mode always on; added on April 14 2025
