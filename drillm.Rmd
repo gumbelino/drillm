@@ -81,9 +81,9 @@ remove_NA_cols <- function(data) {
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
 models %>%
-  select(provider, model, series, num_parameters, context_length, arch, version) %>% 
+  select(provider, model, num_parameters, context_length, arch, version) %>% 
   arrange(provider, model) %>%
-  knitr::kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Series", "Parameters (B)", "Context Length", "Architecture", "Version"))
+  knitr::kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model", "Parameters (B)", "Context Length", "Architecture", "Version"))
 
 ```
 
@@ -1889,6 +1889,22 @@ DRIInd.LLMs.it <- bind_rows(DRIInd.LLMs.it)
 DRIInd.LLMs <- bind_rows(DRIInd.LLMs)
 DRIInd.Rands <- bind_rows(DRIInd.Rands)
 
+# aggregate iteration results
+DRIInd.LLMs.it.summ <- DRIInd.LLMs.it %>%
+  group_by(provider, model, survey, case) %>%
+  summarise(
+    DRIPostV3_mean = mean(DRIPostV3, na.rm = TRUE),
+    DRIPostV3_sd = sd(DRIPostV3, na.rm = TRUE),
+    DRIPostV3_n = n(),
+  )
+
+## add iteration results to DRIInd.LLMs
+DRIInd.LLMs <- DRIInd.LLMs.it.summ %>%
+  full_join(DRIInd.LLMs, by=c("provider", "model", "survey", "case")) %>%
+  relocate(DRIPostV3_mean, .after = DRIPostV3) %>%
+  relocate(DRIPostV3_sd, .after = DRIPostV3_mean) %>%
+  relocate(DRIPostV3_n, .after = DRIPostV3_sd)
+
 ## add alpha results to DRIInd.LLMs
 LLM_alpha_DRI <- alpha_results %>%
   select(provider,
@@ -1919,6 +1935,7 @@ write_csv(DRIInd.LLMs, paste(OUTPUT_DIR, "DRIInd_LLMs.csv", sep = "/"))
 write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ```
+
 
 # Hypotheses Testing
 
@@ -2315,13 +2332,18 @@ ggsave(
 
 ```{r francescos analysis}
 
-
 #library(viridis)
 library(grid)
 library(Metrics)  # For MAE and RMSE
 library(patchwork)
 
 DATA_LLM <- LLM_alpha_DRI
+
+DATA_LLM <- DATA_LLM %>%
+  rename(
+    DRIPostV3_aggr = DRIPostV3,
+    DRIPostV3 = DRIPostV3_mean
+  )
 
 # Convert case and model to factors
 DATA_LLM$case <- as.factor(DATA_LLM$case)
@@ -2331,8 +2353,8 @@ DATA_LLM$delta_post <- DATA_LLM$DRIPostV3 - DATA_LLM$human_only_DRIPost_meanV3
 DATA_LLM$delta_pre <- DATA_LLM$DRIPreV3 - DATA_LLM$human_only_DRIPre_meanV3
 
 #no outlier humans
-DATA_LLM_filtered <- DATA_LLM %>%
-  filter(!(case %in% c("Thalwil")))
+DATA_LLM <- DATA_LLM %>%
+  filter(!(case %in% c("Thalwil", "HGE Control Group", "GBR", "UPSA Control Group")))
 
 
 # Subset where DRI is low
@@ -2689,7 +2711,7 @@ ggplot(plot_long, aes(x = model, y = Score, color = Metric, group = Metric)) +
     axis.text.y = element_text(face = "bold"),
     legend.position = "top"
   ) +
-  ylim(0, 1.05)
+  ylim(0, 1.09)
 ```
 
 ## LLM Performance by Reasoner Classification
