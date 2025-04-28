@@ -539,7 +539,7 @@ included_models_summary <- models %>%
     model,
     series,
     version,
-    reasoning,
+    is_reasoner,
     num_parameters,
     context_length,
     arch,
@@ -1669,8 +1669,30 @@ add_llm_participant <- function(data, provider, model, survey) {
   
 }
 
+add_single_llm_participant <- function(llm_survey_data, it, data, provider, model, survey) {
+  
+  # get llm data
+  llm_participant <- llm_survey_data[it, ]
+  
+  # check if it exists
+  if (nrow(llm_participant) == 0) {
+    warning(paste("No participant found for", paste(provider, model, survey, sep = "/")))
+  }
+  
+  # create 2 participants, PRE and POST
+  llm_participants <- bind_rows(llm_participant, llm_participant)
+  llm_participants$PNum <- 0 # PNum = 0 is LLM
+  llm_participants$StageID <- c(1,2)
+  
+  data_with_llm <- bind_rows(data, llm_participants)
+  
+  return(data_with_llm)
+  
+}
+
 
 DRIInd.LLMs <- list()
+DRIInd.LLMs.it <- list()
 DRIInd.Rands <- list()
 
 # for each study [1:N], N = 26
@@ -1746,9 +1768,73 @@ for (case_study in 1:nrow(mini_publics)) {
 
   # iterate through each llm
   for (llm in 1:nrow(llms)) {
-    
+
     provider <- llms[llm,]$provider
     model <- llms[llm,]$model
+    
+    ## get relevant llm data
+    llm_survey_data <- llm_data %>%
+      filter(model == !!model, survey == !!survey) %>%
+      arrange(created_at) %>%
+      head(MAX_ITERATIONS)
+    
+    ## do DRI for each iteration
+    for (it in 1:nrow(llm_survey_data)) {
+      type <- paste0("human+", paste(provider, model, sep = "/"), "+", it)
+      
+      data_with_llm <- add_single_llm_participant(llm_survey_data, it, data_case_study, provider, model, survey)
+      
+      IC.LLM <- get_IC(data_with_llm, survey, case)
+      DRI.Case.LLM <- get_case_DRI(IC.LLM, type)
+      DRIInd.LLM <- get_ind_DRI(IC.LLM)
+      DRIInd.LLM.Model <- get_ind_LLM_DRI(DRIInd.LLM, provider, model)
+      
+      ## DRI V1
+      DRIInd.LLM.Model$human_only_DRIPre_mean <- human_ind_DRI_mean$DRIPre
+      DRIInd.LLM.Model$human_only_DRIPost_mean <- human_ind_DRI_mean$DRIPost
+      
+      ## DRI V2
+      DRIInd.LLM.Model$human_only_DRIPre_meanV2 <- human_ind_DRI_meanV2$DRIPreV2
+      DRIInd.LLM.Model$human_only_DRIPost_meanV2 <- human_ind_DRI_meanV2$DRIPostV2
+      
+      ## DRI V3
+      DRIInd.LLM.Model$human_only_DRIPre_meanV3 <- human_ind_DRI_meanV3$DRIPreV3
+      DRIInd.LLM.Model$human_only_DRIPost_meanV3 <- human_ind_DRI_meanV3$DRIPostV3
+      
+      get_bm_index <- function(diff) {
+        bm_index <- (diff + 2) / 4
+        return(bm_index)
+      }
+      
+      DRIInd.LLM.Model <- DRIInd.LLM.Model %>%
+        mutate(
+          DRIPre_diff = DRIPre - human_only_DRIPre_mean,
+          DRIPost_diff = DRIPost - human_only_DRIPost_mean
+        ) %>%
+        mutate(bm_index = get_bm_index(DRIPost_diff)) %>%
+        
+        ## benchmark V2
+        mutate(
+          DRIPre_diffV2 = DRIPreV2 - human_only_DRIPre_meanV2,
+          DRIPost_diffV2 = DRIPostV2 - human_only_DRIPost_meanV2
+        ) %>%
+        mutate(bm_indexV2 = get_bm_index(DRIPost_diffV2)) %>%
+        
+        ## benchmark V3
+        mutate(
+          DRIPre_diffV3 = DRIPreV3 - human_only_DRIPre_meanV3,
+          DRIPost_diffV3 = DRIPostV3 - human_only_DRIPost_meanV3
+        ) %>%
+        mutate(bm_indexV3 = get_bm_index(DRIPost_diffV3))
+      
+      DRIInd.LLM.Model$iteration <- it
+      DRIInd.LLMs.it[[length(DRIInd.LLMs.it) + 1]] <- DRIInd.LLM.Model
+      
+      DRI.Global <- rbind(DRI.Global, DRI.Case.LLM)
+      
+    }
+    
+    ## do DRI for aggregated LLM data
     type <- paste0("human+",paste(provider, model, sep = "/"))
     
     data_with_llm <- add_llm_participant(data_case_study, provider, model, survey)
@@ -1799,7 +1885,7 @@ for (case_study in 1:nrow(mini_publics)) {
   
 } # end for each case study
 
-
+DRIInd.LLMs.it <- bind_rows(DRIInd.LLMs.it)
 DRIInd.LLMs <- bind_rows(DRIInd.LLMs)
 DRIInd.Rands <- bind_rows(DRIInd.Rands)
 
@@ -1826,6 +1912,9 @@ DRI.Global <- DRI.Global %>%
 
 # write summary to file
 write_output_csv(LLM_alpha_DRI, "LLM_alpha_DRI.csv")
+
+write_output_csv(DRIInd.LLMs.it, "DRIInd_LLMs_iterations.csv")
+
 write_csv(DRIInd.LLMs, paste(OUTPUT_DIR, "DRIInd_LLMs.csv", sep = "/"))
 write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
@@ -2621,7 +2710,7 @@ Some models are considered "reasoning" models, like , reason using chain-of-thou
 llm_scores_reason <- llm_scores %>%
   full_join(included_models_summary, by="model") %>%
   mutate(
-    is_reasoner = case_when(reasoning == TRUE ~ TRUE, .default = FALSE)
+    is_reasoner = case_when(is_reasoner == TRUE ~ TRUE, .default = FALSE)
   )
 
 # Run one-tailed Wilcoxon test

@@ -25,32 +25,32 @@ human_only_mean,human,zh_thalwil,Thalwill,-0.15568095144935512,-0.10166446376051
 human_only_mean,human,zh_uster,USTER,0.34455173595629685,0.4953697853451704
 human_only_mean,human,zh_winterthur,Winterthur,0.21919794591369968,0.5202587050867213
 human_only_mean,human,zukunft,Zukunft,0.42151882027369325,0.502087804552416
-random,random,acp,Citizen Parliamentarian,-0.13605911608811494,0.05003412215213365
-random,random,auscj,HGE Control Group,0.03521152589471099,0.12167630245256689
-random,random,auscj,HGE Deliberative Group,0.13005536042628463,0.17415567433264068
-random,random,bep,BEP,0.2369244578871268,-0.1065092534804628
-random,random,biobanking_mayo_ubc,Mayo,0.05736698728516654,0.1077727346381252
-random,random,biobanking_mayo_ubc,UBC Bio,-0.05656518371340835,-0.17894698846985924
-random,random,biobanking_wa,WA Citizens,-0.2759230324989139,-0.07618109696464981
-random,random,biobanking_wa,WA Stakeholder,-0.3478990644224478,-0.1306110980707712
-random,random,ccps,CCPS ACT Deliberative,-0.3687515512704641,-0.48789449587865474
-random,random,ds_aargau,Aargau,-0.08358742777072437,-0.2327044765362436
-random,random,ds_bellinzona,Bellinzona,0.5526283861799257,0.5664312692540685
-random,random,energy_futures,CSIRO NSW,0.10469361708490332,0.32940933497560865
-random,random,energy_futures,CSIRO WA,0.26398812571637675,0.05087942291760439
-random,random,fnqcj,FNQCJ,0.2451029718716815,-0.2599455372207803
-random,random,forestera,Forest Lay Citizen,0.31725468622496344,0.26425407895470565
-random,random,forestera,Forest Stakeholder,0.2185047835932814,-0.06433638327069524
-random,random,fremantle,Fremantle,0.05974894218390947,0.11117064429860646
-random,random,gbr,GBR,-0.0019356233345251272,-0.1248520129412738
-random,random,uppsala_speaks,Activate,0.08916237422223539,0.07478637505969665
-random,random,uppsala_speaks,Standard,0.06303088978089288,-0.022901039507964627
-random,random,uppsala_speaks,UPSA Control Group,0.10127333506268621,0.25577146286560026
-random,random,valsamoggia,Valsamoggia,0.04066896201816417,0.047765145595880965
-random,random,zh_thalwil,Thalwill,0.030037811263289083,0.08974404652466572
-random,random,zh_uster,USTER,-0.5408455583267793,-0.4696689259422675
-random,random,zh_winterthur,Winterthur,-0.035401628571873456,0.14863656667235037
-random,random,zukunft,Zukunft,0.212559172621678,0.12059239751967432
+random,random,acp,Citizen Parliamentarian,-0.13409099280661751,-0.002703104055778116
+random,random,auscj,HGE Control Group,0.17340380572612824,0.24512315053974554
+random,random,auscj,HGE Deliberative Group,0.2801809834400608,0.22639811719803227
+random,random,bep,BEP,0.013239716075587715,0.16113700795759067
+random,random,biobanking_mayo_ubc,Mayo,-0.06121128041392909,-0.1493842388194201
+random,random,biobanking_mayo_ubc,UBC Bio,0.11246631296891363,-0.24414889357914293
+random,random,biobanking_wa,WA Citizens,-0.1520944795908702,-0.3626443616196211
+random,random,biobanking_wa,WA Stakeholder,-0.08542382388825431,0.12591118931343726
+random,random,ccps,CCPS ACT Deliberative,0.06599441452715138,-0.0979252006581125
+random,random,ds_aargau,Aargau,-0.051973954059300054,-0.07930409090092694
+random,random,ds_bellinzona,Bellinzona,0.03145157136794574,0.260236341915161
+random,random,energy_futures,CSIRO NSW,-0.25097227479545003,-0.06788666134735855
+random,random,energy_futures,CSIRO WA,-0.46225609912008925,-0.348833847195683
+random,random,fnqcj,FNQCJ,0.2144186083613855,-0.5836212326760712
+random,random,forestera,Forest Lay Citizen,-0.36008338519703176,-0.11387518649644812
+random,random,forestera,Forest Stakeholder,-0.2256531187425418,0.2707121505487038
+random,random,fremantle,Fremantle,0.08556920521893252,0.05101066475074356
+random,random,gbr,GBR,0.5036103621818595,0.3800023839998652
+random,random,uppsala_speaks,Activate,-0.0064556224660019534,0.04504395992924337
+random,random,uppsala_speaks,Standard,0.30160443711490204,0.2509466654957808
+random,random,uppsala_speaks,UPSA Control Group,0.14803232823826207,0.1849212629878998
+random,random,valsamoggia,Valsamoggia,-0.028286441704306275,-0.017824854961421832
+random,random,zh_thalwil,Thalwill,-0.0521957612466718,-0.1970605793998017
+random,random,zh_uster,USTER,0.45372705572391125,0.33338623127915
+random,random,zh_winterthur,Winterthur,0.43653767173176905,0.2621484443894473
+random,random,zukunft,Zukunft,0.22072079242612186,0.15117004625464592
 claude-3-5-haiku-20241022,llm,acp,Citizen Parliamentarian,-0.024902331733186123,-0.0023692919584473726
 claude-3-5-sonnet-20241022,llm,acp,Citizen Parliamentarian,0.24614144616653832,0.1456246117330593
 claude-3-7-sonnet-20250219,llm,acp,Citizen Parliamentarian,0.12666498031501217,0.07575188010236333
@@ -65,6 +65,7 @@ deepseek-chat,llm,acp,Citizen Parliamentarian,-0.1313013705169218,-0.17932488503
 deepseek-reasoner,llm,acp,Citizen Parliamentarian,-0.02500333021379275,-0.05646280061510456
 gemini-1.5-flash,llm,acp,Citizen Parliamentarian,-0.3882694557883809,-0.07539356407103759
 gemini-1.5-flash-8b,llm,acp,Citizen Parliamentarian,-0.1876399478254176,1.0930166697153965e-4
+gemini-1.5-flash-8b-t=1,llm,acp,Citizen Parliamentarian,-0.24705725239598197,-0.2404245961698479
 gemini-1.5-pro,llm,acp,Citizen Parliamentarian,-0.2709380712183299,0.14508482257290556
 gemini-2.0-flash,llm,acp,Citizen Parliamentarian,-0.06931834732460518,0.26708943071103586
 gemini-2.5-pro-preview-03-25,llm,acp,Citizen Parliamentarian,-0.09854599205267156,-0.13937497294349432
@@ -115,6 +116,7 @@ deepseek-chat,llm,auscj,HGE Control Group,-0.9023120660373466,-0.675221145688964
 deepseek-reasoner,llm,auscj,HGE Control Group,-0.7314649961596863,-0.6363440800902855
 gemini-1.5-flash,llm,auscj,HGE Control Group,-0.7544684104656905,-0.6644072583719067
 gemini-1.5-flash-8b,llm,auscj,HGE Control Group,-0.20142695661434917,-0.16926505472639886
+gemini-1.5-flash-8b-t=1,llm,auscj,HGE Control Group,0.043297452686088755,0.016368160157774758
 gemini-1.5-pro,llm,auscj,HGE Control Group,-1.1527048931037327,-0.7308877268253973
 gemini-2.0-flash,llm,auscj,HGE Control Group,-0.07317234701829356,-0.3140489987731955
 gemini-2.5-pro-preview-03-25,llm,auscj,HGE Control Group,-0.8462366546773203,-0.7310736537893869
@@ -165,6 +167,7 @@ deepseek-chat,llm,auscj,HGE Deliberative Group,-0.6428442125525488,-0.8789954348
 deepseek-reasoner,llm,auscj,HGE Deliberative Group,-0.47165048186689285,-0.7194813268414363
 gemini-1.5-flash,llm,auscj,HGE Deliberative Group,-0.6780405587242048,-0.5490314830437544
 gemini-1.5-flash-8b,llm,auscj,HGE Deliberative Group,-0.17385292553305565,0.043318421882005076
+gemini-1.5-flash-8b-t=1,llm,auscj,HGE Deliberative Group,0.09135385491817805,0.13004473781475
 gemini-1.5-pro,llm,auscj,HGE Deliberative Group,-0.6915576638417144,-0.788590515681629
 gemini-2.0-flash,llm,auscj,HGE Deliberative Group,-0.12357157794531803,-0.22848470765298323
 gemini-2.5-pro-preview-03-25,llm,auscj,HGE Deliberative Group,-0.5725974221363483,-0.6829715214630864
@@ -215,6 +218,7 @@ deepseek-chat,llm,bep,BEP,0.5192487846732832,0.42601381816444994
 deepseek-reasoner,llm,bep,BEP,0.34119531163268446,0.46968722601746826
 gemini-1.5-flash,llm,bep,BEP,0.5064175288283983,0.3796393440076087
 gemini-1.5-flash-8b,llm,bep,BEP,0.5357213539660073,0.38444344839331124
+gemini-1.5-flash-8b-t=1,llm,bep,BEP,0.5295496507702102,0.43490639059992375
 gemini-1.5-pro,llm,bep,BEP,0.42184206715777206,0.3678521499806999
 gemini-2.0-flash,llm,bep,BEP,0.5421508216040316,0.40262215506168664
 gemini-2.5-pro-preview-03-25,llm,bep,BEP,0.3774637171332129,0.37630531048968163
@@ -265,6 +269,7 @@ deepseek-chat,llm,biobanking_mayo_ubc,Mayo,0.34879312123052086,0.274517305251276
 deepseek-reasoner,llm,biobanking_mayo_ubc,Mayo,-0.3888161607611822,-0.6114151362693603
 gemini-1.5-flash,llm,biobanking_mayo_ubc,Mayo,0.4118637497850195,0.46693594218531786
 gemini-1.5-flash-8b,llm,biobanking_mayo_ubc,Mayo,0.1395119347059064,0.48454501975055986
+gemini-1.5-flash-8b-t=1,llm,biobanking_mayo_ubc,Mayo,0.30342385187389964,0.45389177798617464
 gemini-1.5-pro,llm,biobanking_mayo_ubc,Mayo,0.34253743860377805,0.36540014284940203
 gemini-2.0-flash,llm,biobanking_mayo_ubc,Mayo,0.33657549702101686,0.38576875333211835
 gemini-2.5-pro-preview-03-25,llm,biobanking_mayo_ubc,Mayo,0.44095434049330273,0.5332551932630294
@@ -315,6 +320,7 @@ deepseek-chat,llm,biobanking_mayo_ubc,UBC Bio,0.34383971745726183,0.257867436151
 deepseek-reasoner,llm,biobanking_mayo_ubc,UBC Bio,-0.5643097846093839,-0.5088323840065632
 gemini-1.5-flash,llm,biobanking_mayo_ubc,UBC Bio,0.4698301918237848,0.15002556997380379
 gemini-1.5-flash-8b,llm,biobanking_mayo_ubc,UBC Bio,0.025768290419422524,0.37600433726987537
+gemini-1.5-flash-8b-t=1,llm,biobanking_mayo_ubc,UBC Bio,0.16522260708431302,0.27134259469873445
 gemini-1.5-pro,llm,biobanking_mayo_ubc,UBC Bio,0.39444991654549044,0.18301154641345518
 gemini-2.0-flash,llm,biobanking_mayo_ubc,UBC Bio,0.33777121110223907,0.22713361893731587
 gemini-2.5-pro-preview-03-25,llm,biobanking_mayo_ubc,UBC Bio,0.2016573323470272,0.37100137091566543
@@ -365,6 +371,7 @@ deepseek-chat,llm,biobanking_wa,WA Citizens,0.69203853275401,0.5129094797675109
 deepseek-reasoner,llm,biobanking_wa,WA Citizens,0.1156142049540747,0.054600513278305396
 gemini-1.5-flash,llm,biobanking_wa,WA Citizens,0.4046553923028615,0.3173188414533583
 gemini-1.5-flash-8b,llm,biobanking_wa,WA Citizens,0.6043813747290241,0.2684934639015888
+gemini-1.5-flash-8b-t=1,llm,biobanking_wa,WA Citizens,0.3367473801095291,0.41497309936799565
 gemini-1.5-pro,llm,biobanking_wa,WA Citizens,0.6759503048549109,0.2607400096833805
 gemini-2.0-flash,llm,biobanking_wa,WA Citizens,0.3976132785592612,0.5482567651170143
 gemini-2.5-pro-preview-03-25,llm,biobanking_wa,WA Citizens,0.4455448042901633,0.4481698726504877
@@ -415,6 +422,7 @@ deepseek-chat,llm,biobanking_wa,WA Stakeholder,0.5907810428173945,0.625382429693
 deepseek-reasoner,llm,biobanking_wa,WA Stakeholder,-0.12468113127886693,0.19788987471080288
 gemini-1.5-flash,llm,biobanking_wa,WA Stakeholder,0.5434707141633699,0.23689147301688251
 gemini-1.5-flash-8b,llm,biobanking_wa,WA Stakeholder,0.5385681443959704,0.1512895588574492
+gemini-1.5-flash-8b-t=1,llm,biobanking_wa,WA Stakeholder,0.46845279256155936,0.02958626353560656
 gemini-1.5-pro,llm,biobanking_wa,WA Stakeholder,0.4253307666740591,0.5520357863482408
 gemini-2.0-flash,llm,biobanking_wa,WA Stakeholder,0.39754268299732765,0.37062075986212584
 gemini-2.5-pro-preview-03-25,llm,biobanking_wa,WA Stakeholder,0.39193729837282243,0.3386884591520858
@@ -465,6 +473,7 @@ deepseek-chat,llm,ccps,CCPS ACT Deliberative,0.7162962756271223,0.75395229404558
 deepseek-reasoner,llm,ccps,CCPS ACT Deliberative,0.6269125836575733,0.724754034120801
 gemini-1.5-flash,llm,ccps,CCPS ACT Deliberative,0.5621207302268734,0.6291992557873709
 gemini-1.5-flash-8b,llm,ccps,CCPS ACT Deliberative,-0.08901102514487014,-0.06323887700902453
+gemini-1.5-flash-8b-t=1,llm,ccps,CCPS ACT Deliberative,0.4910347138660245,0.5103022843146399
 gemini-1.5-pro,llm,ccps,CCPS ACT Deliberative,-1.035148597775983,-1.215996264761169
 gemini-2.0-flash,llm,ccps,CCPS ACT Deliberative,0.6975453486304157,0.7304877494328945
 gemini-2.5-pro-preview-03-25,llm,ccps,CCPS ACT Deliberative,0.605856191068989,0.7012797511460822
@@ -515,6 +524,7 @@ deepseek-chat,llm,ds_aargau,Aargau,0.4136382997864976,0.059359929386885835
 deepseek-reasoner,llm,ds_aargau,Aargau,0.29277332910564025,0.2555275446881382
 gemini-1.5-flash,llm,ds_aargau,Aargau,0.27435622010464455,0.18619763163877123
 gemini-1.5-flash-8b,llm,ds_aargau,Aargau,0.02343871301017164,0.20987702033155986
+gemini-1.5-flash-8b-t=1,llm,ds_aargau,Aargau,-0.25108148962528365,-0.03428364748808144
 gemini-1.5-pro,llm,ds_aargau,Aargau,0.2470179733311253,0.14573775061833882
 gemini-2.0-flash,llm,ds_aargau,Aargau,0.3145731615261116,0.0950104462866257
 gemini-2.5-pro-preview-03-25,llm,ds_aargau,Aargau,0.2779400274241377,0.14360087431676583
@@ -565,6 +575,7 @@ deepseek-chat,llm,ds_bellinzona,Bellinzona,0.2171643539733945,0.6208406602994505
 deepseek-reasoner,llm,ds_bellinzona,Bellinzona,-0.03608924093426802,0.4390583008133033
 gemini-1.5-flash,llm,ds_bellinzona,Bellinzona,0.47711278824491354,0.80791979171391
 gemini-1.5-flash-8b,llm,ds_bellinzona,Bellinzona,0.26947973052967034,0.27864930628812434
+gemini-1.5-flash-8b-t=1,llm,ds_bellinzona,Bellinzona,0.5005917418264392,0.4283444064786961
 gemini-1.5-pro,llm,ds_bellinzona,Bellinzona,-0.19782474243676662,-0.01801378597022152
 gemini-2.0-flash,llm,ds_bellinzona,Bellinzona,0.17884384408442688,0.5722739811809316
 gemini-2.5-pro-preview-03-25,llm,ds_bellinzona,Bellinzona,-0.7255264927057017,-0.5181878535425262
@@ -615,6 +626,7 @@ deepseek-chat,llm,energy_futures,CSIRO NSW,0.3590103956202848,0.3190918856618532
 deepseek-reasoner,llm,energy_futures,CSIRO NSW,0.4116682756037777,0.32252458973194
 gemini-1.5-flash,llm,energy_futures,CSIRO NSW,0.418618783626848,0.6007140822898351
 gemini-1.5-flash-8b,llm,energy_futures,CSIRO NSW,0.48725888620430613,0.5556025480984723
+gemini-1.5-flash-8b-t=1,llm,energy_futures,CSIRO NSW,0.5554458641673705,0.4284914376345428
 gemini-1.5-pro,llm,energy_futures,CSIRO NSW,0.5395647682724642,0.42171832301760803
 gemini-2.0-flash,llm,energy_futures,CSIRO NSW,0.5326629602893154,0.6636034189374607
 gemini-2.5-pro-preview-03-25,llm,energy_futures,CSIRO NSW,0.5278334127364361,0.4545843790877546
@@ -665,6 +677,7 @@ deepseek-chat,llm,energy_futures,CSIRO WA,0.39589569980187145,0.6453912898151295
 deepseek-reasoner,llm,energy_futures,CSIRO WA,0.41154632385557455,0.6512649645841877
 gemini-1.5-flash,llm,energy_futures,CSIRO WA,0.5597987634293244,0.49342183603849565
 gemini-1.5-flash-8b,llm,energy_futures,CSIRO WA,0.6259669918836763,0.48743596370329034
+gemini-1.5-flash-8b-t=1,llm,energy_futures,CSIRO WA,0.5797011689458189,0.48153777450602586
 gemini-1.5-pro,llm,energy_futures,CSIRO WA,0.4982446827761007,0.6482325342879596
 gemini-2.0-flash,llm,energy_futures,CSIRO WA,0.61045602563389,0.614942863240387
 gemini-2.5-pro-preview-03-25,llm,energy_futures,CSIRO WA,0.4750637469345913,0.601777989527158
@@ -715,6 +728,7 @@ deepseek-chat,llm,fnqcj,FNQCJ,0.24228674351542634,0.6601332411849814
 deepseek-reasoner,llm,fnqcj,FNQCJ,-0.9095312514294096,0.4638851175462919
 gemini-1.5-flash,llm,fnqcj,FNQCJ,0.0016083274586395913,0.43680555407664756
 gemini-1.5-flash-8b,llm,fnqcj,FNQCJ,-0.0186013917799549,0.1896019968247704
+gemini-1.5-flash-8b-t=1,llm,fnqcj,FNQCJ,0.15071312048626861,0.5699463261352429
 gemini-1.5-pro,llm,fnqcj,FNQCJ,0.0852781649299823,0.5423891498359708
 gemini-2.0-flash,llm,fnqcj,FNQCJ,0.012223494110907618,-0.02257098167354976
 gemini-2.5-pro-preview-03-25,llm,fnqcj,FNQCJ,-0.1253219351511401,0.5380890681657795
@@ -765,6 +779,7 @@ deepseek-chat,llm,forestera,Forest Lay Citizen,0.4933736628931542,0.726216934085
 deepseek-reasoner,llm,forestera,Forest Lay Citizen,-0.3836982416888143,-0.1756528432486163
 gemini-1.5-flash,llm,forestera,Forest Lay Citizen,0.42836776173684643,0.650847176470787
 gemini-1.5-flash-8b,llm,forestera,Forest Lay Citizen,0.46500462831457146,0.6491673205180806
+gemini-1.5-flash-8b-t=1,llm,forestera,Forest Lay Citizen,0.2783406972484235,0.5921008909878036
 gemini-1.5-pro,llm,forestera,Forest Lay Citizen,0.2870320829569466,0.5599102830673413
 gemini-2.0-flash,llm,forestera,Forest Lay Citizen,0.4831939047388256,0.6053910069509967
 gemini-2.5-pro-preview-03-25,llm,forestera,Forest Lay Citizen,0.45436879306461475,0.7003790625207247
@@ -815,6 +830,7 @@ deepseek-chat,llm,forestera,Forest Stakeholder,0.5332378543262559,0.590281021798
 deepseek-reasoner,llm,forestera,Forest Stakeholder,-0.18880888984455113,-0.033343422940508405
 gemini-1.5-flash,llm,forestera,Forest Stakeholder,0.4428436009249397,0.4682735227194599
 gemini-1.5-flash-8b,llm,forestera,Forest Stakeholder,0.3657445013159186,0.46736642002264306
+gemini-1.5-flash-8b-t=1,llm,forestera,Forest Stakeholder,0.3286759156403196,0.33450334341493404
 gemini-1.5-pro,llm,forestera,Forest Stakeholder,0.3760296334279296,0.5942205407702446
 gemini-2.0-flash,llm,forestera,Forest Stakeholder,0.7470402563132184,0.7260708940400338
 gemini-2.5-pro-preview-03-25,llm,forestera,Forest Stakeholder,0.47965067786366133,0.4848184451130364
@@ -865,6 +881,7 @@ deepseek-chat,llm,fremantle,Fremantle,0.27938006393256987,0.3382764555569635
 deepseek-reasoner,llm,fremantle,Fremantle,-0.10292986565546036,-0.43832765286069453
 gemini-1.5-flash,llm,fremantle,Fremantle,0.17485605088891298,0.06635194961688473
 gemini-1.5-flash-8b,llm,fremantle,Fremantle,-0.23882826241618305,-0.44195361618556106
+gemini-1.5-flash-8b-t=1,llm,fremantle,Fremantle,-0.15807918863136294,-0.3064612788826
 gemini-1.5-pro,llm,fremantle,Fremantle,-0.05510184278426722,-0.036151633615997714
 gemini-2.0-flash,llm,fremantle,Fremantle,0.30836458177625503,0.4621960268879832
 gemini-2.5-pro-preview-03-25,llm,fremantle,Fremantle,0.46039341549907276,0.5493831613635647
@@ -915,6 +932,7 @@ deepseek-chat,llm,gbr,GBR,-1.8565746862384653,-1.9994685931334373
 deepseek-reasoner,llm,gbr,GBR,-1.116613119091045,-0.9481579418741338
 gemini-1.5-flash,llm,gbr,GBR,-1.7220105751710757,-1.8365088883237952
 gemini-1.5-flash-8b,llm,gbr,GBR,-1.5929206934388975,-1.5685627361714727
+gemini-1.5-flash-8b-t=1,llm,gbr,GBR,-1.0867145379793994,-1.1834179620210001
 gemini-1.5-pro,llm,gbr,GBR,-1.447976984831778,-1.546999166156017
 gemini-2.0-flash,llm,gbr,GBR,-1.684911631873958,-1.750551561645055
 gemini-2.5-pro-preview-03-25,llm,gbr,GBR,-1.3672061238285067,-1.3609806349930105
@@ -965,6 +983,7 @@ deepseek-chat,llm,uppsala_speaks,Activate,0.49555736994929234,0.4666544793978058
 deepseek-reasoner,llm,uppsala_speaks,Activate,0.4741420417929907,0.42582540542652625
 gemini-1.5-flash,llm,uppsala_speaks,Activate,0.3370189811979558,0.4053805163793234
 gemini-1.5-flash-8b,llm,uppsala_speaks,Activate,0.5785284016207766,0.5678847085666054
+gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,Activate,0.5560442573649951,0.6341676651949859
 gemini-1.5-pro,llm,uppsala_speaks,Activate,0.5765726414300629,0.6464245754675995
 gemini-2.0-flash,llm,uppsala_speaks,Activate,0.5232510973935298,0.6494223286948355
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,Activate,0.49880386161500057,0.5510350096454553
@@ -1015,6 +1034,7 @@ deepseek-chat,llm,uppsala_speaks,Standard,0.2141007835846349,0.3339156435600463
 deepseek-reasoner,llm,uppsala_speaks,Standard,0.4644771532272416,0.36005500184097694
 gemini-1.5-flash,llm,uppsala_speaks,Standard,0.18207835266708705,0.13809762389983282
 gemini-1.5-flash-8b,llm,uppsala_speaks,Standard,0.20835050059058013,0.35308608480198744
+gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,Standard,0.16676279069475197,0.32603987680298596
 gemini-1.5-pro,llm,uppsala_speaks,Standard,0.6906722537215864,0.6350933363034521
 gemini-2.0-flash,llm,uppsala_speaks,Standard,0.6707300002517944,0.694571905243258
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,Standard,0.35454419969147666,0.5080968257614078
@@ -1065,6 +1085,7 @@ deepseek-chat,llm,uppsala_speaks,UPSA Control Group,0.4675711734053203,0.5018773
 deepseek-reasoner,llm,uppsala_speaks,UPSA Control Group,0.5655438688802421,0.5129003895043189
 gemini-1.5-flash,llm,uppsala_speaks,UPSA Control Group,0.36632765923943333,0.40749519608317186
 gemini-1.5-flash-8b,llm,uppsala_speaks,UPSA Control Group,0.49817573132008586,0.31729945848123275
+gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,UPSA Control Group,0.4511828273085732,0.4293494488905507
 gemini-1.5-pro,llm,uppsala_speaks,UPSA Control Group,0.357517260836159,0.4711107091823701
 gemini-2.0-flash,llm,uppsala_speaks,UPSA Control Group,0.3508244511173313,0.3546015160520062
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,UPSA Control Group,0.4041537305953977,0.3090365381334321
@@ -1115,6 +1136,7 @@ deepseek-chat,llm,valsamoggia,Valsamoggia,0.26284648107201725,0.400734480189344
 deepseek-reasoner,llm,valsamoggia,Valsamoggia,0.41381895587323436,0.35319201377226195
 gemini-1.5-flash,llm,valsamoggia,Valsamoggia,-0.6989918923552698,-0.5496644468378746
 gemini-1.5-flash-8b,llm,valsamoggia,Valsamoggia,-0.931711897924214,-0.8413556227548691
+gemini-1.5-flash-8b-t=1,llm,valsamoggia,Valsamoggia,-0.09615776720081759,-0.040316017659346115
 gemini-1.5-pro,llm,valsamoggia,Valsamoggia,-0.3511811004682148,-0.0723194813578123
 gemini-2.0-flash,llm,valsamoggia,Valsamoggia,0.15238186005959808,0.13508839985308452
 gemini-2.5-pro-preview-03-25,llm,valsamoggia,Valsamoggia,0.12627623476215644,0.22937862867044068
@@ -1165,6 +1187,7 @@ deepseek-chat,llm,zh_thalwil,Thalwill,-0.1123641392165381,0.29433354819554935
 deepseek-reasoner,llm,zh_thalwil,Thalwill,-0.033568769730877634,0.19873876403918356
 gemini-1.5-flash,llm,zh_thalwil,Thalwill,0.23569716050539968,0.24022233501165613
 gemini-1.5-flash-8b,llm,zh_thalwil,Thalwill,0.1377361442958327,0.2819269894648391
+gemini-1.5-flash-8b-t=1,llm,zh_thalwil,Thalwill,-0.018394598827174313,-0.0030126914296585428
 gemini-1.5-pro,llm,zh_thalwil,Thalwill,-0.10216638778040532,0.1426435327090816
 gemini-2.0-flash,llm,zh_thalwil,Thalwill,-0.05787669411283891,0.19476786558488168
 gemini-2.5-pro-preview-03-25,llm,zh_thalwil,Thalwill,-0.08343676751407902,0.18418884217953435
@@ -1215,6 +1238,7 @@ deepseek-chat,llm,zh_uster,USTER,0.5088155783089372,0.6070422845381316
 deepseek-reasoner,llm,zh_uster,USTER,0.4550283518615512,0.5146467339833765
 gemini-1.5-flash,llm,zh_uster,USTER,0.44139419881422026,0.5296585094893729
 gemini-1.5-flash-8b,llm,zh_uster,USTER,0.15285446970413696,0.1739713946138357
+gemini-1.5-flash-8b-t=1,llm,zh_uster,USTER,0.4810841706684963,0.5090600866569182
 gemini-1.5-pro,llm,zh_uster,USTER,0.4004594593701192,0.44139897846916964
 gemini-2.0-flash,llm,zh_uster,USTER,0.5737969235186386,0.5755944755014899
 gemini-2.5-pro-preview-03-25,llm,zh_uster,USTER,0.25709854811388677,0.2664104083715413
@@ -1265,6 +1289,7 @@ deepseek-chat,llm,zh_winterthur,Winterthur,0.3911578920352934,0.6176708303410638
 deepseek-reasoner,llm,zh_winterthur,Winterthur,0.3715734238255337,0.6846283792033756
 gemini-1.5-flash,llm,zh_winterthur,Winterthur,0.26035540254434597,0.5549966096711694
 gemini-1.5-flash-8b,llm,zh_winterthur,Winterthur,0.2764467351493274,0.7693730532411742
+gemini-1.5-flash-8b-t=1,llm,zh_winterthur,Winterthur,0.5136954218543865,0.7502362599884171
 gemini-1.5-pro,llm,zh_winterthur,Winterthur,0.4031344352633133,0.6420331809985886
 gemini-2.0-flash,llm,zh_winterthur,Winterthur,0.42924672980777046,0.6329168537343597
 gemini-2.5-pro-preview-03-25,llm,zh_winterthur,Winterthur,0.33121420279024893,0.6456158791526598
@@ -1315,6 +1340,7 @@ deepseek-chat,llm,zukunft,Zukunft,0.5610360153694374,0.6450570420751203
 deepseek-reasoner,llm,zukunft,Zukunft,0.4582982905380628,0.4972680713034632
 gemini-1.5-flash,llm,zukunft,Zukunft,0.5377482921965657,0.6320135758961485
 gemini-1.5-flash-8b,llm,zukunft,Zukunft,0.5530528911600585,0.6262251516009614
+gemini-1.5-flash-8b-t=1,llm,zukunft,Zukunft,0.5553144773680978,0.6338157196618275
 gemini-1.5-pro,llm,zukunft,Zukunft,0.5643456801351452,0.6143775618637028
 gemini-2.0-flash,llm,zukunft,Zukunft,0.5340821321682536,0.5561671923842844
 gemini-2.5-pro-preview-03-25,llm,zukunft,Zukunft,0.5855139065403494,0.6228831533608263
