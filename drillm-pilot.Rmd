@@ -1,0 +1,172 @@
+---
+title: 'Evaluating LLMs Against Human Collective Wisdom: Can AI Reason Deliberatively?'
+author: "Francesco Veri, Gustavo Umbelino"
+date: "`r Sys.Date()`"
+bibliography: bibliography/refs.bib
+link-citations: true
+csl: bibliography/apsa.csl
+output:
+  pdf_document: default
+  html_document: default
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(tidyverse)
+library(readxl)
+
+OUTPUT_DIR <- "analysis"
+
+ALPHA_RESULTS_FILE <- "alpha_results.csv"
+AGGREGATION_RESULTS_FILE <- "llm_data_aggregated.csv"
+
+read_output_csv <- function(file_name) {
+  read_csv(paste(OUTPUT_DIR, file_name, sep = "/"), show_col_types = FALSE)
+}
+
+```
+
+
+# Read in data
+```{r read data}
+
+DRI_IND_DATA <- read_output_csv("LLM_alpha_DRI.csv")
+
+
+```
+
+
+# Hypotheses Testing
+
+## H1. DRI scores of LLMs do not significantly differ from those produced by a random generation process.
+
+### Testing assumptions
+
+We employed a one-way ANOVA (or a Kruskal-Wallis test, depending on the results of the exploratory analysis) between subjects to analyze our results. If normality and homogeneity of variance assumptions are met, we will use ANOVA followed by Tukey’s HSD post-hoc test for pairwise comparisons between LLM/version DRI and random DRI. If assumptions are violated, we will use the non-parametric Kruskal-Wallis test, followed by Dunn’s post-hoc test with Bonferroni correction.
+
+The independent variable is be the type of participant (e.g., random, model). The dependent variable is the individual-level DRI score.
+
+```{r H1-assumptions, fig.width=10,fig.height=6}
+
+## get data for analysis
+DRIInd.ALL <- DRIInd.LLMs %>%
+  mutate(source = model) %>%
+  mutate(source_type = "llm") %>%
+  select(source, source_type, survey, case, DRIPreV3, dv) %>%
+  rename(DRIPostV3 = dv)
+
+DRIInd.ALL <- DRIInd.Rands %>%
+  mutate(source = "random") %>%
+  mutate(source_type = source) %>%
+  select(source, source_type, survey, case, DRIPreV3, DRIPostV3) %>%
+  bind_rows(DRIInd.ALL)
+
+DRIInd.ALL <- DRI.Global %>%
+  filter(type == "human_only") %>%
+  mutate(
+    source = "human_only_mean",
+    source_type = "human",
+    DRIPreV3 = DRI_PRE_V3,
+    DRIPostV3 = DRI_POST_V3
+  ) %>%
+  select(source, source_type, survey, case, DRIPreV3, DRIPostV3) %>%
+  bind_rows(DRIInd.ALL)
+
+# clean data
+DRIInd.ALL <- DRIInd.ALL %>%
+  mutate(
+    source = as.factor(source),
+    source_type = as.factor(source_type),
+    survey = as.factor(survey),
+    case = as.factor(case)
+  )
+
+
+write_output_csv(DRIInd.ALL, "DRIInd_all.csv")
+
+df <- DRIInd.ALL %>% filter(source != "human_only_mean")
+
+# 1. Normality assumption: Shapiro-Wilk test for each group
+shapiro_results <- df %>%
+  group_by(source) %>%
+  summarise(shapiro_p = shapiro.test(DRIPostV3)$p.value)
+
+# 2. Homogeneity of variances: Levene's Test
+levene_test_result <- leveneTest(DRIPostV3 ~ source, data = df)
+
+# plot distributions
+df %>%
+  full_join(shapiro_results, by = "source") %>%
+  mutate(signif = shapiro_p > 0.05) %>%
+
+  ggplot(aes(x = DRIPostV3, fill = source_type)) +
+  geom_histogram(bins = 30,
+                 alpha = 0.6,
+                 position = "identity") +
+  facet_wrap(~ source) +
+  labs(title = "Distribution of DRIPostV3 for Each Source Type", 
+       x = "DRIPostV3", 
+       y = "Frequency") +
+  theme_minimal() + theme(legend.position = "none") +
+  geom_point(
+    data = . %>% filter(signif),
+    aes(x = -1, y = 5), color = "red", shape = 8, size = 5)
+
+# Assuming your dataframe is named `df`
+df %>% arrange(source_type, source) %>%
+ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
+  geom_boxplot() +
+  labs(title = "Distribution of DRIPostV3 for Each Source Type",
+       x = "Source",
+       y = "DRIPostV3") +
+  theme_minimal() + 
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(angle = 90, hjust = 1))
+
+
+```
+
+### Testing hypothesis
+
+```{r H1-test}
+
+kruskal_test_result <- kruskal.test(DRIPostV3 ~ source, data = df)
+kruskal_test_result
+
+```
+
+### Post-hoc tests
+
+```{r H1-posthoc}
+
+if (kruskal_test_result$p.value < 0.05) {
+  # Perform Dunn's test if Kruskal-Wallis test is significant
+  dunn_test_result <- dunn.test(df$DRIPostV3, df$source, method = "bonferroni", kw = FALSE, table = FALSE)
+  
+  dunn_test_result <- as.data.frame(dunn_test_result)
+  
+  random_comp <- dunn_test_result %>%
+    filter(grepl("random", comparisons)) %>%
+    mutate(P.rounded = round(P.adjusted, 3)) %>%
+    mutate(P.formated = ifelse(P.rounded < 0.05, paste0(P.rounded, "*"), P.rounded))
+  
+  # Print the results of Dunn's test with Bonferroni correction
+  random_comp %>%
+    arrange(P.adjusted) %>% 
+    mutate(model = str_remove(comparisons, " - random")) %>%
+    select(model, P.formated) %>%
+    knitr::kable(
+      caption = "Models compared to random",
+      col.names = c("Model", "P-adjusted"),
+      digits = 3
+    )
+  
+} else {
+  message("Kruskal-Wallis test is not significant; no need for post-hoc testing.")
+}
+
+```
+

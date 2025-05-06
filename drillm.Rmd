@@ -27,6 +27,8 @@ SURVEY_FILE <- "data/surveys_v5.xlsx"
 EXEC_LOG_FILE <- "llm_data/exec_log.csv"
 LLMS_FILE <- "private/llms_v3.csv"
 HUMAN_DATA_FILE <- "data/total dataset_clean.csv"
+SWISS_DATA_FILE <- "data/CA_PRE_POST.csv"
+CASES_FILE <- "data/cases.csv"
 EXPENSES_FILE <- "billing/transaction_history.xlsx"
 OUTPUT_DIR <- "analysis"
 
@@ -296,11 +298,9 @@ write_csv(llm_surveys, paste(OUTPUT_DIR, "llm_surveys.csv", sep = "/"))
 
 ```
 
-
 ## Handle special models
 
-*command-r7b-12-2024-t=1
-*grok-3-beta-r=TRUE
+*command-r7b-12-2024-t=1* grok-3-beta-r=TRUE
 
 ```{r temperature}
 
@@ -315,7 +315,6 @@ llm_data[llm_data$temperature == 1,]$model <- paste(llm_data[llm_data$temperatur
 llm_surveys[llm_surveys$temperature == 1,]$model <- paste(llm_surveys[llm_surveys$temperature == 1,]$model, "t=1", sep = "-")
 
 ```
-
 
 We collected a total of `r nrow(llm_data)` valid LLM responses across `r nrow(surveys)` surveys.
 
@@ -1185,6 +1184,88 @@ human_data <- human_data %>%
   rename_with( ~ sub("^Pref", "P", .), Pref1:Pref10) %>%
   filter(Study != "Sydney CC Adaptation")
 
+```
+
+## Handle Swiss cases
+```{r swiss cases}
+
+# Import the CSV file into a data frame
+swiss_data <- read_csv(SWISS_DATA_FILE, show_col_types = FALSE)
+
+# Rename columns to be consistent with LLM data
+swiss_data <- swiss_data %>%
+  rename_with( ~ sub("^U0|^U", "C", .), everything()) %>%
+  rename_with( ~ sub("^RF", "P", .), everything())
+
+# Get valid column names
+swiss_C_cols <- swiss_data %>%
+  select(C1:C24) %>%
+  colnames()
+
+# get swiss LLM data
+swiss_llm_data <- llm_data %>%
+  filter(survey == "swiss_health")
+
+# remove swiss case from llm data
+llm_data <- llm_data %>%
+  filter(survey != "swiss_health")
+
+# extract valid C columns
+swiss_llm_C_data <- swiss_llm_data %>%
+  select(swiss_C_cols)
+
+# rename valid C columns
+swiss_llm_C_data <- swiss_llm_C_data %>%
+  rename_with(~ paste0("C", seq_along(.)),
+              starts_with("C", ignore.case = FALSE))
+
+# ensure data has columns up to C50
+for (j in (ncol(swiss_llm_C_data)+1):50) {
+  swiss_llm_C_data[[paste0("C", j)]] <- as.numeric(NA)
+}
+
+# remove all C data
+swiss_llm_data <- swiss_llm_data %>%
+  select(-(C1:C50))
+
+# add renamed and valid C data
+swiss_llm_data <- bind_cols(swiss_llm_data, swiss_llm_C_data) %>%
+  relocate(C1:C50, .before = P1)
+
+# add swiss data back to llm data
+llm_data <- bind_rows(llm_data, swiss_llm_data)
+
+# rename valid C columns
+swiss_data <- swiss_data %>%
+  rename_with(~ paste0("C", seq_along(.)),
+              C1:C24)
+
+# rename valid C columns
+# swiss_data <- swiss_data %>%
+#   rename_with(~ paste0("C", seq_along(.)),
+#               starts_with("C", ignore.case = FALSE))
+
+# ensure data has columns up to C50
+for (j in 17:50) {
+  col <- paste0("C", j)
+  swiss_data[[col]] <- as.numeric(NA)
+  swiss_data <- swiss_data %>%
+    relocate(col, .before = P1)
+}
+
+# ensure data has columns up to P10
+for (j in 7:10) {
+  col <- paste0("P", j)
+  swiss_data[[col]] <- as.numeric(NA)
+}
+
+
+
+```
+
+
+```{r add survey}
+
 # Read the mapping file
 study_survey_map <- read_csv("data/study_survey_map.csv", show_col_types = FALSE)
 
@@ -1193,7 +1274,7 @@ human_data <- human_data %>%
   left_join(study_survey_map, by = c("Study" = "study")) %>%
   relocate(survey, .after = "Study")
 
-# print human data
+
 human_data %>%
   group_by(Case, survey) %>%
   summarise(
@@ -1206,9 +1287,39 @@ human_data %>%
     row.names = TRUE,
     col.names = c("Case", "Survey", "Participants")
     )
+
 ```
 
+
 We collected `r nrow(human_data)` human responses across `r length(unique(human_data$Case))` case studies, including pre-post deliberation responses.
+
+## Excluded cases
+
+```{r exclude cases}
+
+# Import the CSV file into a data frame
+cases <- read_csv(CASES_FILE, show_col_types = FALSE)
+excluded_cases <- cases %>% filter(!included)
+
+excluded_cases %>%
+  select(-included)%>%
+  knitr::kable(
+    caption = "Excluded cases",
+    row.names = TRUE,
+    col.names = c("Case", "Survey", "Participants", "Excluded Reason")
+  )
+
+```
+
+We excluded `r nrow(excluded_cases)` cases due to the reasons listed above.
+
+```{r final cases}
+
+human_data <- human_data %>%
+  filter(!Case %in% excluded_cases$case)
+
+```
+
 
 # Randomly Generated Data
 
@@ -1414,6 +1525,9 @@ dri_calc_v3 <- function(data, v1, v2) {
 
 ```
 
+
+
+
 ```{r DRI}
 
 get_IC <- function(data, survey, case) {
@@ -1504,6 +1618,7 @@ get_ind_DRI <- function(IC) {
   DRIInd <- data.frame('participant' = Plist)
   DRIInd$survey <- survey
   DRIInd$case <- data_case_study$Case[1]
+  DRIInd$created_at = now_utc()
   
   DRIInd <- DRIInd[c("survey", "case", "participant")]
   
@@ -1574,6 +1689,7 @@ get_case_DRI <- function(IC, type="human_only") {
     survey = survey,
     case = case,
     type = type,
+    created_at = now_utc(),
     DRI_PRE,
     DRI_PRE_V2,
     DRI_PRE_V3,
@@ -1895,7 +2011,9 @@ DRIInd.LLMs.it.summ <- DRIInd.LLMs.it %>%
   summarise(
     DRIPostV3_mean = mean(DRIPostV3, na.rm = TRUE),
     DRIPostV3_sd = sd(DRIPostV3, na.rm = TRUE),
-    DRIPostV3_n = n(),
+    DRIPostV3_mean = mean(DRIPostV3, na.rm = TRUE),
+    bm_indexV3_mean = mean(bm_indexV3, na.rm = TRUE), 
+    n_it = n(),
   )
 
 ## add iteration results to DRIInd.LLMs
@@ -1903,7 +2021,7 @@ DRIInd.LLMs <- DRIInd.LLMs.it.summ %>%
   full_join(DRIInd.LLMs, by=c("provider", "model", "survey", "case")) %>%
   relocate(DRIPostV3_mean, .after = DRIPostV3) %>%
   relocate(DRIPostV3_sd, .after = DRIPostV3_mean) %>%
-  relocate(DRIPostV3_n, .after = DRIPostV3_sd)
+  relocate(n_it, .after = DRIPostV3_sd)
 
 ## add alpha results to DRIInd.LLMs
 LLM_alpha_DRI <- alpha_results %>%
@@ -1936,6 +2054,16 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ```
 
+# Select Dependent Variable for Analysis
+
+We are using the average DRI calculated across the iterations of LLM (DRIIndV3_mean).
+
+```{r}
+
+DRIInd.LLMs$dv <- DRIInd.LLMs$DRIPostV3_mean
+
+```
+
 
 # Hypotheses Testing
 
@@ -1943,7 +2071,7 @@ write_csv(DRI.Global, paste(OUTPUT_DIR, "DRI_global.csv", sep = "/"))
 
 ### Testing assumptions
 
-We employed a one-way ANOVA (or a Kruskal-Wallis test, depending on the results of the exploratory analysis) between subjects to analyze our results. If normality and homogeneity of variance assumptions are met, we will use ANOVA followed by Tukey’s HSD post-hoc test for pairwise comparisons between LLM/version DRI and random DRI. If assumptions are violated, we will use the non-parametric Kruskal-Wallis test, followed by Dunn’s post-hoc test with Bonferroni correction. 
+We employed a one-way ANOVA (or a Kruskal-Wallis test, depending on the results of the exploratory analysis) between subjects to analyze our results. If normality and homogeneity of variance assumptions are met, we will use ANOVA followed by Tukey’s HSD post-hoc test for pairwise comparisons between LLM/version DRI and random DRI. If assumptions are violated, we will use the non-parametric Kruskal-Wallis test, followed by Dunn’s post-hoc test with Bonferroni correction.
 
 The independent variable is be the type of participant (e.g., random, model). The dependent variable is the individual-level DRI score.
 
@@ -1953,7 +2081,8 @@ The independent variable is be the type of participant (e.g., random, model). Th
 DRIInd.ALL <- DRIInd.LLMs %>%
   mutate(source = model) %>%
   mutate(source_type = "llm") %>%
-  select(source, source_type, survey, case, DRIPreV3, DRIPostV3)
+  select(source, source_type, survey, case, DRIPreV3, dv) %>%
+  rename(DRIPostV3 = dv)
 
 DRIInd.ALL <- DRIInd.Rands %>%
   mutate(source = "random") %>%
@@ -2028,6 +2157,7 @@ ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
 ```
 
 ### Testing hypothesis
+
 ```{r H1-test}
 
 kruskal_test_result <- kruskal.test(DRIPostV3 ~ source, data = df)
@@ -2035,8 +2165,8 @@ kruskal_test_result
 
 ```
 
-
 ### Post-hoc tests
+
 ```{r H1-posthoc}
 
 if (kruskal_test_result$p.value < 0.05) {
@@ -2072,6 +2202,7 @@ Some models, `r nrow(random_comp %>% filter(P.adjusted < 0.05))` out of `r nrow(
 ## H2. LLMs' DRI scores will be significantly lower than those obtained from human participants after deliberation.
 
 ### Testing assumptions
+
 ```{r H2-assumptions, fig.width=10,fig.height=6}
 
 df <- DRIInd.ALL %>% filter(source != "random")
@@ -2115,6 +2246,7 @@ ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
 
 
 ```
+
 ### Testing hypothesis
 
 To test H2, we will compare the average individual-level, post-deliberation DRI scores obtained by human participants with the individual-level DRI scores obtained by LLMs both across case studies and across LLM/version.
@@ -2123,10 +2255,9 @@ First, for each case study, we will employ a t-test (or non-parametric equivalen
 
 For each case study...
 
-  human average 
+human average
 
 Second, for each LLM/version, we will employ a t-test (or non-parametric equivalent, depending on the results of the exploratory analysis) to analyze our results across LLM/version. The independent variable is participant type (human-only vs. LLM/version) and the dependent variable is the individual-level DRI scores.
-
 
 ```{r H2-test}
 
@@ -2135,8 +2266,8 @@ kruskal_test_result
 
 ```
 
-
 ### Post-hoc tests
+
 ```{r H2-posthoc}
 
 if (kruskal_test_result$p.value < 0.05) {
@@ -2168,47 +2299,83 @@ if (kruskal_test_result$p.value < 0.05) {
 
 ```
 
-
 ## H3. LLMs’ DRI scores are improving over time, across each version.
 
 Random slope --
 
-Assume each case
-Multilevel analysis -- each case behave differently
+Assume each case Multilevel analysis -- each case behave differently
 
-LMER -- 
-
-
+LMER --
 
 To test H3, we will conduct a repeated measures ANOVA (or Friedman test if the assumptions of normality or sphericity are violated) to test for differences in the mean DRI across all versions (e.g., v1, v2, v3) of an LLM across each case study. We will treat different LLM versions as related groups and the individual-level LLM DRI in each case study as a subject. In this within-subjects design, we can assess whether more recent versions of LLMs have a significant impact on the DRI scores they produce.
 
-Dependent variable:
-- DRIPostV3
+We want to assess the effects of Case and Series on weight loss in 10 sedentary individuals.
 
-Independent variable:
-- case
-- series
+Dependent variable: - DRIPostV3
 
-- Levels
-- version
+Independent variables: - [LLM series (moderator) -- which llm?] - [case (moderator) -- which case?] -- [LATER] - version (focal)
+
+```{r H3-assumptions, fig.width=10,fig.height=6}
+
+library(rstatix)
+library(ggpubr)
 
 
-gemini 
 
-```{r}
+v_series <- unique(included_models_summary$series)
 
 df <- included_models_summary %>%
-  full_join(DRIInd.LLMs) %>%
-  select(model, series, version, case, DRIPostV3) %>%
+  full_join(DRIInd.LLMs, by=join_by(provider, model)) %>%
+  select(provider, model, series, version, case, DRIPostV3) %>%
   arrange(version)
+
+df <- df %>%
+  filter(series == "open-qwen") %>%
+  mutate(id = as.factor(paste(series, case, sep = "/"))) %>%
+  select(id, version, DRIPostV3)
+
+v_vals <- sort(unique(df$version))
+
+df <- df %>%
+  mutate(
+    v = as.factor(match(version, v_vals))
+  )
+
+
+
+
+
+df %>%
+  group_by(v) %>%
+  get_summary_stats(DRIPostV3, type = "common")
+
+# plot data
+bxp <- ggboxplot(df, x = "v", y = "DRIPostV3", add = "point")
+bxp
+
+# identify outliers
+df %>%
+  group_by(v) %>%
+  identify_outliers(DRIPostV3)
+
+
+# normality assumption
+df %>%
+  group_by(v) %>%
+  shapiro_test(DRIPostV3)
+
+ggqqplot(df, "DRIPostV3", facet.by = "v")
+
+# not ANOVA!
+# res.aov <- anova_test(data = df, dv = DRIPostV3, wid = id, within = v)
+# get_anova_table(res.aov)
+
+res.fried <- df %>% friedman_test(DRIPostV3 ~ v |id)
+res.fried
 
 ```
 
-
 If a significant difference is found, we will conduct a post-hoc analysis using paired t-tests (or Wilcoxon signed-rank tests) for pairwise comparisons, with adjustments for multiple comparisons.
-
-
-
 
 # DRI Benchmark
 
@@ -2230,7 +2397,6 @@ models %>%
   theme_minimal()
 
 ```
-
 
 ```{r benchmark index, fig.width=10,fig.height=6, warning=FALSE}
 
@@ -2716,13 +2882,11 @@ ggplot(plot_long, aes(x = model, y = Score, color = Metric, group = Metric)) +
 
 ## LLM Performance by Reasoner Classification
 
-
 Architecture types:
 
 -   Transformer-based models [@vaswani2017].
 
-
-Some models are considered "reasoning" models, like , reason using chain-of-thought (CoT) -- this is not a difference in architecture 
+Some models are considered "reasoning" models, like , reason using chain-of-thought (CoT) -- this is not a difference in architecture
 
 ```{r reasoner, fig.width=10,fig.height=6}
 
