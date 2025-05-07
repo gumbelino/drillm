@@ -15,34 +15,36 @@ human_only_mean,human,fnqcj,FNQCJ,-0.045849852688990445,0.4979662237714362,NA,NA
 human_only_mean,human,forestera,Forest Lay Citizen,0.3370855959332548,0.5342888399823129,NA,NA
 human_only_mean,human,forestera,Forest Stakeholder,0.5138354358417467,0.45458252276447153,NA,NA
 human_only_mean,human,fremantle,Fremantle,0.1318406467039821,0.2703262719535897,NA,NA
+human_only_mean,human,swiss_health,CA,0.17313737187241718,0.1982775429630974,NA,NA
 human_only_mean,human,uppsala_speaks,Activate,0.3642480975981299,0.5721022781484872,NA,NA
 human_only_mean,human,uppsala_speaks,Standard,0.2720131889004609,0.43579321257940307,NA,NA
 human_only_mean,human,valsamoggia,Valsamoggia,0.30768912791221714,0.3060081127341603,NA,NA
 human_only_mean,human,zh_uster,USTER,0.34455173595629685,0.4953697853451704,NA,NA
 human_only_mean,human,zh_winterthur,Winterthur,0.21919794591369968,0.5202587050867213,NA,NA
 human_only_mean,human,zukunft,Zukunft,0.42151882027369325,0.502087804552416,NA,NA
-random,random,acp,Citizen Parliamentarian,-0.0444627409922721,-0.12571909948607451,NA,NA
-random,random,auscj,HGE Deliberative Group,-0.010679219183311384,0.10888364701307274,NA,NA
-random,random,bep,BEP,-0.2571153546522881,-0.547910513540905,NA,NA
-random,random,biobanking_mayo_ubc,Mayo,-0.14153147609110805,0.07722129102144715,NA,NA
-random,random,biobanking_mayo_ubc,UBC Bio,-0.06322281832910437,0.06940851241619606,NA,NA
-random,random,biobanking_wa,WA Citizens,-0.17467011356643747,-0.06507024406829287,NA,NA
-random,random,biobanking_wa,WA Stakeholder,-0.1687796072581521,-0.2756922130594901,NA,NA
-random,random,ccps,CCPS ACT Deliberative,-0.006482661774123266,-0.040412444239819156,NA,NA
-random,random,ds_aargau,Aargau,-0.23175918088395508,-0.11344717291755824,NA,NA
-random,random,ds_bellinzona,Bellinzona,0.12275850684529344,0.15132891250269132,NA,NA
-random,random,energy_futures,CSIRO NSW,0.020025356418057028,-0.23806869764656302,NA,NA
-random,random,energy_futures,CSIRO WA,-0.07469961341675135,-0.09622512908082914,NA,NA
-random,random,fnqcj,FNQCJ,-0.088704113824291,0.19918652879507892,NA,NA
-random,random,forestera,Forest Lay Citizen,-0.02379876279795523,0.23406943808544778,NA,NA
-random,random,forestera,Forest Stakeholder,0.1168084849185882,0.2626894871081815,NA,NA
-random,random,fremantle,Fremantle,-0.12905957349630826,0.027739600122547392,NA,NA
-random,random,uppsala_speaks,Activate,0.18825618913744124,0.005478565093110621,NA,NA
-random,random,uppsala_speaks,Standard,-0.15422332979540865,-0.007922089352318529,NA,NA
-random,random,valsamoggia,Valsamoggia,-0.10814739505391913,-0.013366220119061634,NA,NA
-random,random,zh_uster,USTER,0.3022430101129947,0.18838462770221653,NA,NA
-random,random,zh_winterthur,Winterthur,0.02706025795693745,0.16786508817044932,NA,NA
-random,random,zukunft,Zukunft,0.44034065352644536,0.5331677741637861,NA,NA
+random,random,acp,Citizen Parliamentarian,-0.13409099280661751,-0.002703104055778116,NA,NA
+random,random,auscj,HGE Deliberative Group,0.2801809834400608,0.22639811719803227,NA,NA
+random,random,bep,BEP,0.013239716075587715,0.16113700795759067,NA,NA
+random,random,biobanking_mayo_ubc,Mayo,-0.06121128041392909,-0.1493842388194201,NA,NA
+random,random,biobanking_mayo_ubc,UBC Bio,0.11246631296891363,-0.24414889357914293,NA,NA
+random,random,biobanking_wa,WA Citizens,-0.1520944795908702,-0.3626443616196211,NA,NA
+random,random,biobanking_wa,WA Stakeholder,-0.08542382388825431,0.12591118931343726,NA,NA
+random,random,ccps,CCPS ACT Deliberative,0.06599441452715138,-0.0979252006581125,NA,NA
+random,random,ds_aargau,Aargau,-0.051973954059300054,-0.07930409090092694,NA,NA
+random,random,ds_bellinzona,Bellinzona,0.03145157136794574,0.260236341915161,NA,NA
+random,random,energy_futures,CSIRO NSW,-0.25097227479545003,-0.06788666134735855,NA,NA
+random,random,energy_futures,CSIRO WA,-0.46225609912008925,-0.348833847195683,NA,NA
+random,random,fnqcj,FNQCJ,0.2144186083613855,-0.5836212326760712,NA,NA
+random,random,forestera,Forest Lay Citizen,-0.36008338519703176,-0.11387518649644812,NA,NA
+random,random,forestera,Forest Stakeholder,-0.2256531187425418,0.2707121505487038,NA,NA
+random,random,fremantle,Fremantle,0.08556920521893252,0.05101066475074356,NA,NA
+random,random,swiss_health,CA,-0.05526641668023502,-0.028501903928243033,NA,NA
+random,random,uppsala_speaks,Activate,0.013697980909253227,0.034704492232614736,NA,NA
+random,random,uppsala_speaks,Standard,-0.23513098355236606,-0.06688892405733127,NA,NA
+random,random,valsamoggia,Valsamoggia,-0.333823762949254,-0.16092822490092418,NA,NA
+random,random,zh_uster,USTER,-0.11620698012611008,-0.3608263021351569,NA,NA
+random,random,zh_winterthur,Winterthur,0.18218683944562475,0.2720720910639667,NA,NA
+random,random,zukunft,Zukunft,-0.26388826861734926,-0.15105267391584976,NA,NA
 claude-3-5-haiku-20241022,llm,acp,Citizen Parliamentarian,-0.024902331733186123,-0.01852694480923074,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,auscj,HGE Deliberative Group,-0.35049865593684737,-0.35544420892306855,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,bep,BEP,0.41004945688625805,0.2589574905209991,anthropic,claude-3-5-haiku-20241022
@@ -59,6 +61,7 @@ claude-3-5-haiku-20241022,llm,fnqcj,FNQCJ,-0.5699666269121133,-0.127501539659867
 claude-3-5-haiku-20241022,llm,forestera,Forest Lay Citizen,0.5775022874973859,0.4997746013081278,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,forestera,Forest Stakeholder,0.5427865791416489,0.5040885706721364,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,fremantle,Fremantle,0.30007054471619643,0.0076124167601878045,anthropic,claude-3-5-haiku-20241022
+claude-3-5-haiku-20241022,llm,swiss_health,CA,0.2994198052214183,0.27071169944940665,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,uppsala_speaks,Activate,0.35832286881022,0.10961042917883967,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,uppsala_speaks,Standard,0.11803399846011553,0.24283797869448237,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,valsamoggia,Valsamoggia,0.3861095215941883,0.19293114862227545,anthropic,claude-3-5-haiku-20241022
@@ -81,6 +84,7 @@ claude-3-5-sonnet-20241022,llm,fnqcj,FNQCJ,0.17279365960613147,0.481556289196008
 claude-3-5-sonnet-20241022,llm,forestera,Forest Lay Citizen,0.4172646287177926,0.6491914970581214,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,forestera,Forest Stakeholder,0.4720097640502765,0.5749932764462168,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,fremantle,Fremantle,0.17619800388705098,0.16437797604230978,anthropic,claude-3-5-sonnet-20241022
+claude-3-5-sonnet-20241022,llm,swiss_health,CA,0.402042779033732,0.36894867653355745,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,uppsala_speaks,Activate,0.5015762977857638,0.5698431396685992,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,uppsala_speaks,Standard,0.20315219511164107,0.4403856686741166,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,valsamoggia,Valsamoggia,0.38811447710576097,0.383310787962423,anthropic,claude-3-5-sonnet-20241022
@@ -103,6 +107,7 @@ claude-3-7-sonnet-20250219,llm,fnqcj,FNQCJ,0.16858958461132567,0.557990144199072
 claude-3-7-sonnet-20250219,llm,forestera,Forest Lay Citizen,0.44176185281415736,0.6622279926216189,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,forestera,Forest Stakeholder,0.48675925424921807,0.5283144684145139,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,fremantle,Fremantle,0.20112844743877778,0.1533337296203898,anthropic,claude-3-7-sonnet-20250219
+claude-3-7-sonnet-20250219,llm,swiss_health,CA,0.39278189516542494,0.3824602689370275,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,uppsala_speaks,Activate,0.5358489878101178,0.5910625042210093,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,uppsala_speaks,Standard,0.19081552289532677,0.3996917154395488,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,valsamoggia,Valsamoggia,0.3122316833738634,0.3929607174379827,anthropic,claude-3-7-sonnet-20250219
@@ -125,6 +130,7 @@ claude-3-haiku-20240307,llm,fnqcj,FNQCJ,0.4238365423159558,-0.054278060720810095
 claude-3-haiku-20240307,llm,forestera,Forest Lay Citizen,0.5854273333189643,0.24068375656582291,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,forestera,Forest Stakeholder,0.6507632824297396,0.18524482418784063,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,fremantle,Fremantle,-0.05533568719966553,-0.11054356691042062,anthropic,claude-3-haiku-20240307
+claude-3-haiku-20240307,llm,swiss_health,CA,0.35380437166380485,0.13987867985890134,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,uppsala_speaks,Activate,0.47587937194251806,0.16374527231463104,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,uppsala_speaks,Standard,0.3272553809517291,0.1136748156276676,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,valsamoggia,Valsamoggia,0.4361185167214081,-0.1865756832419509,anthropic,claude-3-haiku-20240307
@@ -147,6 +153,7 @@ claude-3-opus-20240229,llm,fnqcj,FNQCJ,-0.07629765895174168,0.4837169883274467,a
 claude-3-opus-20240229,llm,forestera,Forest Lay Citizen,0.3846815915061559,0.631776047767891,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,forestera,Forest Stakeholder,0.43834253913506194,0.5249631428543772,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,fremantle,Fremantle,0.02226961319338594,-0.04826084074686792,anthropic,claude-3-opus-20240229
+claude-3-opus-20240229,llm,swiss_health,CA,0.32445358488040954,0.3420819591583198,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,uppsala_speaks,Activate,0.5570024030648313,0.5762455727604084,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,uppsala_speaks,Standard,0.21361231199231634,0.40725312805948594,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,valsamoggia,Valsamoggia,0.12622244054926912,0.17324086534303115,anthropic,claude-3-opus-20240229
@@ -169,6 +176,7 @@ command,llm,fnqcj,FNQCJ,-0.5867699788071322,0.12585747554113846,cohere,command
 command,llm,forestera,Forest Lay Citizen,0.4237148022175423,0.12341143533675128,cohere,command
 command,llm,forestera,Forest Stakeholder,0.6481860110559474,0.19471359932526444,cohere,command
 command,llm,fremantle,Fremantle,-0.26275726135561717,-0.02393261120021506,cohere,command
+command,llm,swiss_health,CA,0.2674416171490406,0.030899895255457197,cohere,command
 command,llm,uppsala_speaks,Activate,-0.03380867933495124,0.04653690049428188,cohere,command
 command,llm,uppsala_speaks,Standard,0.02947636387826824,0.01806122622287673,cohere,command
 command,llm,valsamoggia,Valsamoggia,-0.001990177617697708,-0.019053431788897124,cohere,command
@@ -191,6 +199,7 @@ command-a-03-2025,llm,fnqcj,FNQCJ,-0.034489728833400735,-0.3662653534280574,cohe
 command-a-03-2025,llm,forestera,Forest Lay Citizen,0.4063063962656144,0.02862575542802685,cohere,command-a-03-2025
 command-a-03-2025,llm,forestera,Forest Stakeholder,0.5693285974643136,-0.01403799657913278,cohere,command-a-03-2025
 command-a-03-2025,llm,fremantle,Fremantle,-0.11876525965429119,0.05328731800354007,cohere,command-a-03-2025
+command-a-03-2025,llm,swiss_health,CA,0.3718467309287268,0.030801905488688802,cohere,command-a-03-2025
 command-a-03-2025,llm,uppsala_speaks,Activate,0.47873130465728786,0.4211355836639844,cohere,command-a-03-2025
 command-a-03-2025,llm,uppsala_speaks,Standard,0.2541121570605376,0.32750849940910415,cohere,command-a-03-2025
 command-a-03-2025,llm,valsamoggia,Valsamoggia,0.3362328224109177,0.05726012551667468,cohere,command-a-03-2025
@@ -213,6 +222,7 @@ command-r-08-2024,llm,fnqcj,FNQCJ,-0.1315584512940653,0.05145286875082907,cohere
 command-r-08-2024,llm,forestera,Forest Lay Citizen,0.2729967912994311,0.1868225055314686,cohere,command-r-08-2024
 command-r-08-2024,llm,forestera,Forest Stakeholder,0.6672704908310638,0.2785726338440615,cohere,command-r-08-2024
 command-r-08-2024,llm,fremantle,Fremantle,0.2931094228744531,0.09749701826962442,cohere,command-r-08-2024
+command-r-08-2024,llm,swiss_health,CA,0.33862989251464626,0.10360945160098411,cohere,command-r-08-2024
 command-r-08-2024,llm,uppsala_speaks,Activate,0.28632108869012196,0.17855396135229293,cohere,command-r-08-2024
 command-r-08-2024,llm,uppsala_speaks,Standard,0.40657308957375915,0.10455782009626599,cohere,command-r-08-2024
 command-r-08-2024,llm,valsamoggia,Valsamoggia,0.11799031222621315,-0.1951019477803124,cohere,command-r-08-2024
@@ -235,6 +245,7 @@ command-r7b-12-2024,llm,fnqcj,FNQCJ,0.05887330348128961,0.09979097697313916,cohe
 command-r7b-12-2024,llm,forestera,Forest Lay Citizen,0.6074382078608893,0.35961246366529653,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,forestera,Forest Stakeholder,0.4820921636767219,0.421415115419559,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,fremantle,Fremantle,0.11319898459159927,-0.06141074662313623,cohere,command-r7b-12-2024
+command-r7b-12-2024,llm,swiss_health,CA,0.2027645817890411,0.09883994110269814,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,uppsala_speaks,Activate,0.42510444665650815,0.21613785664707175,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,uppsala_speaks,Standard,0.4176366165941141,0.18115181505139175,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,valsamoggia,Valsamoggia,0.3335659636673918,-0.16549731982628785,cohere,command-r7b-12-2024
@@ -257,6 +268,7 @@ command-r7b-12-2024-t=1,llm,fnqcj,FNQCJ,-0.33209016477915854,0.101908450737081,c
 command-r7b-12-2024-t=1,llm,forestera,Forest Lay Citizen,0.29528831882223905,0.3215328042636433,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,forestera,Forest Stakeholder,0.39466629587891466,0.35898440027530915,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,fremantle,Fremantle,0.21174536813436617,-0.001217584967085117,cohere,command-r7b-12-2024-t=1
+command-r7b-12-2024-t=1,llm,swiss_health,CA,0.03669329032708846,0.08178272929709512,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,uppsala_speaks,Activate,0.10110042157825827,0.06291691716011141,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,uppsala_speaks,Standard,0.23673641838292703,0.11864733641837946,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,valsamoggia,Valsamoggia,0.344350478529047,-0.1412144467452124,cohere,command-r7b-12-2024-t=1
@@ -279,6 +291,7 @@ deepseek-chat,llm,fnqcj,FNQCJ,0.24228674351542634,0.048591164652851807,deepseek,
 deepseek-chat,llm,forestera,Forest Lay Citizen,0.4933736628931542,0.5623479007390072,deepseek,deepseek-chat
 deepseek-chat,llm,forestera,Forest Stakeholder,0.5332378543262559,0.5260919693074414,deepseek,deepseek-chat
 deepseek-chat,llm,fremantle,Fremantle,0.27938006393256987,0.00843874487381448,deepseek,deepseek-chat
+deepseek-chat,llm,swiss_health,CA,0.38315865547458383,0.2525370870347891,deepseek,deepseek-chat
 deepseek-chat,llm,uppsala_speaks,Activate,0.49555736994929234,0.4357558138738851,deepseek,deepseek-chat
 deepseek-chat,llm,uppsala_speaks,Standard,0.2141007835846349,0.2756522316832203,deepseek,deepseek-chat
 deepseek-chat,llm,valsamoggia,Valsamoggia,0.26284648107201725,0.2127226373088245,deepseek,deepseek-chat
@@ -301,6 +314,7 @@ deepseek-reasoner,llm,fnqcj,FNQCJ,-0.9095312514294096,0.067461421592986,deepseek
 deepseek-reasoner,llm,forestera,Forest Lay Citizen,-0.3836982416888143,0.1496195872804679,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,forestera,Forest Stakeholder,-0.18880888984455113,0.28244368365378636,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,fremantle,Fremantle,-0.10292986565546036,0.05963008784987871,deepseek,deepseek-reasoner
+deepseek-reasoner,llm,swiss_health,CA,0.3561158865514067,0.15087472412163982,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,uppsala_speaks,Activate,0.4741420417929907,0.35149394629431824,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,uppsala_speaks,Standard,0.4644771532272416,0.2529673951835851,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,valsamoggia,Valsamoggia,0.41381895587323436,-0.20408671176475254,deepseek,deepseek-reasoner
@@ -323,6 +337,7 @@ gemini-1.5-flash,llm,fnqcj,FNQCJ,0.0016083274586395913,0.2285931026421973,google
 gemini-1.5-flash,llm,forestera,Forest Lay Citizen,0.42836776173684643,0.5362635373785647,google,gemini-1.5-flash
 gemini-1.5-flash,llm,forestera,Forest Stakeholder,0.4428436009249397,0.5715483359142365,google,gemini-1.5-flash
 gemini-1.5-flash,llm,fremantle,Fremantle,0.17485605088891298,0.055534714377138625,google,gemini-1.5-flash
+gemini-1.5-flash,llm,swiss_health,CA,0.28268633430321244,0.16213832003439357,google,gemini-1.5-flash
 gemini-1.5-flash,llm,uppsala_speaks,Activate,0.3370189811979558,0.5012582184985652,google,gemini-1.5-flash
 gemini-1.5-flash,llm,uppsala_speaks,Standard,0.18207835266708705,0.3289093337254309,google,gemini-1.5-flash
 gemini-1.5-flash,llm,valsamoggia,Valsamoggia,-0.6989918923552698,0.022727964555163818,google,gemini-1.5-flash
@@ -345,6 +360,7 @@ gemini-1.5-flash-8b,llm,fnqcj,FNQCJ,-0.0186013917799549,-0.21243810504024907,goo
 gemini-1.5-flash-8b,llm,forestera,Forest Lay Citizen,0.46500462831457146,0.2732464751185118,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,forestera,Forest Stakeholder,0.3657445013159186,0.2520049189574728,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,fremantle,Fremantle,-0.23882826241618305,-0.08806851902317307,google,gemini-1.5-flash-8b
+gemini-1.5-flash-8b,llm,swiss_health,CA,0.37216971362755413,0.17952143916310906,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,uppsala_speaks,Activate,0.5785284016207766,0.4203775505836673,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,uppsala_speaks,Standard,0.20835050059058013,0.3251108794279025,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,valsamoggia,Valsamoggia,-0.931711897924214,-0.02497309914934307,google,gemini-1.5-flash-8b
@@ -367,6 +383,7 @@ gemini-1.5-flash-8b-t=1,llm,fnqcj,FNQCJ,0.15071312048626861,0.02162674908498128,
 gemini-1.5-flash-8b-t=1,llm,forestera,Forest Lay Citizen,0.2783406972484235,0.3716458744363181,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,forestera,Forest Stakeholder,0.3286759156403196,0.3103331024080419,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,fremantle,Fremantle,-0.15807918863136294,-0.18526545205601658,google,gemini-1.5-flash-8b-t=1
+gemini-1.5-flash-8b-t=1,llm,swiss_health,CA,0.3207881389849938,0.11695960677173668,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,Activate,0.5560442573649951,0.2279159041355767,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,Standard,0.16676279069475197,0.22922568055864448,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,valsamoggia,Valsamoggia,-0.09615776720081759,-0.15986524472049296,google,gemini-1.5-flash-8b-t=1
@@ -389,6 +406,7 @@ gemini-1.5-pro,llm,fnqcj,FNQCJ,0.0852781649299823,-0.01230467195450194,google,ge
 gemini-1.5-pro,llm,forestera,Forest Lay Citizen,0.2870320829569466,0.27513148163781576,google,gemini-1.5-pro
 gemini-1.5-pro,llm,forestera,Forest Stakeholder,0.3760296334279296,0.2766309310277299,google,gemini-1.5-pro
 gemini-1.5-pro,llm,fremantle,Fremantle,-0.05510184278426722,0.12632287356791594,google,gemini-1.5-pro
+gemini-1.5-pro,llm,swiss_health,CA,0.28750960209932686,0.15103731358632969,google,gemini-1.5-pro
 gemini-1.5-pro,llm,uppsala_speaks,Activate,0.5765726414300629,0.43835019567576505,google,gemini-1.5-pro
 gemini-1.5-pro,llm,uppsala_speaks,Standard,0.6906722537215864,0.4606519859099617,google,gemini-1.5-pro
 gemini-1.5-pro,llm,valsamoggia,Valsamoggia,-0.3511811004682148,0.010962409543688899,google,gemini-1.5-pro
@@ -411,6 +429,7 @@ gemini-2.0-flash,llm,fnqcj,FNQCJ,0.012223494110907618,-0.03161655967803294,googl
 gemini-2.0-flash,llm,forestera,Forest Lay Citizen,0.4831939047388256,0.5461720400406598,google,gemini-2.0-flash
 gemini-2.0-flash,llm,forestera,Forest Stakeholder,0.7470402563132184,0.5968622183603475,google,gemini-2.0-flash
 gemini-2.0-flash,llm,fremantle,Fremantle,0.30836458177625503,0.23635192129542973,google,gemini-2.0-flash
+gemini-2.0-flash,llm,swiss_health,CA,0.3502425493627248,0.3685881898272541,google,gemini-2.0-flash
 gemini-2.0-flash,llm,uppsala_speaks,Activate,0.5232510973935298,0.5353050594364823,google,gemini-2.0-flash
 gemini-2.0-flash,llm,uppsala_speaks,Standard,0.6707300002517944,0.5192512868429872,google,gemini-2.0-flash
 gemini-2.0-flash,llm,valsamoggia,Valsamoggia,0.15238186005959808,-0.12391010550949398,google,gemini-2.0-flash
@@ -433,6 +452,7 @@ gemini-2.5-pro-preview-03-25,llm,fnqcj,FNQCJ,-0.1253219351511401,0.4504239300661
 gemini-2.5-pro-preview-03-25,llm,forestera,Forest Lay Citizen,0.45436879306461475,0.4728850118435556,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,forestera,Forest Stakeholder,0.47965067786366133,0.3467138125002286,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,fremantle,Fremantle,0.46039341549907276,0.38147314708467045,google,gemini-2.5-pro-preview-03-25
+gemini-2.5-pro-preview-03-25,llm,swiss_health,CA,0.4006381368357792,0.10157083965019988,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,Activate,0.49880386161500057,0.49451527498513703,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,Standard,0.35454419969147666,0.4127036798363321,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,valsamoggia,Valsamoggia,0.12627623476215644,0.3155335612343055,google,gemini-2.5-pro-preview-03-25
@@ -455,6 +475,7 @@ gemma,llm,fnqcj,FNQCJ,-0.060195317687025685,-0.062291023424377014,google,gemma
 gemma,llm,forestera,Forest Lay Citizen,0.40612047682233343,0.34276278886624606,google,gemma
 gemma,llm,forestera,Forest Stakeholder,0.4300636804975926,0.33143062079901797,google,gemma
 gemma,llm,fremantle,Fremantle,0.007982305887024088,-0.005709384950925461,google,gemma
+gemma,llm,swiss_health,CA,0.18875194785155935,0.05442148166647732,google,gemma
 gemma,llm,uppsala_speaks,Activate,0.5231703701489725,0.24275320804199932,google,gemma
 gemma,llm,uppsala_speaks,Standard,0.2572885385548236,0.09706993998107653,google,gemma
 gemma,llm,valsamoggia,Valsamoggia,0.10148954783320119,-0.07729047383121956,google,gemma
@@ -477,6 +498,7 @@ gemma2:27b,llm,fnqcj,FNQCJ,0.26640404385428207,0.07131058399616876,google,gemma2
 gemma2:27b,llm,forestera,Forest Lay Citizen,0.5153241049399304,0.5556451794813461,google,gemma2:27b
 gemma2:27b,llm,forestera,Forest Stakeholder,0.532712424221842,0.5413816049085777,google,gemma2:27b
 gemma2:27b,llm,fremantle,Fremantle,0.2424436131395511,-0.11135835166150859,google,gemma2:27b
+gemma2:27b,llm,swiss_health,CA,0.3383518085270498,0.17694869231625535,google,gemma2:27b
 gemma2:27b,llm,uppsala_speaks,Activate,0.5677556840765308,0.46214612398905264,google,gemma2:27b
 gemma2:27b,llm,uppsala_speaks,Standard,0.6664481769011643,0.4548633421258306,google,gemma2:27b
 gemma2:27b,llm,valsamoggia,Valsamoggia,0.26827007235760725,0.0506802716301873,google,gemma2:27b
@@ -499,6 +521,7 @@ granite3.3,llm,fnqcj,FNQCJ,-0.5388814990178552,-0.0865608113639552,ibm,granite3.
 granite3.3,llm,forestera,Forest Lay Citizen,0.3325327193592853,0.28942003244233555,ibm,granite3.3
 granite3.3,llm,forestera,Forest Stakeholder,0.6322100460345919,0.3952786721866164,ibm,granite3.3
 granite3.3,llm,fremantle,Fremantle,0.20459771950411665,-0.036913804048725116,ibm,granite3.3
+granite3.3,llm,swiss_health,CA,0.16267802267856424,0.1036719075674253,ibm,granite3.3
 granite3.3,llm,uppsala_speaks,Activate,0.392062734512046,0.17667951777116803,ibm,granite3.3
 granite3.3,llm,uppsala_speaks,Standard,0.02654897079505303,0.09409439665048484,ibm,granite3.3
 granite3.3,llm,valsamoggia,Valsamoggia,0.10904522376675208,-0.14694137513050506,ibm,granite3.3
@@ -521,6 +544,7 @@ llama3.1:405B-turbo,llm,fnqcj,FNQCJ,-0.11732812443507412,0.4828668998583134,meta
 llama3.1:405B-turbo,llm,forestera,Forest Lay Citizen,0.5487038517546878,0.6121159321068312,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,forestera,Forest Stakeholder,0.37915229045458365,0.5105598695113261,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,fremantle,Fremantle,0.20569429672047135,0.12484113804279476,meta,llama3.1:405B-turbo
+llama3.1:405B-turbo,llm,swiss_health,CA,0.4178145507945057,0.3468885588787461,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,uppsala_speaks,Activate,0.3341593240715537,0.40181789515002136,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,uppsala_speaks,Standard,0.31937331673584213,0.2789892687174594,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,valsamoggia,Valsamoggia,0.319928409451127,0.22313611194338398,meta,llama3.1:405B-turbo
@@ -543,6 +567,7 @@ llama3.3:70b,llm,fnqcj,FNQCJ,-0.06115026360394327,0.39157344991986237,meta,llama
 llama3.3:70b,llm,forestera,Forest Lay Citizen,0.44243397687221586,0.5974611538975866,meta,llama3.3:70b
 llama3.3:70b,llm,forestera,Forest Stakeholder,0.4570153380998774,0.49354107367321287,meta,llama3.3:70b
 llama3.3:70b,llm,fremantle,Fremantle,0.0828203591507568,0.08193099797860809,meta,llama3.3:70b
+llama3.3:70b,llm,swiss_health,CA,0.3374465229657937,0.28280764252263524,meta,llama3.3:70b
 llama3.3:70b,llm,uppsala_speaks,Activate,0.42775804214996627,0.5374496581859547,meta,llama3.3:70b
 llama3.3:70b,llm,uppsala_speaks,Standard,0.2423897492238456,0.4049531199397228,meta,llama3.3:70b
 llama3.3:70b,llm,valsamoggia,Valsamoggia,-0.3074962387671095,-0.04602420764072027,meta,llama3.3:70b
@@ -565,6 +590,7 @@ llama3:70b,llm,fnqcj,FNQCJ,-0.030761716868798472,0.35199103424501854,meta,llama3
 llama3:70b,llm,forestera,Forest Lay Citizen,0.5891005750866856,0.5690354942360505,meta,llama3:70b
 llama3:70b,llm,forestera,Forest Stakeholder,0.4328875055343533,0.4863105737798963,meta,llama3:70b
 llama3:70b,llm,fremantle,Fremantle,-0.15952063270564898,-0.02288488746024737,meta,llama3:70b
+llama3:70b,llm,swiss_health,CA,0.30392531777614784,0.26790648081009194,meta,llama3:70b
 llama3:70b,llm,uppsala_speaks,Activate,0.2978734150581832,0.47624811195629013,meta,llama3:70b
 llama3:70b,llm,uppsala_speaks,Standard,0.16044239448062436,0.340612714233217,meta,llama3:70b
 llama3:70b,llm,valsamoggia,Valsamoggia,0.25154031597425774,0.032044274672085406,meta,llama3:70b
@@ -587,6 +613,7 @@ llama4-maverick,llm,fnqcj,FNQCJ,0.21039062527058228,-0.32474647809894674,meta,ll
 llama4-maverick,llm,forestera,Forest Lay Citizen,0.26265121810128855,0.02665909898932714,meta,llama4-maverick
 llama4-maverick,llm,forestera,Forest Stakeholder,0.31786471166718155,0.046808393513355265,meta,llama4-maverick
 llama4-maverick,llm,fremantle,Fremantle,-0.1352167127956967,-0.048300867594478665,meta,llama4-maverick
+llama4-maverick,llm,swiss_health,CA,0.3216111765351537,0.13410687771102525,meta,llama4-maverick
 llama4-maverick,llm,uppsala_speaks,Activate,0.27566434247214544,0.3178171050366108,meta,llama4-maverick
 llama4-maverick,llm,uppsala_speaks,Standard,0.34631360124433974,0.3005619835077194,meta,llama4-maverick
 llama4-maverick,llm,valsamoggia,Valsamoggia,0.06892255357531907,0.024036627040051717,meta,llama4-maverick
@@ -609,6 +636,7 @@ llama4-scout,llm,fnqcj,FNQCJ,-0.08573127161233118,0.24510772128513264,meta,llama
 llama4-scout,llm,forestera,Forest Lay Citizen,0.5609285042384011,0.27756909286503634,meta,llama4-scout
 llama4-scout,llm,forestera,Forest Stakeholder,0.47246432154697526,0.2562494000529619,meta,llama4-scout
 llama4-scout,llm,fremantle,Fremantle,0.039311756269704734,0.01891707019680922,meta,llama4-scout
+llama4-scout,llm,swiss_health,CA,0.38518334686814715,0.1432254307403113,meta,llama4-scout
 llama4-scout,llm,uppsala_speaks,Activate,0.5527019973477121,0.4399797054116732,meta,llama4-scout
 llama4-scout,llm,uppsala_speaks,Standard,0.5078752908491968,0.41172782618831927,meta,llama4-scout
 llama4-scout,llm,valsamoggia,Valsamoggia,-0.729840666517761,-0.3332723133086834,meta,llama4-scout
@@ -631,6 +659,7 @@ phi4,llm,fnqcj,FNQCJ,0.11522119140454179,-0.3483596975803175,microsoft,phi4
 phi4,llm,forestera,Forest Lay Citizen,0.5139129268292053,0.5341670498712843,microsoft,phi4
 phi4,llm,forestera,Forest Stakeholder,0.4732375888349363,0.5459470746642449,microsoft,phi4
 phi4,llm,fremantle,Fremantle,-0.03992670234126605,-0.010269456914098278,microsoft,phi4
+phi4,llm,swiss_health,CA,0.3528356677065323,0.22470594734375632,microsoft,phi4
 phi4,llm,uppsala_speaks,Activate,0.0766149124196811,0.25514681773465225,microsoft,phi4
 phi4,llm,uppsala_speaks,Standard,-0.006090025690787759,0.17390791299420702,microsoft,phi4
 phi4,llm,valsamoggia,Valsamoggia,0.29887232271627995,-0.002445040640396698,microsoft,phi4
@@ -653,6 +682,7 @@ ministral-3b-latest,llm,fnqcj,FNQCJ,0.33403137452634857,0.22170787701941624,mist
 ministral-3b-latest,llm,forestera,Forest Lay Citizen,0.4650693699534143,0.36520550812625086,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,forestera,Forest Stakeholder,0.6505660816040006,0.40179182556860127,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,fremantle,Fremantle,0.13164202502801592,0.06952473115709806,mistralai,ministral-3b-latest
+ministral-3b-latest,llm,swiss_health,CA,0.10172412385967733,0.12734514297660773,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,uppsala_speaks,Activate,0.3409595285631417,0.26872665821112973,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,uppsala_speaks,Standard,0.25610045043247154,0.21617869650441496,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,valsamoggia,Valsamoggia,0.37205824430770895,0.07362512409126695,mistralai,ministral-3b-latest
@@ -675,6 +705,7 @@ ministral-8b-latest,llm,fnqcj,FNQCJ,0.2792920180947316,0.2007811282888167,mistra
 ministral-8b-latest,llm,forestera,Forest Lay Citizen,0.39661172838135106,0.4992674951860702,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,forestera,Forest Stakeholder,0.3331661430783417,0.43496944604662957,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,fremantle,Fremantle,0.16069610056053474,-0.01410876473690917,mistralai,ministral-8b-latest
+ministral-8b-latest,llm,swiss_health,CA,0.28714932487351685,0.1338898418353329,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,uppsala_speaks,Activate,-0.3812741233458514,0.17849867476557177,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,uppsala_speaks,Standard,-0.21401172232518162,0.0749917099778544,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,valsamoggia,Valsamoggia,0.07728043433802134,0.12405093749911014,mistralai,ministral-8b-latest
@@ -697,6 +728,7 @@ mistral-large-latest,llm,fnqcj,FNQCJ,0.23630556732941388,0.15898717042234523,mis
 mistral-large-latest,llm,forestera,Forest Lay Citizen,0.47944719050833684,0.5209733868338426,mistralai,mistral-large-latest
 mistral-large-latest,llm,forestera,Forest Stakeholder,0.711273879394593,0.610510187385346,mistralai,mistral-large-latest
 mistral-large-latest,llm,fremantle,Fremantle,0.06372371198907789,-0.036325176829664754,mistralai,mistral-large-latest
+mistral-large-latest,llm,swiss_health,CA,0.33618208128192717,0.30522530027670397,mistralai,mistral-large-latest
 mistral-large-latest,llm,uppsala_speaks,Activate,0.3534889295618482,0.5010667981497763,mistralai,mistral-large-latest
 mistral-large-latest,llm,uppsala_speaks,Standard,0.19713840851914832,0.45288851866385443,mistralai,mistral-large-latest
 mistral-large-latest,llm,valsamoggia,Valsamoggia,0.31410756953853736,0.00307568409932509,mistralai,mistral-large-latest
@@ -719,6 +751,7 @@ mistral-small-latest,llm,fnqcj,FNQCJ,-0.6337052758440784,-0.21154492841541112,mi
 mistral-small-latest,llm,forestera,Forest Lay Citizen,0.45205357079872877,0.37303043237850664,mistralai,mistral-small-latest
 mistral-small-latest,llm,forestera,Forest Stakeholder,0.6892161856826531,0.2973445747468596,mistralai,mistral-small-latest
 mistral-small-latest,llm,fremantle,Fremantle,0.04819561557546881,0.05915021771489202,mistralai,mistral-small-latest
+mistral-small-latest,llm,swiss_health,CA,0.43087987938778216,0.3099889838454943,mistralai,mistral-small-latest
 mistral-small-latest,llm,uppsala_speaks,Activate,0.1919079280066438,0.36809753995024724,mistralai,mistral-small-latest
 mistral-small-latest,llm,uppsala_speaks,Standard,0.26826991004684686,0.43833673723910027,mistralai,mistral-small-latest
 mistral-small-latest,llm,valsamoggia,Valsamoggia,0.631965000342839,-0.08112568297562053,mistralai,mistral-small-latest
@@ -741,6 +774,7 @@ open-mistral-nemo,llm,fnqcj,FNQCJ,-0.12111838060474955,-0.11022464181537386,mist
 open-mistral-nemo,llm,forestera,Forest Lay Citizen,0.5230032668427071,0.35971748057674846,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,forestera,Forest Stakeholder,0.5124795127745694,0.3969541180987817,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,fremantle,Fremantle,-0.0031337445356055538,-0.0625135963175364,mistralai,open-mistral-nemo
+open-mistral-nemo,llm,swiss_health,CA,0.3017704696992387,0.2129914103703922,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,uppsala_speaks,Activate,0.45983582717495897,0.3320948913319614,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,uppsala_speaks,Standard,0.1920281624735818,0.20948100883286416,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,valsamoggia,Valsamoggia,0.3438218048734789,-0.20453992530014356,mistralai,open-mistral-nemo
@@ -763,6 +797,7 @@ open-mixtral-8x22b,llm,fnqcj,FNQCJ,-0.05893118606855674,-0.23718148849153153,mis
 open-mixtral-8x22b,llm,forestera,Forest Lay Citizen,0.47610523308621056,0.5323963872950286,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,forestera,Forest Stakeholder,0.4858146539372561,0.5403166857087933,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,fremantle,Fremantle,0.1754752005143212,0.05141997258613125,mistralai,open-mixtral-8x22b
+open-mixtral-8x22b,llm,swiss_health,CA,0.37141496844818267,0.31421301889609,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,uppsala_speaks,Activate,0.39531575172356503,0.3939775435178396,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,uppsala_speaks,Standard,0.3796502880900372,0.3627881127028608,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,valsamoggia,Valsamoggia,0.30236398164361034,0.15223291830060645,mistralai,open-mixtral-8x22b
@@ -785,13 +820,14 @@ gpt-3.5-turbo,llm,fnqcj,FNQCJ,-0.4685898616527965,0.0799028217164727,openai,gpt-
 gpt-3.5-turbo,llm,forestera,Forest Lay Citizen,0.4018335014364971,0.13418059687591088,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,forestera,Forest Stakeholder,0.314038734703902,0.19035607554288939,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,fremantle,Fremantle,-0.14883319801070571,-0.02431678588216654,openai,gpt-3.5-turbo
+gpt-3.5-turbo,llm,swiss_health,CA,0.30354575183526555,0.03756747655001017,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,uppsala_speaks,Activate,-0.05045488994386871,0.1026653669601304,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,uppsala_speaks,Standard,0.1123444276422032,0.1310063914471588,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,valsamoggia,Valsamoggia,0.42033739514014146,-0.29450040974418334,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,zh_uster,USTER,0.411315173839397,0.004890917371015313,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,zh_winterthur,Winterthur,-0.009809996204426685,-0.23710297313741424,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,zukunft,Zukunft,0.5267613284887873,0.05919327239362632,openai,gpt-3.5-turbo
-gpt-4,llm,acp,Citizen Parliamentarian,-0.13147023462046858,0.007879019093909515,openai,gpt-4
+gpt-4,llm,acp,Citizen Parliamentarian,-0.13439229355311555,0.007879019093909515,openai,gpt-4
 gpt-4,llm,auscj,HGE Deliberative Group,-0.6905836216135337,-0.1552225184813537,openai,gpt-4
 gpt-4,llm,bep,BEP,0.3780898889374509,-0.04769548465801874,openai,gpt-4
 gpt-4,llm,biobanking_mayo_ubc,Mayo,-0.2619257725894697,-0.1522408305019101,openai,gpt-4
@@ -807,6 +843,7 @@ gpt-4,llm,fnqcj,FNQCJ,-0.0705220827893529,-0.021343557484301313,openai,gpt-4
 gpt-4,llm,forestera,Forest Lay Citizen,0.4093196883877488,0.2571571001128975,openai,gpt-4
 gpt-4,llm,forestera,Forest Stakeholder,0.5392514085670193,0.167194746970739,openai,gpt-4
 gpt-4,llm,fremantle,Fremantle,0.13156915156634374,-0.009581453407724441,openai,gpt-4
+gpt-4,llm,swiss_health,CA,0.36152004381817315,0.13909030494640617,openai,gpt-4
 gpt-4,llm,uppsala_speaks,Activate,0.4943693116063277,0.48732083607390225,openai,gpt-4
 gpt-4,llm,uppsala_speaks,Standard,0.329749517617804,0.3134500261861605,openai,gpt-4
 gpt-4,llm,valsamoggia,Valsamoggia,0.45276084153201124,0.2994558952582788,openai,gpt-4
@@ -829,6 +866,7 @@ gpt-4-turbo,llm,fnqcj,FNQCJ,-0.07583945044430696,0.3534870071345535,openai,gpt-4
 gpt-4-turbo,llm,forestera,Forest Lay Citizen,0.35229221454398174,0.42297140411677187,openai,gpt-4-turbo
 gpt-4-turbo,llm,forestera,Forest Stakeholder,0.39876875780376064,0.38730768023562745,openai,gpt-4-turbo
 gpt-4-turbo,llm,fremantle,Fremantle,0.11914666514633532,-0.009709913961558713,openai,gpt-4-turbo
+gpt-4-turbo,llm,swiss_health,CA,0.3436586702013418,0.22902246323078929,openai,gpt-4-turbo
 gpt-4-turbo,llm,uppsala_speaks,Activate,0.29809907439986305,0.49301490159232636,openai,gpt-4-turbo
 gpt-4-turbo,llm,uppsala_speaks,Standard,0.15043988504395922,0.2955331997950407,openai,gpt-4-turbo
 gpt-4-turbo,llm,valsamoggia,Valsamoggia,0.46014557919740406,0.26733148169223364,openai,gpt-4-turbo
@@ -851,6 +889,7 @@ gpt-4.5-preview,llm,fnqcj,FNQCJ,0.2235399469605468,0.27292107458990233,openai,gp
 gpt-4.5-preview,llm,forestera,Forest Lay Citizen,0.30665499949950825,-0.2116903227584302,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,forestera,Forest Stakeholder,-0.06976195999231805,-0.17250690714317246,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,fremantle,Fremantle,0.29786138575787113,0.3887158612551012,openai,gpt-4.5-preview
+gpt-4.5-preview,llm,swiss_health,CA,0.41623786085204784,0.20439936820615104,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,uppsala_speaks,Activate,0.5807426403705895,0.536175691791003,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,uppsala_speaks,Standard,0.16492300459733333,0.37880351522373357,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,valsamoggia,Valsamoggia,0.3146355969581225,0.3820138792955776,openai,gpt-4.5-preview
@@ -873,6 +912,7 @@ gpt-4o,llm,fnqcj,FNQCJ,-0.03274086606471993,0.12161843468438917,openai,gpt-4o
 gpt-4o,llm,forestera,Forest Lay Citizen,0.27527442549898673,0.17891371132127143,openai,gpt-4o
 gpt-4o,llm,forestera,Forest Stakeholder,0.5806380409127851,0.174344082261754,openai,gpt-4o
 gpt-4o,llm,fremantle,Fremantle,0.2715808201874552,-0.09081640666747666,openai,gpt-4o
+gpt-4o,llm,swiss_health,CA,0.3441803448533134,0.07377069795474327,openai,gpt-4o
 gpt-4o,llm,uppsala_speaks,Activate,0.39749032621805824,0.22856547953601516,openai,gpt-4o
 gpt-4o,llm,uppsala_speaks,Standard,0.34549075474551105,0.18847684306544796,openai,gpt-4o
 gpt-4o,llm,valsamoggia,Valsamoggia,0.36972791836385177,0.17907099803187623,openai,gpt-4o
@@ -895,6 +935,7 @@ gpt-4o-mini,llm,fnqcj,FNQCJ,-0.27379952482773084,0.055327344697777725,openai,gpt
 gpt-4o-mini,llm,forestera,Forest Lay Citizen,0.16460524633654106,0.4848803276683749,openai,gpt-4o-mini
 gpt-4o-mini,llm,forestera,Forest Stakeholder,0.41194100683731305,0.508366099076024,openai,gpt-4o-mini
 gpt-4o-mini,llm,fremantle,Fremantle,0.03828123068848943,-0.08677397186732956,openai,gpt-4o-mini
+gpt-4o-mini,llm,swiss_health,CA,0.3180561748982884,0.17218943457527722,openai,gpt-4o-mini
 gpt-4o-mini,llm,uppsala_speaks,Activate,0.21033199282820747,0.29747719720469423,openai,gpt-4o-mini
 gpt-4o-mini,llm,uppsala_speaks,Standard,0.14406875289690313,0.21158138549705147,openai,gpt-4o-mini
 gpt-4o-mini,llm,valsamoggia,Valsamoggia,0.26636118233873907,-0.0907437608634482,openai,gpt-4o-mini
@@ -906,8 +947,8 @@ o1,llm,auscj,HGE Deliberative Group,-0.19558578346219568,0.011019650336354703,op
 o1,llm,bep,BEP,-0.7003315119087213,-0.4518483509309573,openai,o1
 o1,llm,biobanking_mayo_ubc,Mayo,0.24161477371778783,0.15272618122486326,openai,o1
 o1,llm,biobanking_mayo_ubc,UBC Bio,0.18082359705587425,0.19508732370918513,openai,o1
-o1,llm,biobanking_wa,WA Citizens,0.15524431617547285,0.24361701988470136,openai,o1
-o1,llm,biobanking_wa,WA Stakeholder,0.02141376740950518,0.050927007609026076,openai,o1
+o1,llm,biobanking_wa,WA Citizens,-0.09147876920287767,0.24361701988470136,openai,o1
+o1,llm,biobanking_wa,WA Stakeholder,0.21920583341914046,0.050927007609026076,openai,o1
 o1,llm,ccps,CCPS ACT Deliberative,-0.30258265442672283,-0.35199246833071435,openai,o1
 o1,llm,ds_aargau,Aargau,0.10128876110721285,-0.12592412824649363,openai,o1
 o1,llm,ds_bellinzona,Bellinzona,0.3099717203790371,0.44697842937302285,openai,o1
@@ -917,9 +958,10 @@ o1,llm,fnqcj,FNQCJ,0.3870796869843336,0.22601368643549508,openai,o1
 o1,llm,forestera,Forest Lay Citizen,0.6548180444830483,0.19442408855694532,openai,o1
 o1,llm,forestera,Forest Stakeholder,0.5378942250964827,0.22600331649962196,openai,o1
 o1,llm,fremantle,Fremantle,0.0916720570967442,0.16276853375603662,openai,o1
+o1,llm,swiss_health,CA,0.31419157337059755,0.1007788639772165,openai,o1
 o1,llm,uppsala_speaks,Activate,-0.12185495055727014,0.13945811138202552,openai,o1
 o1,llm,uppsala_speaks,Standard,0.005740038211983656,0.12469721020565247,openai,o1
-o1,llm,valsamoggia,Valsamoggia,0.17825998574892843,0.07911464933192865,openai,o1
+o1,llm,valsamoggia,Valsamoggia,0.17945894518644878,0.07911464933192865,openai,o1
 o1,llm,zh_uster,USTER,0.43741202241724064,0.12227173105635884,openai,o1
 o1,llm,zh_winterthur,Winterthur,0.3293041058205084,0.07463194014043242,openai,o1
 o1,llm,zukunft,Zukunft,0.3327868502222999,0.08358364040302813,openai,o1
@@ -939,6 +981,7 @@ o3-mini,llm,fnqcj,FNQCJ,-0.09018033965416017,0.3935419688289775,openai,o3-mini
 o3-mini,llm,forestera,Forest Lay Citizen,0.3080855479477953,0.504641388085419,openai,o3-mini
 o3-mini,llm,forestera,Forest Stakeholder,0.6849704944965687,0.5948061731954828,openai,o3-mini
 o3-mini,llm,fremantle,Fremantle,0.06853998691388274,0.12247530032688692,openai,o3-mini
+o3-mini,llm,swiss_health,CA,0.446892861547586,0.3088621115569359,openai,o3-mini
 o3-mini,llm,uppsala_speaks,Activate,0.33068202289425375,0.21871984557101523,openai,o3-mini
 o3-mini,llm,uppsala_speaks,Standard,0.08976743110927043,0.1814096161410353,openai,o3-mini
 o3-mini,llm,valsamoggia,Valsamoggia,-0.18762823938885653,0.37605151550166416,openai,o3-mini
@@ -961,6 +1004,7 @@ qwen-max,llm,fnqcj,FNQCJ,-0.02418002827809118,0.08458668642238572,qwen,qwen-max
 qwen-max,llm,forestera,Forest Lay Citizen,0.36512448872641334,0.6180169017322367,qwen,qwen-max
 qwen-max,llm,forestera,Forest Stakeholder,0.4150097809439681,0.5391643612258525,qwen,qwen-max
 qwen-max,llm,fremantle,Fremantle,0.005342776986192677,-0.0012653417730475467,qwen,qwen-max
+qwen-max,llm,swiss_health,CA,0.33842891808968356,0.2980716287698603,qwen,qwen-max
 qwen-max,llm,uppsala_speaks,Activate,0.37648534525777855,0.418469775339787,qwen,qwen-max
 qwen-max,llm,uppsala_speaks,Standard,0.36344108573673384,0.3289356342297126,qwen,qwen-max
 qwen-max,llm,valsamoggia,Valsamoggia,0.42581236392648636,0.24741960739808608,qwen,qwen-max
@@ -983,6 +1027,7 @@ qwen-plus,llm,fnqcj,FNQCJ,-0.5333088311321226,-0.1599173264221978,qwen,qwen-plus
 qwen-plus,llm,forestera,Forest Lay Citizen,0.4303843967450385,0.5154678932982362,qwen,qwen-plus
 qwen-plus,llm,forestera,Forest Stakeholder,0.4063448784736514,0.48113843551245555,qwen,qwen-plus
 qwen-plus,llm,fremantle,Fremantle,0.25796811432681355,-0.0863317899589155,qwen,qwen-plus
+qwen-plus,llm,swiss_health,CA,0.3610663247920407,0.3045224114058516,qwen,qwen-plus
 qwen-plus,llm,uppsala_speaks,Activate,0.42823884523894296,0.37975742607804974,qwen,qwen-plus
 qwen-plus,llm,uppsala_speaks,Standard,0.4076513403742752,0.3418795185290047,qwen,qwen-plus
 qwen-plus,llm,valsamoggia,Valsamoggia,0.4462512766660911,0.0940328164031178,qwen,qwen-plus
@@ -1005,6 +1050,7 @@ qwen-turbo,llm,fnqcj,FNQCJ,-0.5901070537613009,-0.07462467622224368,qwen,qwen-tu
 qwen-turbo,llm,forestera,Forest Lay Citizen,0.41631772114305354,0.2693473002265183,qwen,qwen-turbo
 qwen-turbo,llm,forestera,Forest Stakeholder,0.6838788379540162,0.20826567676263888,qwen,qwen-turbo
 qwen-turbo,llm,fremantle,Fremantle,-0.5238945049104848,-0.05961640301133788,qwen,qwen-turbo
+qwen-turbo,llm,swiss_health,CA,0.2922283208908698,0.20499360206367612,qwen,qwen-turbo
 qwen-turbo,llm,uppsala_speaks,Activate,0.5211936611010939,0.31495258881221994,qwen,qwen-turbo
 qwen-turbo,llm,uppsala_speaks,Standard,0.4891603646227407,0.202675549767782,qwen,qwen-turbo
 qwen-turbo,llm,valsamoggia,Valsamoggia,0.06241051567843536,-0.07090714256784841,qwen,qwen-turbo
@@ -1027,6 +1073,7 @@ qwen1.5-72b-chat,llm,fnqcj,FNQCJ,-0.09159061610496211,6.500814689310038e-4,qwen,
 qwen1.5-72b-chat,llm,forestera,Forest Lay Citizen,0.3410937599154946,0.3501535493621511,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,forestera,Forest Stakeholder,0.49933694950494867,0.40222713515218417,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,fremantle,Fremantle,0.17896796265259507,0.06502372868085564,qwen,qwen1.5-72b-chat
+qwen1.5-72b-chat,llm,swiss_health,CA,0.2778958326980119,0.22160211271338165,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,uppsala_speaks,Activate,0.39314804712164353,0.2988425856616871,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,uppsala_speaks,Standard,0.2444365754001423,0.15622765710069422,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,valsamoggia,Valsamoggia,0.39689657082054763,0.0017304086327113073,qwen,qwen1.5-72b-chat
@@ -1049,6 +1096,7 @@ qwen2-72b-instruct,llm,fnqcj,FNQCJ,-0.08552882472491996,0.11738193403733366,qwen
 qwen2-72b-instruct,llm,forestera,Forest Lay Citizen,0.12937263793050957,0.2630710426503412,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,forestera,Forest Stakeholder,0.557041038524621,0.16808801544789406,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,fremantle,Fremantle,-0.18718261478815668,-0.01639242386121761,qwen,qwen2-72b-instruct
+qwen2-72b-instruct,llm,swiss_health,CA,0.33479961879373366,0.23255901251956965,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,uppsala_speaks,Activate,0.5180305538452377,0.20502195494614575,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,uppsala_speaks,Standard,0.3088548551255901,0.13341370776198,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,valsamoggia,Valsamoggia,0.41123253673925975,0.2735728816085476,qwen,qwen2-72b-instruct
@@ -1071,6 +1119,7 @@ qwen2.5-72b-instruct,llm,fnqcj,FNQCJ,0.12378112612395942,0.2035404237226903,qwen
 qwen2.5-72b-instruct,llm,forestera,Forest Lay Citizen,0.2493611817067214,0.5252830596559704,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,forestera,Forest Stakeholder,0.355929482636282,0.5043926919451553,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,fremantle,Fremantle,3.298754903362511e-4,-0.08837710859656883,qwen,qwen2.5-72b-instruct
+qwen2.5-72b-instruct,llm,swiss_health,CA,0.34551632059249027,0.25729591044706357,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,uppsala_speaks,Activate,0.5151570568486301,0.36074344065284036,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,uppsala_speaks,Standard,0.44331175402998424,0.2352225836485145,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,valsamoggia,Valsamoggia,0.28175633361946706,-0.22181196191403557,qwen,qwen2.5-72b-instruct
@@ -1093,6 +1142,7 @@ qwq-plus,llm,fnqcj,FNQCJ,-0.10118149736929882,0.17968025660225562,qwen,qwq-plus
 qwq-plus,llm,forestera,Forest Lay Citizen,0.43011863736663813,0.4956626553821283,qwen,qwq-plus
 qwq-plus,llm,forestera,Forest Stakeholder,0.6493535451219188,0.4944395928084759,qwen,qwq-plus
 qwq-plus,llm,fremantle,Fremantle,-0.2771592342955126,-0.14660289664349183,qwen,qwq-plus
+qwq-plus,llm,swiss_health,CA,0.3211252648694758,0.23503165093067185,qwen,qwq-plus
 qwq-plus,llm,uppsala_speaks,Activate,0.4146378654344878,0.3773227958265074,qwen,qwq-plus
 qwq-plus,llm,uppsala_speaks,Standard,0.2833202974465068,0.2828145679123519,qwen,qwq-plus
 qwq-plus,llm,valsamoggia,Valsamoggia,0.09291445012719168,0.15309561181226045,qwen,qwq-plus
@@ -1115,6 +1165,7 @@ grok-2-1212,llm,fnqcj,FNQCJ,-0.058016173017159,0.25669657188253653,xai,grok-2-12
 grok-2-1212,llm,forestera,Forest Lay Citizen,-0.46525281398108753,-0.1518789071728352,xai,grok-2-1212
 grok-2-1212,llm,forestera,Forest Stakeholder,-0.8120131575198888,-0.18435063509739802,xai,grok-2-1212
 grok-2-1212,llm,fremantle,Fremantle,0.2352703103771967,-0.08216731342530675,xai,grok-2-1212
+grok-2-1212,llm,swiss_health,CA,0.39750010374602085,-0.10896096315033747,xai,grok-2-1212
 grok-2-1212,llm,uppsala_speaks,Activate,0.37959167939649463,-0.036124665015911536,xai,grok-2-1212
 grok-2-1212,llm,uppsala_speaks,Standard,0.3568109115593012,-0.0467158818132128,xai,grok-2-1212
 grok-2-1212,llm,valsamoggia,Valsamoggia,0.36567075423176676,0.04500958191693132,xai,grok-2-1212
@@ -1137,6 +1188,7 @@ grok-3-beta,llm,fnqcj,FNQCJ,-0.09957488449040819,0.30848927181445407,xai,grok-3-
 grok-3-beta,llm,forestera,Forest Lay Citizen,0.37853661042568554,0.6098686048824898,xai,grok-3-beta
 grok-3-beta,llm,forestera,Forest Stakeholder,0.528764133556985,0.6191723939886249,xai,grok-3-beta
 grok-3-beta,llm,fremantle,Fremantle,0.24626607178971383,0.14626844646994588,xai,grok-3-beta
+grok-3-beta,llm,swiss_health,CA,0.34344115765924643,0.3205985462075962,xai,grok-3-beta
 grok-3-beta,llm,uppsala_speaks,Activate,0.33962059735793737,0.4530024990670199,xai,grok-3-beta
 grok-3-beta,llm,uppsala_speaks,Standard,0.29640231339251244,0.5092874332282735,xai,grok-3-beta
 grok-3-beta,llm,valsamoggia,Valsamoggia,0.3359316520940119,0.20012230707195805,xai,grok-3-beta
@@ -1159,6 +1211,7 @@ grok-3-mini-beta,llm,fnqcj,FNQCJ,-0.10322876216395405,0.40602802068895444,xai,gr
 grok-3-mini-beta,llm,forestera,Forest Lay Citizen,0.4819301883788032,0.500282895144423,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,forestera,Forest Stakeholder,0.30729662543873304,0.44083187374151095,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,fremantle,Fremantle,-0.5835117628951033,-0.06624340356010487,xai,grok-3-mini-beta
+grok-3-mini-beta,llm,swiss_health,CA,0.3212137457620965,0.2894395117550842,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,uppsala_speaks,Activate,0.45418295894153915,0.4925261321009684,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,uppsala_speaks,Standard,0.26262600625653665,0.35762970333416755,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,valsamoggia,Valsamoggia,0.27981284268225437,0.004747445878790505,xai,grok-3-mini-beta
@@ -1181,6 +1234,7 @@ grok-3-mini-beta-r=high,llm,fnqcj,FNQCJ,-0.11154168638926998,0.4444102646682332,
 grok-3-mini-beta-r=high,llm,forestera,Forest Lay Citizen,0.4324525607982659,0.5805194329937056,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,forestera,Forest Stakeholder,0.3990527985543595,0.5988643274294078,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,fremantle,Fremantle,0.17789400962030144,0.38034086467587497,xai,grok-3-mini-beta-r=high
+grok-3-mini-beta-r=high,llm,swiss_health,CA,0.33261879639692604,0.26006647901522434,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,uppsala_speaks,Activate,0.3677432547281543,0.5361143963656158,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,uppsala_speaks,Standard,0.3620602763410825,0.46535884601555433,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,valsamoggia,Valsamoggia,0.48384027321103784,0.4680361333436284,xai,grok-3-mini-beta-r=high
@@ -1203,6 +1257,7 @@ grok-3-mini-beta-r=low,llm,fnqcj,FNQCJ,-0.11917141206608972,0.3819774357908139,x
 grok-3-mini-beta-r=low,llm,forestera,Forest Lay Citizen,0.4734071826025572,0.6016839730753218,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,forestera,Forest Stakeholder,0.5141095295327003,0.582357439431683,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,fremantle,Fremantle,0.03454831930299074,0.02630848975084943,xai,grok-3-mini-beta-r=low
+grok-3-mini-beta-r=low,llm,swiss_health,CA,0.2894312485440127,0.31358790139100057,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,uppsala_speaks,Activate,0.36635345976539035,0.4925759282731994,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,uppsala_speaks,Standard,0.3233959359708398,0.442655526024504,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,valsamoggia,Valsamoggia,0.203739211783444,0.19366958154958047,xai,grok-3-mini-beta-r=low
@@ -1225,6 +1280,7 @@ grok-beta,llm,fnqcj,FNQCJ,-0.04413050311423572,0.10597967284852478,xai,grok-beta
 grok-beta,llm,forestera,Forest Lay Citizen,0.3900134578274481,0.23340814368968368,xai,grok-beta
 grok-beta,llm,forestera,Forest Stakeholder,0.549045483352057,0.17961732678920084,xai,grok-beta
 grok-beta,llm,fremantle,Fremantle,0.4403786548801314,-0.1765180316347029,xai,grok-beta
+grok-beta,llm,swiss_health,CA,0.45913426132825697,0.08032321175832023,xai,grok-beta
 grok-beta,llm,uppsala_speaks,Activate,0.4994430791603133,0.2851117660807674,xai,grok-beta
 grok-beta,llm,uppsala_speaks,Standard,0.3046143332320832,0.1915116804270248,xai,grok-beta
 grok-beta,llm,valsamoggia,Valsamoggia,0.39179344826842666,-0.11872659434516133,xai,grok-beta

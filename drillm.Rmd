@@ -967,6 +967,157 @@ alpha_summary %>%
 
 ```
 
+# Human Data
+
+```{r human data, warning=FALSE}
+
+# Import the CSV file into a data frame
+human_data <- read_csv(HUMAN_DATA_FILE, show_col_types = FALSE)
+
+# Rename columns to be consistent with LLM data
+human_data <- human_data %>%
+  rename_with( ~ sub("^U0|^U", "C", .), U01:U50) %>%
+  rename_with( ~ sub("^Pref", "P", .), Pref1:Pref10) %>%
+  filter(Study != "Sydney CC Adaptation")
+
+```
+
+## Handle Swiss cases
+```{r swiss cases}
+
+# Import the CSV file into a data frame
+swiss_data <- read_csv(SWISS_DATA_FILE, show_col_types = FALSE)
+
+# Rename columns to be consistent with LLM data
+swiss_data <- swiss_data %>%
+  rename_with( ~ sub("^U0|^U", "C", .), everything()) %>%
+  rename_with( ~ sub("^RF", "P", .), everything())
+
+# Get valid column names
+swiss_C_cols <- swiss_data %>%
+  select(C1:C24) %>%
+  colnames()
+
+# get swiss LLM data
+swiss_llm_data <- llm_data %>%
+  filter(survey == "swiss_health")
+
+# remove swiss case from llm data
+llm_data <- llm_data %>%
+  filter(survey != "swiss_health")
+
+# extract valid C columns
+swiss_llm_C_data <- swiss_llm_data %>%
+  select(swiss_C_cols)
+
+# rename valid C columns
+swiss_llm_C_data <- swiss_llm_C_data %>%
+  rename_with(~ paste0("C", seq_along(.)),
+              starts_with("C", ignore.case = FALSE))
+
+# ensure data has columns up to C50
+for (j in (ncol(swiss_llm_C_data)+1):50) {
+  swiss_llm_C_data[[paste0("C", j)]] <- as.numeric(NA)
+}
+
+# remove all C data
+swiss_llm_data <- swiss_llm_data %>%
+  select(-(C1:C50))
+
+# add renamed and valid C data
+swiss_llm_data <- bind_cols(swiss_llm_data, swiss_llm_C_data) %>%
+  relocate(C1:C50, .before = P1)
+
+# add swiss data back to llm data
+llm_data <- bind_rows(llm_data, swiss_llm_data)
+
+# rename valid C columns
+swiss_data <- swiss_data %>%
+  rename_with(~ paste0("C", seq_along(.)),
+              C1:C24)
+
+# rename valid C columns
+# swiss_data <- swiss_data %>%
+#   rename_with(~ paste0("C", seq_along(.)),
+#               starts_with("C", ignore.case = FALSE))
+
+# ensure data has columns up to C50
+for (j in 17:50) {
+  col <- paste0("C", j)
+  swiss_data[[col]] <- as.numeric(NA)
+  swiss_data <- swiss_data %>%
+    relocate(col, .before = P1)
+}
+
+# ensure data has columns up to P10
+for (j in 7:10) {
+  col <- paste0("P", j)
+  swiss_data[[col]] <- as.numeric(NA)
+}
+
+# add swiss data to human data
+human_data <- bind_rows(human_data, swiss_data)
+
+```
+
+
+```{r add survey}
+
+# Read the mapping file
+study_survey_map <- read_csv("data/study_survey_map.csv", show_col_types = FALSE)
+
+# Add a new column 'Survey' to human_data by matching 'Study' with 'survey'
+human_data <- human_data %>%
+  left_join(study_survey_map, by = c("Study" = "study")) %>%
+  relocate(survey, .after = "Study")
+
+
+human_data %>%
+  group_by(Case, survey) %>%
+  summarise(
+    participants = n() / 2,  # account for pre/post deliberation
+    .groups = "drop"
+  ) %>%
+  arrange(survey) %>%
+  knitr::kable(
+    caption = "Number of participants in each case study",
+    row.names = TRUE,
+    col.names = c("Case", "Survey", "Participants")
+    )
+
+```
+
+
+We collected `r nrow(human_data)` human responses across `r length(unique(human_data$Case))` case studies, including pre-post deliberation responses.
+
+## Excluded cases
+
+```{r exclude cases}
+
+# Import the CSV file into a data frame
+cases <- read_csv(CASES_FILE, show_col_types = FALSE)
+excluded_cases <- cases %>% filter(!included)
+
+excluded_cases %>%
+  select(-included)%>%
+  knitr::kable(
+    caption = "Excluded cases",
+    row.names = TRUE,
+    col.names = c("Case", "Survey", "Participants", "Excluded Reason")
+  )
+
+```
+
+We excluded `r nrow(excluded_cases)` cases due to the reasons listed above.
+
+```{r final cases}
+
+human_data <- human_data %>%
+  filter(!Case %in% excluded_cases$case)
+
+```
+
+
 # Aggregation
 
 We then aggregated LLM data into 1 response per model/survey. Based on [@motoki_more_2024], we bootstrap considerations 1000 times.
@@ -1171,154 +1322,6 @@ for (i in 1:nrow(llm_data_aggregated)) {
 
 ```
 
-# Human Data
-
-```{r human data, warning=FALSE}
-
-# Import the CSV file into a data frame
-human_data <- read_csv(HUMAN_DATA_FILE, show_col_types = FALSE)
-
-# Rename columns to be consistent with LLM data
-human_data <- human_data %>%
-  rename_with( ~ sub("^U0|^U", "C", .), U01:U50) %>%
-  rename_with( ~ sub("^Pref", "P", .), Pref1:Pref10) %>%
-  filter(Study != "Sydney CC Adaptation")
-
-```
-
-## Handle Swiss cases
-```{r swiss cases}
-
-# Import the CSV file into a data frame
-swiss_data <- read_csv(SWISS_DATA_FILE, show_col_types = FALSE)
-
-# Rename columns to be consistent with LLM data
-swiss_data <- swiss_data %>%
-  rename_with( ~ sub("^U0|^U", "C", .), everything()) %>%
-  rename_with( ~ sub("^RF", "P", .), everything())
-
-# Get valid column names
-swiss_C_cols <- swiss_data %>%
-  select(C1:C24) %>%
-  colnames()
-
-# get swiss LLM data
-swiss_llm_data <- llm_data %>%
-  filter(survey == "swiss_health")
-
-# remove swiss case from llm data
-llm_data <- llm_data %>%
-  filter(survey != "swiss_health")
-
-# extract valid C columns
-swiss_llm_C_data <- swiss_llm_data %>%
-  select(swiss_C_cols)
-
-# rename valid C columns
-swiss_llm_C_data <- swiss_llm_C_data %>%
-  rename_with(~ paste0("C", seq_along(.)),
-              starts_with("C", ignore.case = FALSE))
-
-# ensure data has columns up to C50
-for (j in (ncol(swiss_llm_C_data)+1):50) {
-  swiss_llm_C_data[[paste0("C", j)]] <- as.numeric(NA)
-}
-
-# remove all C data
-swiss_llm_data <- swiss_llm_data %>%
-  select(-(C1:C50))
-
-# add renamed and valid C data
-swiss_llm_data <- bind_cols(swiss_llm_data, swiss_llm_C_data) %>%
-  relocate(C1:C50, .before = P1)
-
-# add swiss data back to llm data
-llm_data <- bind_rows(llm_data, swiss_llm_data)
-
-# rename valid C columns
-swiss_data <- swiss_data %>%
-  rename_with(~ paste0("C", seq_along(.)),
-              C1:C24)
-
-# rename valid C columns
-# swiss_data <- swiss_data %>%
-#   rename_with(~ paste0("C", seq_along(.)),
-#               starts_with("C", ignore.case = FALSE))
-
-# ensure data has columns up to C50
-for (j in 17:50) {
-  col <- paste0("C", j)
-  swiss_data[[col]] <- as.numeric(NA)
-  swiss_data <- swiss_data %>%
-    relocate(col, .before = P1)
-}
-
-# ensure data has columns up to P10
-for (j in 7:10) {
-  col <- paste0("P", j)
-  swiss_data[[col]] <- as.numeric(NA)
-}
-
-
-
-```
-
-
-```{r add survey}
-
-# Read the mapping file
-study_survey_map <- read_csv("data/study_survey_map.csv", show_col_types = FALSE)
-
-# Add a new column 'Survey' to human_data by matching 'Study' with 'survey'
-human_data <- human_data %>%
-  left_join(study_survey_map, by = c("Study" = "study")) %>%
-  relocate(survey, .after = "Study")
-
-
-human_data %>%
-  group_by(Case, survey) %>%
-  summarise(
-    participants = n() / 2,  # account for pre/post deliberation
-    .groups = "drop"
-  ) %>%
-  arrange(survey) %>%
-  knitr::kable(
-    caption = "Number of participants in each case study",
-    row.names = TRUE,
-    col.names = c("Case", "Survey", "Participants")
-    )
-
-```
-
-
-We collected `r nrow(human_data)` human responses across `r length(unique(human_data$Case))` case studies, including pre-post deliberation responses.
-
-## Excluded cases
-
-```{r exclude cases}
-
-# Import the CSV file into a data frame
-cases <- read_csv(CASES_FILE, show_col_types = FALSE)
-excluded_cases <- cases %>% filter(!included)
-
-excluded_cases %>%
-  select(-included)%>%
-  knitr::kable(
-    caption = "Excluded cases",
-    row.names = TRUE,
-    col.names = c("Case", "Survey", "Participants", "Excluded Reason")
-  )
-
-```
-
-We excluded `r nrow(excluded_cases)` cases due to the reasons listed above.
-
-```{r final cases}
-
-human_data <- human_data %>%
-  filter(!Case %in% excluded_cases$case)
-
-```
 
 
 # Randomly Generated Data
@@ -1352,6 +1355,11 @@ get_random_data <- function(sheet_names, file_path=SURVEY_FILE) {
     
     # Calculate the number of non-NA rows in "considerations" column
     n_c <- sum(!is.na(df$considerations))
+    
+    ## handle special swiss case manually
+    if (sheet_name == "swiss_health") {
+      n_c <- 16
+    }
     
     # Calculate the number of non-NA rows in "policies" column
     n_p <- sum(!is.na(df$policies))
@@ -1810,6 +1818,9 @@ add_single_llm_participant <- function(llm_survey_data, it, data, provider, mode
 DRIInd.LLMs <- list()
 DRIInd.LLMs.it <- list()
 DRIInd.Rands <- list()
+
+# FIXME: for debugging
+mini_publics <- mini_publics %>% filter(survey == "swiss_health")
 
 # for each study [1:N], N = 26
 for (case_study in 1:nrow(mini_publics)) {
