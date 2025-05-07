@@ -22,29 +22,29 @@ human_only_mean,human,valsamoggia,Valsamoggia,0.30768912791221714,0.306008112734
 human_only_mean,human,zh_uster,USTER,0.34455173595629685,0.4953697853451704,NA,NA
 human_only_mean,human,zh_winterthur,Winterthur,0.21919794591369968,0.5202587050867213,NA,NA
 human_only_mean,human,zukunft,Zukunft,0.42151882027369325,0.502087804552416,NA,NA
-random,random,acp,Citizen Parliamentarian,-0.13409099280661751,-0.002703104055778116,NA,NA
-random,random,auscj,HGE Deliberative Group,0.2801809834400608,0.22639811719803227,NA,NA
-random,random,bep,BEP,0.013239716075587715,0.16113700795759067,NA,NA
-random,random,biobanking_mayo_ubc,Mayo,-0.06121128041392909,-0.1493842388194201,NA,NA
-random,random,biobanking_mayo_ubc,UBC Bio,0.11246631296891363,-0.24414889357914293,NA,NA
-random,random,biobanking_wa,WA Citizens,-0.1520944795908702,-0.3626443616196211,NA,NA
-random,random,biobanking_wa,WA Stakeholder,-0.08542382388825431,0.12591118931343726,NA,NA
-random,random,ccps,CCPS ACT Deliberative,0.06599441452715138,-0.0979252006581125,NA,NA
-random,random,ds_aargau,Aargau,-0.051973954059300054,-0.07930409090092694,NA,NA
-random,random,ds_bellinzona,Bellinzona,0.03145157136794574,0.260236341915161,NA,NA
-random,random,energy_futures,CSIRO NSW,-0.25097227479545003,-0.06788666134735855,NA,NA
-random,random,energy_futures,CSIRO WA,-0.46225609912008925,-0.348833847195683,NA,NA
-random,random,fnqcj,FNQCJ,0.2144186083613855,-0.5836212326760712,NA,NA
-random,random,forestera,Forest Lay Citizen,-0.36008338519703176,-0.11387518649644812,NA,NA
-random,random,forestera,Forest Stakeholder,-0.2256531187425418,0.2707121505487038,NA,NA
-random,random,fremantle,Fremantle,0.08556920521893252,0.05101066475074356,NA,NA
-random,random,swiss_health,CA,-0.05526641668023502,-0.028501903928243033,NA,NA
-random,random,uppsala_speaks,Activate,0.013697980909253227,0.034704492232614736,NA,NA
-random,random,uppsala_speaks,Standard,-0.23513098355236606,-0.06688892405733127,NA,NA
-random,random,valsamoggia,Valsamoggia,-0.333823762949254,-0.16092822490092418,NA,NA
-random,random,zh_uster,USTER,-0.11620698012611008,-0.3608263021351569,NA,NA
-random,random,zh_winterthur,Winterthur,0.18218683944562475,0.2720720910639667,NA,NA
-random,random,zukunft,Zukunft,-0.26388826861734926,-0.15105267391584976,NA,NA
+random,random,acp,Citizen Parliamentarian,-0.14782067271369326,-0.09333891263285987,NA,NA
+random,random,auscj,HGE Deliberative Group,-0.004141082867404222,-0.036134427383988754,NA,NA
+random,random,bep,BEP,0.06673719644175624,0.0920018577890016,NA,NA
+random,random,biobanking_mayo_ubc,Mayo,0.14046498751781922,-0.07646673470161147,NA,NA
+random,random,biobanking_mayo_ubc,UBC Bio,-0.07356296535765205,-0.002291750575117657,NA,NA
+random,random,biobanking_wa,WA Citizens,-0.22854666793721745,-0.009547524662223417,NA,NA
+random,random,biobanking_wa,WA Stakeholder,0.05414505437260053,-0.18405138491033268,NA,NA
+random,random,ccps,CCPS ACT Deliberative,0.08602316913350672,0.013573075637163479,NA,NA
+random,random,ds_aargau,Aargau,0.2343876060953105,0.11961507521648729,NA,NA
+random,random,ds_bellinzona,Bellinzona,-0.11843768005681765,-0.2944398098141183,NA,NA
+random,random,energy_futures,CSIRO NSW,0.3893305379179872,0.024228360288571782,NA,NA
+random,random,energy_futures,CSIRO WA,0.5467510583682658,0.5435352845366201,NA,NA
+random,random,fnqcj,FNQCJ,-0.026228916678583403,-0.3801854265302641,NA,NA
+random,random,forestera,Forest Lay Citizen,0.16479064147404143,-0.06200330476655069,NA,NA
+random,random,forestera,Forest Stakeholder,0.43238011113621266,0.060643371441344573,NA,NA
+random,random,fremantle,Fremantle,-0.06565062781270803,-0.00809609544350931,NA,NA
+random,random,swiss_health,CA,0.08928817177178083,-0.047063095315530434,NA,NA
+random,random,uppsala_speaks,Activate,0.0442253451205985,0.0992452292681767,NA,NA
+random,random,uppsala_speaks,Standard,-0.16329112123917888,0.015251246209800007,NA,NA
+random,random,valsamoggia,Valsamoggia,0.06063559423691389,-0.084030927263263,NA,NA
+random,random,zh_uster,USTER,-0.07710925461479579,-0.3497697292781401,NA,NA
+random,random,zh_winterthur,Winterthur,-0.20097122429019787,0.19605522325632863,NA,NA
+random,random,zukunft,Zukunft,0.26698638394785745,0.1513028398912568,NA,NA
 claude-3-5-haiku-20241022,llm,acp,Citizen Parliamentarian,-0.024902331733186123,-0.01852694480923074,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,auscj,HGE Deliberative Group,-0.35049865593684737,-0.35544420892306855,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,bep,BEP,0.41004945688625805,0.2589574905209991,anthropic,claude-3-5-haiku-20241022

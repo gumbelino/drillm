@@ -1820,7 +1820,7 @@ DRIInd.LLMs.it <- list()
 DRIInd.Rands <- list()
 
 # FIXME: for debugging
-mini_publics <- mini_publics %>% filter(survey == "swiss_health")
+#mini_publics <- mini_publics %>% filter(survey == "swiss_health")
 
 # for each study [1:N], N = 26
 for (case_study in 1:nrow(mini_publics)) {
