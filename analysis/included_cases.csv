@@ -1,0 +1,26 @@
+case,survey,participants,included,excluded_reason,considerations,policies,scale_max,q_method
+Aargau,ds_aargau,16,NA,NA,33,7,7,FALSE
+Activate,uppsala_speaks,26,NA,NA,42,7,7,FALSE
+BEP,bep,16,NA,NA,43,7,7,FALSE
+Bellinzona,ds_bellinzona,8,NA,NA,32,7,7,FALSE
+CA,swiss_health,56,NA,NA,24,6,7,FALSE
+CCPS ACT Deliberative,ccps,31,NA,NA,33,7,11,FALSE
+CSIRO NSW,energy_futures,12,NA,NA,45,9,11,FALSE
+CSIRO WA,energy_futures,17,NA,NA,45,9,11,FALSE
+Citizen Parliamentarian,acp,45,NA,NA,48,5,11,FALSE
+FNQCJ,fnqcj,11,NA,NA,42,5,12,FALSE
+Forest Lay Citizen,forestera,9,NA,NA,45,7,11,FALSE
+Forest Stakeholder,forestera,11,NA,NA,45,7,11,FALSE
+Fremantle,fremantle,41,NA,NA,36,6,11,TRUE
+HGE Deliberative Group,auscj,23,NA,NA,45,8,7,FALSE
+Mayo,biobanking_mayo_ubc,17,NA,NA,38,7,11,FALSE
+Standard,uppsala_speaks,22,NA,NA,42,7,7,FALSE
+Thalwill,zh_thalwil,14,NA,does not align with deliberative democracy experience,31,7,7,FALSE
+UBC Bio,biobanking_mayo_ubc,17,NA,NA,38,7,11,FALSE
+USTER,zh_uster,15,NA,NA,31,7,7,FALSE
+Valsamoggia,valsamoggia,16,NA,NA,36,4,11,TRUE
+WA Citizens,biobanking_wa,9,NA,NA,49,7,11,FALSE
+WA Stakeholder,biobanking_wa,15,NA,NA,49,7,11,FALSE
+Winterthur,zh_winterthur,16,NA,NA,30,6,7,FALSE
+Zukunft,zukunft,63,NA,NA,20,7,7,FALSE
+NA,gbr,NA,NA,NA,35,7,7,FALSE

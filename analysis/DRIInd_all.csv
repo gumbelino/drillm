@@ -19,32 +19,34 @@ human_only_mean,human,swiss_health,CA,0.17313737187241718,0.1982775429630974,NA,
 human_only_mean,human,uppsala_speaks,Activate,0.3642480975981299,0.5721022781484872,NA,NA
 human_only_mean,human,uppsala_speaks,Standard,0.2720131889004609,0.43579321257940307,NA,NA
 human_only_mean,human,valsamoggia,Valsamoggia,0.30768912791221714,0.3060081127341603,NA,NA
+human_only_mean,human,zh_thalwil,Thalwill,-0.15568095144935512,-0.10166446376051397,NA,NA
 human_only_mean,human,zh_uster,USTER,0.34455173595629685,0.4953697853451704,NA,NA
 human_only_mean,human,zh_winterthur,Winterthur,0.21919794591369968,0.5202587050867213,NA,NA
 human_only_mean,human,zukunft,Zukunft,0.42151882027369325,0.502087804552416,NA,NA
-random,random,acp,Citizen Parliamentarian,-0.14782067271369326,-0.09333891263285987,NA,NA
-random,random,auscj,HGE Deliberative Group,-0.004141082867404222,-0.036134427383988754,NA,NA
-random,random,bep,BEP,0.06673719644175624,0.0920018577890016,NA,NA
-random,random,biobanking_mayo_ubc,Mayo,0.14046498751781922,-0.07646673470161147,NA,NA
-random,random,biobanking_mayo_ubc,UBC Bio,-0.07356296535765205,-0.002291750575117657,NA,NA
-random,random,biobanking_wa,WA Citizens,-0.22854666793721745,-0.009547524662223417,NA,NA
-random,random,biobanking_wa,WA Stakeholder,0.05414505437260053,-0.18405138491033268,NA,NA
-random,random,ccps,CCPS ACT Deliberative,0.08602316913350672,0.013573075637163479,NA,NA
-random,random,ds_aargau,Aargau,0.2343876060953105,0.11961507521648729,NA,NA
-random,random,ds_bellinzona,Bellinzona,-0.11843768005681765,-0.2944398098141183,NA,NA
-random,random,energy_futures,CSIRO NSW,0.3893305379179872,0.024228360288571782,NA,NA
-random,random,energy_futures,CSIRO WA,0.5467510583682658,0.5435352845366201,NA,NA
-random,random,fnqcj,FNQCJ,-0.026228916678583403,-0.3801854265302641,NA,NA
-random,random,forestera,Forest Lay Citizen,0.16479064147404143,-0.06200330476655069,NA,NA
-random,random,forestera,Forest Stakeholder,0.43238011113621266,0.060643371441344573,NA,NA
-random,random,fremantle,Fremantle,-0.06565062781270803,-0.00809609544350931,NA,NA
-random,random,swiss_health,CA,0.08928817177178083,-0.047063095315530434,NA,NA
-random,random,uppsala_speaks,Activate,0.0442253451205985,0.0992452292681767,NA,NA
-random,random,uppsala_speaks,Standard,-0.16329112123917888,0.015251246209800007,NA,NA
-random,random,valsamoggia,Valsamoggia,0.06063559423691389,-0.084030927263263,NA,NA
-random,random,zh_uster,USTER,-0.07710925461479579,-0.3497697292781401,NA,NA
-random,random,zh_winterthur,Winterthur,-0.20097122429019787,0.19605522325632863,NA,NA
-random,random,zukunft,Zukunft,0.26698638394785745,0.1513028398912568,NA,NA
+random,random,acp,Citizen Parliamentarian,-0.13409099280661751,-0.002703104055778116,NA,NA
+random,random,auscj,HGE Deliberative Group,0.2801809834400608,0.22639811719803227,NA,NA
+random,random,bep,BEP,0.013239716075587715,0.16113700795759067,NA,NA
+random,random,biobanking_mayo_ubc,Mayo,-0.06121128041392909,-0.1493842388194201,NA,NA
+random,random,biobanking_mayo_ubc,UBC Bio,0.11246631296891363,-0.24414889357914293,NA,NA
+random,random,biobanking_wa,WA Citizens,-0.1520944795908702,-0.3626443616196211,NA,NA
+random,random,biobanking_wa,WA Stakeholder,-0.08542382388825431,0.12591118931343726,NA,NA
+random,random,ccps,CCPS ACT Deliberative,0.06599441452715138,-0.0979252006581125,NA,NA
+random,random,ds_aargau,Aargau,-0.051973954059300054,-0.07930409090092694,NA,NA
+random,random,ds_bellinzona,Bellinzona,0.03145157136794574,0.260236341915161,NA,NA
+random,random,energy_futures,CSIRO NSW,-0.25097227479545003,-0.06788666134735855,NA,NA
+random,random,energy_futures,CSIRO WA,-0.46225609912008925,-0.348833847195683,NA,NA
+random,random,fnqcj,FNQCJ,0.2144186083613855,-0.5836212326760712,NA,NA
+random,random,forestera,Forest Lay Citizen,-0.36008338519703176,-0.11387518649644812,NA,NA
+random,random,forestera,Forest Stakeholder,-0.2256531187425418,0.2707121505487038,NA,NA
+random,random,fremantle,Fremantle,0.08556920521893252,0.05101066475074356,NA,NA
+random,random,swiss_health,CA,-0.05526641668023502,-0.028501903928243033,NA,NA
+random,random,uppsala_speaks,Activate,0.013697980909253227,0.034704492232614736,NA,NA
+random,random,uppsala_speaks,Standard,-0.23513098355236606,-0.06688892405733127,NA,NA
+random,random,valsamoggia,Valsamoggia,-0.333823762949254,-0.16092822490092418,NA,NA
+random,random,zh_thalwil,Thalwill,0.1116514935967543,-0.025481623704440737,NA,NA
+random,random,zh_uster,USTER,-0.11620698012611008,-0.3608263021351569,NA,NA
+random,random,zh_winterthur,Winterthur,0.18218683944562475,0.2720720910639667,NA,NA
+random,random,zukunft,Zukunft,-0.26388826861734926,-0.15105267391584976,NA,NA
 claude-3-5-haiku-20241022,llm,acp,Citizen Parliamentarian,-0.024902331733186123,-0.01852694480923074,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,auscj,HGE Deliberative Group,-0.35049865593684737,-0.35544420892306855,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,bep,BEP,0.41004945688625805,0.2589574905209991,anthropic,claude-3-5-haiku-20241022
@@ -65,6 +67,7 @@ claude-3-5-haiku-20241022,llm,swiss_health,CA,0.2994198052214183,0.2707116994494
 claude-3-5-haiku-20241022,llm,uppsala_speaks,Activate,0.35832286881022,0.10961042917883967,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,uppsala_speaks,Standard,0.11803399846011553,0.24283797869448237,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,valsamoggia,Valsamoggia,0.3861095215941883,0.19293114862227545,anthropic,claude-3-5-haiku-20241022
+claude-3-5-haiku-20241022,llm,zh_thalwil,Thalwill,-0.08849707602707035,0.16194293768791732,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,zh_uster,USTER,0.4859684528655477,0.537667672493893,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,zh_winterthur,Winterthur,0.4818587390233582,0.4419376972722144,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,zukunft,Zukunft,0.5488416366500297,0.5328006641398708,anthropic,claude-3-5-haiku-20241022
@@ -88,6 +91,7 @@ claude-3-5-sonnet-20241022,llm,swiss_health,CA,0.402042779033732,0.3689486765335
 claude-3-5-sonnet-20241022,llm,uppsala_speaks,Activate,0.5015762977857638,0.5698431396685992,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,uppsala_speaks,Standard,0.20315219511164107,0.4403856686741166,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,valsamoggia,Valsamoggia,0.38811447710576097,0.383310787962423,anthropic,claude-3-5-sonnet-20241022
+claude-3-5-sonnet-20241022,llm,zh_thalwil,Thalwill,-0.004861007181456434,0.12373993195342775,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,zh_uster,USTER,0.5727789615446384,0.5435265755251707,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,zh_winterthur,Winterthur,0.3381599279751244,0.5473340751072555,anthropic,claude-3-5-sonnet-20241022
 claude-3-5-sonnet-20241022,llm,zukunft,Zukunft,0.5610024256354014,0.5729193027964157,anthropic,claude-3-5-sonnet-20241022
@@ -111,9 +115,34 @@ claude-3-7-sonnet-20250219,llm,swiss_health,CA,0.39278189516542494,0.38246026893
 claude-3-7-sonnet-20250219,llm,uppsala_speaks,Activate,0.5358489878101178,0.5910625042210093,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,uppsala_speaks,Standard,0.19081552289532677,0.3996917154395488,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,valsamoggia,Valsamoggia,0.3122316833738634,0.3929607174379827,anthropic,claude-3-7-sonnet-20250219
+claude-3-7-sonnet-20250219,llm,zh_thalwil,Thalwill,-0.04303300720208525,0.10966698332113156,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,zh_uster,USTER,0.6018704460740449,0.6164841142055546,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,zh_winterthur,Winterthur,0.3866122386589024,0.5526716608536762,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,zukunft,Zukunft,0.5765351663812703,0.6016727625854634,anthropic,claude-3-7-sonnet-20250219
+claude-3-7-sonnet-20250219-think=low,llm,acp,Citizen Parliamentarian,-0.2556159899673207,0.0049463267550475115,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,auscj,HGE Deliberative Group,-0.7287051728819793,-0.399110225119916,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,bep,BEP,0.5412693858974535,0.20133375642776136,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,biobanking_mayo_ubc,Mayo,0.37213662712070317,0.2603663465272531,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,biobanking_mayo_ubc,UBC Bio,0.4029383661927852,0.07616899745695951,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,biobanking_wa,WA Citizens,0.4714026469455326,0.5433682853594395,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,biobanking_wa,WA Stakeholder,0.47097504645921195,0.4338880407895042,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,ccps,CCPS ACT Deliberative,0.4951544971797617,0.501787526366653,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,ds_aargau,Aargau,-0.32517644618695063,-0.23819045001713138,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,ds_bellinzona,Bellinzona,0.4201036287643807,0.5854868182457835,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,energy_futures,CSIRO NSW,0.4864018647106265,0.3237215138492756,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,energy_futures,CSIRO WA,0.3480293568405697,0.5425711033644569,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,fnqcj,FNQCJ,0.17033105523708647,0.6246064794902714,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,forestera,Forest Lay Citizen,0.3018406994359346,0.4216757392125727,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,forestera,Forest Stakeholder,0.6005475383216106,0.43639378147274727,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,fremantle,Fremantle,0.3868218103272534,0.28664115376939947,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,swiss_health,CA,0.3564232748400282,0.2873084342860512,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,uppsala_speaks,Activate,0.6062015766943241,0.19646534991114217,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,uppsala_speaks,Standard,0.38809433066929433,0.06305751111101868,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,valsamoggia,Valsamoggia,0.33094476944520457,0.04831900575638419,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,zh_thalwil,Thalwill,-0.43357808401154585,-0.22536195292810454,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,zh_uster,USTER,0.4198695314551195,0.2630149817395679,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,zh_winterthur,Winterthur,0.4238148546492302,0.45573400698682176,anthropic,claude-3-7-sonnet-20250219-think=low
+claude-3-7-sonnet-20250219-think=low,llm,zukunft,Zukunft,0.520062878283938,0.46884773346116415,anthropic,claude-3-7-sonnet-20250219-think=low
 claude-3-haiku-20240307,llm,acp,Citizen Parliamentarian,0.13864597707030235,-0.04486608376483044,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,auscj,HGE Deliberative Group,-0.3417892070378008,-0.025420882666411355,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,bep,BEP,0.5864809377901048,-0.204618840294138,anthropic,claude-3-haiku-20240307
@@ -134,6 +163,7 @@ claude-3-haiku-20240307,llm,swiss_health,CA,0.35380437166380485,0.13987867985890
 claude-3-haiku-20240307,llm,uppsala_speaks,Activate,0.47587937194251806,0.16374527231463104,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,uppsala_speaks,Standard,0.3272553809517291,0.1136748156276676,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,valsamoggia,Valsamoggia,0.4361185167214081,-0.1865756832419509,anthropic,claude-3-haiku-20240307
+claude-3-haiku-20240307,llm,zh_thalwil,Thalwill,-0.07257015848203341,-0.2424276392513002,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,zh_uster,USTER,0.2017511644898362,-0.14527083862098356,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,zh_winterthur,Winterthur,0.47279262846636505,-0.08167608256110766,anthropic,claude-3-haiku-20240307
 claude-3-haiku-20240307,llm,zukunft,Zukunft,0.5625296762135457,0.2590146523142823,anthropic,claude-3-haiku-20240307
@@ -157,6 +187,7 @@ claude-3-opus-20240229,llm,swiss_health,CA,0.32445358488040954,0.342081959158319
 claude-3-opus-20240229,llm,uppsala_speaks,Activate,0.5570024030648313,0.5762455727604084,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,uppsala_speaks,Standard,0.21361231199231634,0.40725312805948594,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,valsamoggia,Valsamoggia,0.12622244054926912,0.17324086534303115,anthropic,claude-3-opus-20240229
+claude-3-opus-20240229,llm,zh_thalwil,Thalwill,-0.1188902185280235,0.14962462382072703,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,zh_uster,USTER,0.5836010491868711,0.5787651869781996,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,zh_winterthur,Winterthur,0.3923683801126421,0.546471279143663,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,zukunft,Zukunft,0.5573773561698312,0.5815764208334304,anthropic,claude-3-opus-20240229
@@ -180,6 +211,7 @@ command,llm,swiss_health,CA,0.2674416171490406,0.030899895255457197,cohere,comma
 command,llm,uppsala_speaks,Activate,-0.03380867933495124,0.04653690049428188,cohere,command
 command,llm,uppsala_speaks,Standard,0.02947636387826824,0.01806122622287673,cohere,command
 command,llm,valsamoggia,Valsamoggia,-0.001990177617697708,-0.019053431788897124,cohere,command
+command,llm,zh_thalwil,Thalwill,0.18160867543564052,-0.1895880843478031,cohere,command
 command,llm,zh_uster,USTER,0.5874229281854861,0.0935463574678999,cohere,command
 command,llm,zh_winterthur,Winterthur,0.30485507615633023,0.20784982409850267,cohere,command
 command,llm,zukunft,Zukunft,0.5098464306926969,0.1907715215709537,cohere,command
@@ -203,6 +235,7 @@ command-a-03-2025,llm,swiss_health,CA,0.3718467309287268,0.030801905488688802,co
 command-a-03-2025,llm,uppsala_speaks,Activate,0.47873130465728786,0.4211355836639844,cohere,command-a-03-2025
 command-a-03-2025,llm,uppsala_speaks,Standard,0.2541121570605376,0.32750849940910415,cohere,command-a-03-2025
 command-a-03-2025,llm,valsamoggia,Valsamoggia,0.3362328224109177,0.05726012551667468,cohere,command-a-03-2025
+command-a-03-2025,llm,zh_thalwil,Thalwill,0.03483780228656563,-0.141433478992185,cohere,command-a-03-2025
 command-a-03-2025,llm,zh_uster,USTER,0.4946416428830267,0.19982550353583858,cohere,command-a-03-2025
 command-a-03-2025,llm,zh_winterthur,Winterthur,-0.738709973539424,-0.45987066262269805,cohere,command-a-03-2025
 command-a-03-2025,llm,zukunft,Zukunft,0.5654771528847544,0.18734159615652385,cohere,command-a-03-2025
@@ -226,6 +259,7 @@ command-r-08-2024,llm,swiss_health,CA,0.33862989251464626,0.10360945160098411,co
 command-r-08-2024,llm,uppsala_speaks,Activate,0.28632108869012196,0.17855396135229293,cohere,command-r-08-2024
 command-r-08-2024,llm,uppsala_speaks,Standard,0.40657308957375915,0.10455782009626599,cohere,command-r-08-2024
 command-r-08-2024,llm,valsamoggia,Valsamoggia,0.11799031222621315,-0.1951019477803124,cohere,command-r-08-2024
+command-r-08-2024,llm,zh_thalwil,Thalwill,-0.07929753259767158,-0.1841407362765473,cohere,command-r-08-2024
 command-r-08-2024,llm,zh_uster,USTER,0.571773577126889,0.018539646255477195,cohere,command-r-08-2024
 command-r-08-2024,llm,zh_winterthur,Winterthur,0.30714369564335375,-0.007530459030654006,cohere,command-r-08-2024
 command-r-08-2024,llm,zukunft,Zukunft,0.5689276802184893,-0.10775021111840603,cohere,command-r-08-2024
@@ -249,6 +283,7 @@ command-r7b-12-2024,llm,swiss_health,CA,0.2027645817890411,0.09883994110269814,c
 command-r7b-12-2024,llm,uppsala_speaks,Activate,0.42510444665650815,0.21613785664707175,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,uppsala_speaks,Standard,0.4176366165941141,0.18115181505139175,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,valsamoggia,Valsamoggia,0.3335659636673918,-0.16549731982628785,cohere,command-r7b-12-2024
+command-r7b-12-2024,llm,zh_thalwil,Thalwill,-0.03197670315983969,0.029661716953317537,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,zh_uster,USTER,0.6793454959192793,0.24491392638431844,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,zh_winterthur,Winterthur,0.34910327262365004,0.22220866735687636,cohere,command-r7b-12-2024
 command-r7b-12-2024,llm,zukunft,Zukunft,0.5552782732812034,0.20050433382979635,cohere,command-r7b-12-2024
@@ -272,6 +307,7 @@ command-r7b-12-2024-t=1,llm,swiss_health,CA,0.03669329032708846,0.08178272929709
 command-r7b-12-2024-t=1,llm,uppsala_speaks,Activate,0.10110042157825827,0.06291691716011141,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,uppsala_speaks,Standard,0.23673641838292703,0.11864733641837946,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,valsamoggia,Valsamoggia,0.344350478529047,-0.1412144467452124,cohere,command-r7b-12-2024-t=1
+command-r7b-12-2024-t=1,llm,zh_thalwil,Thalwill,-0.07876583682610416,-0.13748927058338428,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,zh_uster,USTER,0.6496068288620855,0.298229083518045,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,zh_winterthur,Winterthur,0.44748695474003286,0.19537073985928255,cohere,command-r7b-12-2024-t=1
 command-r7b-12-2024-t=1,llm,zukunft,Zukunft,0.4670125628447228,0.060686299206328495,cohere,command-r7b-12-2024-t=1
@@ -295,6 +331,7 @@ deepseek-chat,llm,swiss_health,CA,0.38315865547458383,0.2525370870347891,deepsee
 deepseek-chat,llm,uppsala_speaks,Activate,0.49555736994929234,0.4357558138738851,deepseek,deepseek-chat
 deepseek-chat,llm,uppsala_speaks,Standard,0.2141007835846349,0.2756522316832203,deepseek,deepseek-chat
 deepseek-chat,llm,valsamoggia,Valsamoggia,0.26284648107201725,0.2127226373088245,deepseek,deepseek-chat
+deepseek-chat,llm,zh_thalwil,Thalwill,-0.1123641392165381,0.09017423616631128,deepseek,deepseek-chat
 deepseek-chat,llm,zh_uster,USTER,0.5088155783089372,0.40541058285045056,deepseek,deepseek-chat
 deepseek-chat,llm,zh_winterthur,Winterthur,0.3911578920352934,0.35611873832376034,deepseek,deepseek-chat
 deepseek-chat,llm,zukunft,Zukunft,0.5610360153694374,0.29835732869383813,deepseek,deepseek-chat
@@ -318,6 +355,7 @@ deepseek-reasoner,llm,swiss_health,CA,0.3561158865514067,0.15087472412163982,dee
 deepseek-reasoner,llm,uppsala_speaks,Activate,0.4741420417929907,0.35149394629431824,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,uppsala_speaks,Standard,0.4644771532272416,0.2529673951835851,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,valsamoggia,Valsamoggia,0.41381895587323436,-0.20408671176475254,deepseek,deepseek-reasoner
+deepseek-reasoner,llm,zh_thalwil,Thalwill,-0.033568769730877634,-0.16910036819973764,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,zh_uster,USTER,0.4550283518615512,0.18646234085038502,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,zh_winterthur,Winterthur,0.3715734238255337,-0.06737791698757406,deepseek,deepseek-reasoner
 deepseek-reasoner,llm,zukunft,Zukunft,0.4582982905380628,0.08917324492447305,deepseek,deepseek-reasoner
@@ -341,6 +379,7 @@ gemini-1.5-flash,llm,swiss_health,CA,0.28268633430321244,0.16213832003439357,goo
 gemini-1.5-flash,llm,uppsala_speaks,Activate,0.3370189811979558,0.5012582184985652,google,gemini-1.5-flash
 gemini-1.5-flash,llm,uppsala_speaks,Standard,0.18207835266708705,0.3289093337254309,google,gemini-1.5-flash
 gemini-1.5-flash,llm,valsamoggia,Valsamoggia,-0.6989918923552698,0.022727964555163818,google,gemini-1.5-flash
+gemini-1.5-flash,llm,zh_thalwil,Thalwill,0.23569716050539968,0.09154932330452888,google,gemini-1.5-flash
 gemini-1.5-flash,llm,zh_uster,USTER,0.44139419881422026,0.40479527533378784,google,gemini-1.5-flash
 gemini-1.5-flash,llm,zh_winterthur,Winterthur,0.26035540254434597,0.298255478258198,google,gemini-1.5-flash
 gemini-1.5-flash,llm,zukunft,Zukunft,0.5377482921965657,0.34917051919770414,google,gemini-1.5-flash
@@ -364,6 +403,7 @@ gemini-1.5-flash-8b,llm,swiss_health,CA,0.37216971362755413,0.17952143916310906,
 gemini-1.5-flash-8b,llm,uppsala_speaks,Activate,0.5785284016207766,0.4203775505836673,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,uppsala_speaks,Standard,0.20835050059058013,0.3251108794279025,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,valsamoggia,Valsamoggia,-0.931711897924214,-0.02497309914934307,google,gemini-1.5-flash-8b
+gemini-1.5-flash-8b,llm,zh_thalwil,Thalwill,0.1377361442958327,-0.25140902592898917,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,zh_uster,USTER,0.15285446970413696,0.026743399872466635,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,zh_winterthur,Winterthur,0.2764467351493274,0.2545106733207535,google,gemini-1.5-flash-8b
 gemini-1.5-flash-8b,llm,zukunft,Zukunft,0.5530528911600585,-0.0733015434384735,google,gemini-1.5-flash-8b
@@ -387,6 +427,7 @@ gemini-1.5-flash-8b-t=1,llm,swiss_health,CA,0.3207881389849938,0.116959606771736
 gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,Activate,0.5560442573649951,0.2279159041355767,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,uppsala_speaks,Standard,0.16676279069475197,0.22922568055864448,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,valsamoggia,Valsamoggia,-0.09615776720081759,-0.15986524472049296,google,gemini-1.5-flash-8b-t=1
+gemini-1.5-flash-8b-t=1,llm,zh_thalwil,Thalwill,-0.018394598827174313,-0.21123365559790244,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,zh_uster,USTER,0.4810841706684963,0.24243439109141351,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,zh_winterthur,Winterthur,0.5136954218543865,-0.030954788776012328,google,gemini-1.5-flash-8b-t=1
 gemini-1.5-flash-8b-t=1,llm,zukunft,Zukunft,0.5553144773680978,-0.00129701689108744,google,gemini-1.5-flash-8b-t=1
@@ -410,6 +451,7 @@ gemini-1.5-pro,llm,swiss_health,CA,0.28750960209932686,0.15103731358632969,googl
 gemini-1.5-pro,llm,uppsala_speaks,Activate,0.5765726414300629,0.43835019567576505,google,gemini-1.5-pro
 gemini-1.5-pro,llm,uppsala_speaks,Standard,0.6906722537215864,0.4606519859099617,google,gemini-1.5-pro
 gemini-1.5-pro,llm,valsamoggia,Valsamoggia,-0.3511811004682148,0.010962409543688899,google,gemini-1.5-pro
+gemini-1.5-pro,llm,zh_thalwil,Thalwill,-0.10216638778040532,-0.19678572474958783,google,gemini-1.5-pro
 gemini-1.5-pro,llm,zh_uster,USTER,0.4004594593701192,0.16618414228459977,google,gemini-1.5-pro
 gemini-1.5-pro,llm,zh_winterthur,Winterthur,0.4031344352633133,0.2303069612675893,google,gemini-1.5-pro
 gemini-1.5-pro,llm,zukunft,Zukunft,0.5643456801351452,0.22535191323951817,google,gemini-1.5-pro
@@ -433,6 +475,7 @@ gemini-2.0-flash,llm,swiss_health,CA,0.3502425493627248,0.3685881898272541,googl
 gemini-2.0-flash,llm,uppsala_speaks,Activate,0.5232510973935298,0.5353050594364823,google,gemini-2.0-flash
 gemini-2.0-flash,llm,uppsala_speaks,Standard,0.6707300002517944,0.5192512868429872,google,gemini-2.0-flash
 gemini-2.0-flash,llm,valsamoggia,Valsamoggia,0.15238186005959808,-0.12391010550949398,google,gemini-2.0-flash
+gemini-2.0-flash,llm,zh_thalwil,Thalwill,-0.05787669411283891,0.21361423399293164,google,gemini-2.0-flash
 gemini-2.0-flash,llm,zh_uster,USTER,0.5737969235186386,0.5779610132040266,google,gemini-2.0-flash
 gemini-2.0-flash,llm,zh_winterthur,Winterthur,0.42924672980777046,0.6457799610580439,google,gemini-2.0-flash
 gemini-2.0-flash,llm,zukunft,Zukunft,0.5340821321682536,0.5856025636559674,google,gemini-2.0-flash
@@ -456,6 +499,7 @@ gemini-2.5-pro-preview-03-25,llm,swiss_health,CA,0.4006381368357792,0.1015708396
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,Activate,0.49880386161500057,0.49451527498513703,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,uppsala_speaks,Standard,0.35454419969147666,0.4127036798363321,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,valsamoggia,Valsamoggia,0.12627623476215644,0.3155335612343055,google,gemini-2.5-pro-preview-03-25
+gemini-2.5-pro-preview-03-25,llm,zh_thalwil,Thalwill,-0.08343676751407902,-0.053530682882574857,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,zh_uster,USTER,0.25709854811388677,0.008946138940337814,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,zh_winterthur,Winterthur,0.33121420279024893,0.10151687659664198,google,gemini-2.5-pro-preview-03-25
 gemini-2.5-pro-preview-03-25,llm,zukunft,Zukunft,0.5855139065403494,0.15067048785432557,google,gemini-2.5-pro-preview-03-25
@@ -479,6 +523,7 @@ gemma,llm,swiss_health,CA,0.18875194785155935,0.05442148166647732,google,gemma
 gemma,llm,uppsala_speaks,Activate,0.5231703701489725,0.24275320804199932,google,gemma
 gemma,llm,uppsala_speaks,Standard,0.2572885385548236,0.09706993998107653,google,gemma
 gemma,llm,valsamoggia,Valsamoggia,0.10148954783320119,-0.07729047383121956,google,gemma
+gemma,llm,zh_thalwil,Thalwill,-0.44910640479553154,-0.21092458410360845,google,gemma
 gemma,llm,zh_uster,USTER,0.4311007721673312,0.04101220876774454,google,gemma
 gemma,llm,zh_winterthur,Winterthur,0.36130060833529676,-0.16251472791572175,google,gemma
 gemma,llm,zukunft,Zukunft,0.5418782240645392,0.27545250855740766,google,gemma
@@ -502,6 +547,7 @@ gemma2:27b,llm,swiss_health,CA,0.3383518085270498,0.17694869231625535,google,gem
 gemma2:27b,llm,uppsala_speaks,Activate,0.5677556840765308,0.46214612398905264,google,gemma2:27b
 gemma2:27b,llm,uppsala_speaks,Standard,0.6664481769011643,0.4548633421258306,google,gemma2:27b
 gemma2:27b,llm,valsamoggia,Valsamoggia,0.26827007235760725,0.0506802716301873,google,gemma2:27b
+gemma2:27b,llm,zh_thalwil,Thalwill,0.006007078878854211,0.0561808673334828,google,gemma2:27b
 gemma2:27b,llm,zh_uster,USTER,0.5294720274971458,0.4151039477385991,google,gemma2:27b
 gemma2:27b,llm,zh_winterthur,Winterthur,0.5145724980282369,0.4414211655736356,google,gemma2:27b
 gemma2:27b,llm,zukunft,Zukunft,0.5751307808955555,0.4254399095053026,google,gemma2:27b
@@ -525,6 +571,7 @@ granite3.3,llm,swiss_health,CA,0.16267802267856424,0.1036719075674253,ibm,granit
 granite3.3,llm,uppsala_speaks,Activate,0.392062734512046,0.17667951777116803,ibm,granite3.3
 granite3.3,llm,uppsala_speaks,Standard,0.02654897079505303,0.09409439665048484,ibm,granite3.3
 granite3.3,llm,valsamoggia,Valsamoggia,0.10904522376675208,-0.14694137513050506,ibm,granite3.3
+granite3.3,llm,zh_thalwil,Thalwill,-0.47506324277632483,-0.11881004207988359,ibm,granite3.3
 granite3.3,llm,zh_uster,USTER,-0.42183895249600467,0.1648353712243738,ibm,granite3.3
 granite3.3,llm,zh_winterthur,Winterthur,0.3878957898642703,0.3220612107677546,ibm,granite3.3
 granite3.3,llm,zukunft,Zukunft,0.5552436992990615,0.3506363859546855,ibm,granite3.3
@@ -548,6 +595,7 @@ llama3.1:405B-turbo,llm,swiss_health,CA,0.4178145507945057,0.3468885588787461,me
 llama3.1:405B-turbo,llm,uppsala_speaks,Activate,0.3341593240715537,0.40181789515002136,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,uppsala_speaks,Standard,0.31937331673584213,0.2789892687174594,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,valsamoggia,Valsamoggia,0.319928409451127,0.22313611194338398,meta,llama3.1:405B-turbo
+llama3.1:405B-turbo,llm,zh_thalwil,Thalwill,-0.11995118248350833,0.17858580397873908,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,zh_uster,USTER,0.48584187710178073,0.5507506324647661,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,zh_winterthur,Winterthur,0.4403558046770508,0.4608439986537743,meta,llama3.1:405B-turbo
 llama3.1:405B-turbo,llm,zukunft,Zukunft,0.503453399578329,0.5785729658767608,meta,llama3.1:405B-turbo
@@ -571,6 +619,7 @@ llama3.3:70b,llm,swiss_health,CA,0.3374465229657937,0.28280764252263524,meta,lla
 llama3.3:70b,llm,uppsala_speaks,Activate,0.42775804214996627,0.5374496581859547,meta,llama3.3:70b
 llama3.3:70b,llm,uppsala_speaks,Standard,0.2423897492238456,0.4049531199397228,meta,llama3.3:70b
 llama3.3:70b,llm,valsamoggia,Valsamoggia,-0.3074962387671095,-0.04602420764072027,meta,llama3.3:70b
+llama3.3:70b,llm,zh_thalwil,Thalwill,0.040068999841976094,0.16586292335472225,meta,llama3.3:70b
 llama3.3:70b,llm,zh_uster,USTER,0.5446011523434575,0.5048937003336215,meta,llama3.3:70b
 llama3.3:70b,llm,zh_winterthur,Winterthur,0.48177923907717246,0.490679020820969,meta,llama3.3:70b
 llama3.3:70b,llm,zukunft,Zukunft,0.5631922214709271,0.38470956702756454,meta,llama3.3:70b
@@ -594,6 +643,7 @@ llama3:70b,llm,swiss_health,CA,0.30392531777614784,0.26790648081009194,meta,llam
 llama3:70b,llm,uppsala_speaks,Activate,0.2978734150581832,0.47624811195629013,meta,llama3:70b
 llama3:70b,llm,uppsala_speaks,Standard,0.16044239448062436,0.340612714233217,meta,llama3:70b
 llama3:70b,llm,valsamoggia,Valsamoggia,0.25154031597425774,0.032044274672085406,meta,llama3:70b
+llama3:70b,llm,zh_thalwil,Thalwill,-0.0995803742349739,0.13769980470008786,meta,llama3:70b
 llama3:70b,llm,zh_uster,USTER,0.4669096470995351,0.5310079244607487,meta,llama3:70b
 llama3:70b,llm,zh_winterthur,Winterthur,0.45584258115248444,0.4381001187756426,meta,llama3:70b
 llama3:70b,llm,zukunft,Zukunft,0.5998364469664947,0.5487948344668743,meta,llama3:70b
@@ -617,6 +667,7 @@ llama4-maverick,llm,swiss_health,CA,0.3216111765351537,0.13410687771102525,meta,
 llama4-maverick,llm,uppsala_speaks,Activate,0.27566434247214544,0.3178171050366108,meta,llama4-maverick
 llama4-maverick,llm,uppsala_speaks,Standard,0.34631360124433974,0.3005619835077194,meta,llama4-maverick
 llama4-maverick,llm,valsamoggia,Valsamoggia,0.06892255357531907,0.024036627040051717,meta,llama4-maverick
+llama4-maverick,llm,zh_thalwil,Thalwill,-0.24028763987799473,-0.16286704347518546,meta,llama4-maverick
 llama4-maverick,llm,zh_uster,USTER,0.4941577681144893,0.11320529600759854,meta,llama4-maverick
 llama4-maverick,llm,zh_winterthur,Winterthur,-0.1410761921297493,-0.3798624953883007,meta,llama4-maverick
 llama4-maverick,llm,zukunft,Zukunft,0.44479820702609896,0.10192396868168077,meta,llama4-maverick
@@ -640,6 +691,7 @@ llama4-scout,llm,swiss_health,CA,0.38518334686814715,0.1432254307403113,meta,lla
 llama4-scout,llm,uppsala_speaks,Activate,0.5527019973477121,0.4399797054116732,meta,llama4-scout
 llama4-scout,llm,uppsala_speaks,Standard,0.5078752908491968,0.41172782618831927,meta,llama4-scout
 llama4-scout,llm,valsamoggia,Valsamoggia,-0.729840666517761,-0.3332723133086834,meta,llama4-scout
+llama4-scout,llm,zh_thalwil,Thalwill,-0.16558190733714595,0.06723555990143701,meta,llama4-scout
 llama4-scout,llm,zh_uster,USTER,0.5450677412509024,0.4656267789196073,meta,llama4-scout
 llama4-scout,llm,zh_winterthur,Winterthur,0.5371489287754869,0.14938911195428842,meta,llama4-scout
 llama4-scout,llm,zukunft,Zukunft,0.4813478703284553,0.3294584196159456,meta,llama4-scout
@@ -663,6 +715,7 @@ phi4,llm,swiss_health,CA,0.3528356677065323,0.22470594734375632,microsoft,phi4
 phi4,llm,uppsala_speaks,Activate,0.0766149124196811,0.25514681773465225,microsoft,phi4
 phi4,llm,uppsala_speaks,Standard,-0.006090025690787759,0.17390791299420702,microsoft,phi4
 phi4,llm,valsamoggia,Valsamoggia,0.29887232271627995,-0.002445040640396698,microsoft,phi4
+phi4,llm,zh_thalwil,Thalwill,-0.038115988082433994,0.10924460739071128,microsoft,phi4
 phi4,llm,zh_uster,USTER,0.5333318860456444,0.34954448821165646,microsoft,phi4
 phi4,llm,zh_winterthur,Winterthur,0.5014143674515885,0.4096072465711549,microsoft,phi4
 phi4,llm,zukunft,Zukunft,0.5738566008663515,0.4385251089835599,microsoft,phi4
@@ -686,6 +739,7 @@ ministral-3b-latest,llm,swiss_health,CA,0.10172412385967733,0.12734514297660773,
 ministral-3b-latest,llm,uppsala_speaks,Activate,0.3409595285631417,0.26872665821112973,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,uppsala_speaks,Standard,0.25610045043247154,0.21617869650441496,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,valsamoggia,Valsamoggia,0.37205824430770895,0.07362512409126695,mistralai,ministral-3b-latest
+ministral-3b-latest,llm,zh_thalwil,Thalwill,0.04555964976387905,-0.010863022616679324,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,zh_uster,USTER,0.5151052445543784,0.18663616556923146,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,zh_winterthur,Winterthur,-0.8225418993668667,-0.058036126431205294,mistralai,ministral-3b-latest
 ministral-3b-latest,llm,zukunft,Zukunft,0.5481511550921432,0.10016867371697952,mistralai,ministral-3b-latest
@@ -709,6 +763,7 @@ ministral-8b-latest,llm,swiss_health,CA,0.28714932487351685,0.1338898418353329,m
 ministral-8b-latest,llm,uppsala_speaks,Activate,-0.3812741233458514,0.17849867476557177,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,uppsala_speaks,Standard,-0.21401172232518162,0.0749917099778544,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,valsamoggia,Valsamoggia,0.07728043433802134,0.12405093749911014,mistralai,ministral-8b-latest
+ministral-8b-latest,llm,zh_thalwil,Thalwill,0.054459926693509964,0.07598063850764658,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,zh_uster,USTER,0.5955113960403009,0.33059250511065885,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,zh_winterthur,Winterthur,0.5719334749398794,0.4006797703853384,mistralai,ministral-8b-latest
 ministral-8b-latest,llm,zukunft,Zukunft,0.5791150822394433,0.3353296260414249,mistralai,ministral-8b-latest
@@ -732,6 +787,7 @@ mistral-large-latest,llm,swiss_health,CA,0.33618208128192717,0.30522530027670397
 mistral-large-latest,llm,uppsala_speaks,Activate,0.3534889295618482,0.5010667981497763,mistralai,mistral-large-latest
 mistral-large-latest,llm,uppsala_speaks,Standard,0.19713840851914832,0.45288851866385443,mistralai,mistral-large-latest
 mistral-large-latest,llm,valsamoggia,Valsamoggia,0.31410756953853736,0.00307568409932509,mistralai,mistral-large-latest
+mistral-large-latest,llm,zh_thalwil,Thalwill,0.04432165330288629,0.22782302573310947,mistralai,mistral-large-latest
 mistral-large-latest,llm,zh_uster,USTER,0.47143424663745725,0.5599490108940425,mistralai,mistral-large-latest
 mistral-large-latest,llm,zh_winterthur,Winterthur,0.4430425615161464,0.6413237159009259,mistralai,mistral-large-latest
 mistral-large-latest,llm,zukunft,Zukunft,0.5721541658577987,0.5792502949934667,mistralai,mistral-large-latest
@@ -755,6 +811,7 @@ mistral-small-latest,llm,swiss_health,CA,0.43087987938778216,0.3099889838454943,
 mistral-small-latest,llm,uppsala_speaks,Activate,0.1919079280066438,0.36809753995024724,mistralai,mistral-small-latest
 mistral-small-latest,llm,uppsala_speaks,Standard,0.26826991004684686,0.43833673723910027,mistralai,mistral-small-latest
 mistral-small-latest,llm,valsamoggia,Valsamoggia,0.631965000342839,-0.08112568297562053,mistralai,mistral-small-latest
+mistral-small-latest,llm,zh_thalwil,Thalwill,-0.14493115825406477,0.1270654669089117,mistralai,mistral-small-latest
 mistral-small-latest,llm,zh_uster,USTER,0.5510378783178276,0.4752410117868016,mistralai,mistral-small-latest
 mistral-small-latest,llm,zh_winterthur,Winterthur,0.4879295914723316,0.33279395981218407,mistralai,mistral-small-latest
 mistral-small-latest,llm,zukunft,Zukunft,0.5091325620282559,0.5391258907895575,mistralai,mistral-small-latest
@@ -778,6 +835,7 @@ open-mistral-nemo,llm,swiss_health,CA,0.3017704696992387,0.2129914103703922,mist
 open-mistral-nemo,llm,uppsala_speaks,Activate,0.45983582717495897,0.3320948913319614,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,uppsala_speaks,Standard,0.1920281624735818,0.20948100883286416,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,valsamoggia,Valsamoggia,0.3438218048734789,-0.20453992530014356,mistralai,open-mistral-nemo
+open-mistral-nemo,llm,zh_thalwil,Thalwill,-0.010932191307465478,0.10176536679156573,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,zh_uster,USTER,0.5434795976000937,0.2686295353773507,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,zh_winterthur,Winterthur,0.40286939501013297,0.24414368710814424,mistralai,open-mistral-nemo
 open-mistral-nemo,llm,zukunft,Zukunft,0.5451567018973749,0.34269364701185673,mistralai,open-mistral-nemo
@@ -801,6 +859,7 @@ open-mixtral-8x22b,llm,swiss_health,CA,0.37141496844818267,0.31421301889609,mist
 open-mixtral-8x22b,llm,uppsala_speaks,Activate,0.39531575172356503,0.3939775435178396,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,uppsala_speaks,Standard,0.3796502880900372,0.3627881127028608,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,valsamoggia,Valsamoggia,0.30236398164361034,0.15223291830060645,mistralai,open-mixtral-8x22b
+open-mixtral-8x22b,llm,zh_thalwil,Thalwill,-0.05647067729806576,0.11046777775116078,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,zh_uster,USTER,0.4458354555365829,0.541881106965253,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,zh_winterthur,Winterthur,0.4678756063855729,0.6074382752204187,mistralai,open-mixtral-8x22b
 open-mixtral-8x22b,llm,zukunft,Zukunft,0.5747765820582389,0.5187068840870228,mistralai,open-mixtral-8x22b
@@ -824,6 +883,7 @@ gpt-3.5-turbo,llm,swiss_health,CA,0.30354575183526555,0.03756747655001017,openai
 gpt-3.5-turbo,llm,uppsala_speaks,Activate,-0.05045488994386871,0.1026653669601304,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,uppsala_speaks,Standard,0.1123444276422032,0.1310063914471588,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,valsamoggia,Valsamoggia,0.42033739514014146,-0.29450040974418334,openai,gpt-3.5-turbo
+gpt-3.5-turbo,llm,zh_thalwil,Thalwill,-0.09687302798795627,-0.07023713044436519,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,zh_uster,USTER,0.411315173839397,0.004890917371015313,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,zh_winterthur,Winterthur,-0.009809996204426685,-0.23710297313741424,openai,gpt-3.5-turbo
 gpt-3.5-turbo,llm,zukunft,Zukunft,0.5267613284887873,0.05919327239362632,openai,gpt-3.5-turbo
@@ -847,6 +907,7 @@ gpt-4,llm,swiss_health,CA,0.36152004381817315,0.13909030494640617,openai,gpt-4
 gpt-4,llm,uppsala_speaks,Activate,0.4943693116063277,0.48732083607390225,openai,gpt-4
 gpt-4,llm,uppsala_speaks,Standard,0.329749517617804,0.3134500261861605,openai,gpt-4
 gpt-4,llm,valsamoggia,Valsamoggia,0.45276084153201124,0.2994558952582788,openai,gpt-4
+gpt-4,llm,zh_thalwil,Thalwill,3.010018935187819e-4,-0.12114922393278331,openai,gpt-4
 gpt-4,llm,zh_uster,USTER,0.5706881516102309,0.24047732251444304,openai,gpt-4
 gpt-4,llm,zh_winterthur,Winterthur,0.4231040859747506,0.11029723894598235,openai,gpt-4
 gpt-4,llm,zukunft,Zukunft,0.5368685029596223,0.3082175881542813,openai,gpt-4
@@ -870,6 +931,7 @@ gpt-4-turbo,llm,swiss_health,CA,0.3436586702013418,0.22902246323078929,openai,gp
 gpt-4-turbo,llm,uppsala_speaks,Activate,0.29809907439986305,0.49301490159232636,openai,gpt-4-turbo
 gpt-4-turbo,llm,uppsala_speaks,Standard,0.15043988504395922,0.2955331997950407,openai,gpt-4-turbo
 gpt-4-turbo,llm,valsamoggia,Valsamoggia,0.46014557919740406,0.26733148169223364,openai,gpt-4-turbo
+gpt-4-turbo,llm,zh_thalwil,Thalwill,-0.0959910117094176,0.15031530052583233,openai,gpt-4-turbo
 gpt-4-turbo,llm,zh_uster,USTER,0.6023647708833078,0.5202113822753834,openai,gpt-4-turbo
 gpt-4-turbo,llm,zh_winterthur,Winterthur,0.4412869083930382,0.3491495271093541,openai,gpt-4-turbo
 gpt-4-turbo,llm,zukunft,Zukunft,0.5828613451231337,0.3608321301888872,openai,gpt-4-turbo
@@ -893,6 +955,7 @@ gpt-4.5-preview,llm,swiss_health,CA,0.41623786085204784,0.20439936820615104,open
 gpt-4.5-preview,llm,uppsala_speaks,Activate,0.5807426403705895,0.536175691791003,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,uppsala_speaks,Standard,0.16492300459733333,0.37880351522373357,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,valsamoggia,Valsamoggia,0.3146355969581225,0.3820138792955776,openai,gpt-4.5-preview
+gpt-4.5-preview,llm,zh_thalwil,Thalwill,-0.2715589755483033,-0.1970597860400607,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,zh_uster,USTER,0.4822477570948651,0.24883103694848957,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,zh_winterthur,Winterthur,0.12821069371041882,-0.15381094115985927,openai,gpt-4.5-preview
 gpt-4.5-preview,llm,zukunft,Zukunft,0.23414520903089642,-0.05940338643589412,openai,gpt-4.5-preview
@@ -916,6 +979,7 @@ gpt-4o,llm,swiss_health,CA,0.3441803448533134,0.07377069795474327,openai,gpt-4o
 gpt-4o,llm,uppsala_speaks,Activate,0.39749032621805824,0.22856547953601516,openai,gpt-4o
 gpt-4o,llm,uppsala_speaks,Standard,0.34549075474551105,0.18847684306544796,openai,gpt-4o
 gpt-4o,llm,valsamoggia,Valsamoggia,0.36972791836385177,0.17907099803187623,openai,gpt-4o
+gpt-4o,llm,zh_thalwil,Thalwill,0.019020641614071465,-0.3206846465724138,openai,gpt-4o
 gpt-4o,llm,zh_uster,USTER,-1.1143985883040275,-0.3047842063187969,openai,gpt-4o
 gpt-4o,llm,zh_winterthur,Winterthur,0.11970474594497515,-0.27264305239797365,openai,gpt-4o
 gpt-4o,llm,zukunft,Zukunft,0.3326550859254511,-0.24085811851759914,openai,gpt-4o
@@ -939,6 +1003,7 @@ gpt-4o-mini,llm,swiss_health,CA,0.3180561748982884,0.17218943457527722,openai,gp
 gpt-4o-mini,llm,uppsala_speaks,Activate,0.21033199282820747,0.29747719720469423,openai,gpt-4o-mini
 gpt-4o-mini,llm,uppsala_speaks,Standard,0.14406875289690313,0.21158138549705147,openai,gpt-4o-mini
 gpt-4o-mini,llm,valsamoggia,Valsamoggia,0.26636118233873907,-0.0907437608634482,openai,gpt-4o-mini
+gpt-4o-mini,llm,zh_thalwil,Thalwill,-0.06270951053523843,-0.024289394746719338,openai,gpt-4o-mini
 gpt-4o-mini,llm,zh_uster,USTER,0.5923518068689286,0.2301869542501723,openai,gpt-4o-mini
 gpt-4o-mini,llm,zh_winterthur,Winterthur,0.395939866236501,0.3176702388292269,openai,gpt-4o-mini
 gpt-4o-mini,llm,zukunft,Zukunft,0.5160909209285611,0.3488178065891504,openai,gpt-4o-mini
@@ -962,6 +1027,7 @@ o1,llm,swiss_health,CA,0.31419157337059755,0.1007788639772165,openai,o1
 o1,llm,uppsala_speaks,Activate,-0.12185495055727014,0.13945811138202552,openai,o1
 o1,llm,uppsala_speaks,Standard,0.005740038211983656,0.12469721020565247,openai,o1
 o1,llm,valsamoggia,Valsamoggia,0.17945894518644878,0.07911464933192865,openai,o1
+o1,llm,zh_thalwil,Thalwill,-0.2737361920006348,-0.5317696715824732,openai,o1
 o1,llm,zh_uster,USTER,0.43741202241724064,0.12227173105635884,openai,o1
 o1,llm,zh_winterthur,Winterthur,0.3293041058205084,0.07463194014043242,openai,o1
 o1,llm,zukunft,Zukunft,0.3327868502222999,0.08358364040302813,openai,o1
@@ -985,6 +1051,7 @@ o3-mini,llm,swiss_health,CA,0.446892861547586,0.3088621115569359,openai,o3-mini
 o3-mini,llm,uppsala_speaks,Activate,0.33068202289425375,0.21871984557101523,openai,o3-mini
 o3-mini,llm,uppsala_speaks,Standard,0.08976743110927043,0.1814096161410353,openai,o3-mini
 o3-mini,llm,valsamoggia,Valsamoggia,-0.18762823938885653,0.37605151550166416,openai,o3-mini
+o3-mini,llm,zh_thalwil,Thalwill,0.02795734663755378,0.2771664835209353,openai,o3-mini
 o3-mini,llm,zh_uster,USTER,0.3307113909863384,0.44194393396827425,openai,o3-mini
 o3-mini,llm,zh_winterthur,Winterthur,0.5246717479339873,0.6575797659701103,openai,o3-mini
 o3-mini,llm,zukunft,Zukunft,0.5236489334614467,0.5781236068003089,openai,o3-mini
@@ -1008,6 +1075,7 @@ qwen-max,llm,swiss_health,CA,0.33842891808968356,0.2980716287698603,qwen,qwen-ma
 qwen-max,llm,uppsala_speaks,Activate,0.37648534525777855,0.418469775339787,qwen,qwen-max
 qwen-max,llm,uppsala_speaks,Standard,0.36344108573673384,0.3289356342297126,qwen,qwen-max
 qwen-max,llm,valsamoggia,Valsamoggia,0.42581236392648636,0.24741960739808608,qwen,qwen-max
+qwen-max,llm,zh_thalwil,Thalwill,-0.10020146758919679,0.20746708973575614,qwen,qwen-max
 qwen-max,llm,zh_uster,USTER,0.6311219004533337,0.5797005734843397,qwen,qwen-max
 qwen-max,llm,zh_winterthur,Winterthur,0.4433435295631991,0.583024207702565,qwen,qwen-max
 qwen-max,llm,zukunft,Zukunft,0.5886022688121715,0.5848826056539126,qwen,qwen-max
@@ -1031,6 +1099,7 @@ qwen-plus,llm,swiss_health,CA,0.3610663247920407,0.3045224114058516,qwen,qwen-pl
 qwen-plus,llm,uppsala_speaks,Activate,0.42823884523894296,0.37975742607804974,qwen,qwen-plus
 qwen-plus,llm,uppsala_speaks,Standard,0.4076513403742752,0.3418795185290047,qwen,qwen-plus
 qwen-plus,llm,valsamoggia,Valsamoggia,0.4462512766660911,0.0940328164031178,qwen,qwen-plus
+qwen-plus,llm,zh_thalwil,Thalwill,-0.083032281172622735,0.1707620093640833,qwen,qwen-plus
 qwen-plus,llm,zh_uster,USTER,0.5823832238064033,0.491206953540799,qwen,qwen-plus
 qwen-plus,llm,zh_winterthur,Winterthur,0.4073269018557055,0.46032632653934696,qwen,qwen-plus
 qwen-plus,llm,zukunft,Zukunft,0.5533493420512967,0.5481856825416002,qwen,qwen-plus
@@ -1054,6 +1123,7 @@ qwen-turbo,llm,swiss_health,CA,0.2922283208908698,0.20499360206367612,qwen,qwen-
 qwen-turbo,llm,uppsala_speaks,Activate,0.5211936611010939,0.31495258881221994,qwen,qwen-turbo
 qwen-turbo,llm,uppsala_speaks,Standard,0.4891603646227407,0.202675549767782,qwen,qwen-turbo
 qwen-turbo,llm,valsamoggia,Valsamoggia,0.06241051567843536,-0.07090714256784841,qwen,qwen-turbo
+qwen-turbo,llm,zh_thalwil,Thalwill,-0.05445116276374462,-0.07343855070813511,qwen,qwen-turbo
 qwen-turbo,llm,zh_uster,USTER,0.5653163843925058,0.36920660195313,qwen,qwen-turbo
 qwen-turbo,llm,zh_winterthur,Winterthur,0.37806317098442177,-0.05295912224315116,qwen,qwen-turbo
 qwen-turbo,llm,zukunft,Zukunft,0.557672034050289,0.3207687947438772,qwen,qwen-turbo
@@ -1077,6 +1147,7 @@ qwen1.5-72b-chat,llm,swiss_health,CA,0.2778958326980119,0.22160211271338165,qwen
 qwen1.5-72b-chat,llm,uppsala_speaks,Activate,0.39314804712164353,0.2988425856616871,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,uppsala_speaks,Standard,0.2444365754001423,0.15622765710069422,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,valsamoggia,Valsamoggia,0.39689657082054763,0.0017304086327113073,qwen,qwen1.5-72b-chat
+qwen1.5-72b-chat,llm,zh_thalwil,Thalwill,-0.10064980953108715,-0.0660129309486817,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,zh_uster,USTER,0.44085351159267194,0.13511359882292098,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,zh_winterthur,Winterthur,0.47920233532036227,0.2905232966252695,qwen,qwen1.5-72b-chat
 qwen1.5-72b-chat,llm,zukunft,Zukunft,0.5452227827798348,0.394022874024234,qwen,qwen1.5-72b-chat
@@ -1100,6 +1171,7 @@ qwen2-72b-instruct,llm,swiss_health,CA,0.33479961879373366,0.23255901251956965,q
 qwen2-72b-instruct,llm,uppsala_speaks,Activate,0.5180305538452377,0.20502195494614575,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,uppsala_speaks,Standard,0.3088548551255901,0.13341370776198,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,valsamoggia,Valsamoggia,0.41123253673925975,0.2735728816085476,qwen,qwen2-72b-instruct
+qwen2-72b-instruct,llm,zh_thalwil,Thalwill,-0.11004838763445923,-0.14679123975695554,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,zh_uster,USTER,0.5294646830344862,0.0038946789724049634,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,zh_winterthur,Winterthur,0.40207745295113595,0.1538453366116919,qwen,qwen2-72b-instruct
 qwen2-72b-instruct,llm,zukunft,Zukunft,0.5896145907609669,0.22629445083938804,qwen,qwen2-72b-instruct
@@ -1123,6 +1195,7 @@ qwen2.5-72b-instruct,llm,swiss_health,CA,0.34551632059249027,0.25729591044706357
 qwen2.5-72b-instruct,llm,uppsala_speaks,Activate,0.5151570568486301,0.36074344065284036,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,uppsala_speaks,Standard,0.44331175402998424,0.2352225836485145,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,valsamoggia,Valsamoggia,0.28175633361946706,-0.22181196191403557,qwen,qwen2.5-72b-instruct
+qwen2.5-72b-instruct,llm,zh_thalwil,Thalwill,-0.08111343690804396,0.06455335036679537,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,zh_uster,USTER,0.5708933277785717,0.46725919479549255,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,zh_winterthur,Winterthur,0.5236679177445562,0.42352080511676254,qwen,qwen2.5-72b-instruct
 qwen2.5-72b-instruct,llm,zukunft,Zukunft,0.5657073724835151,0.42686019466080033,qwen,qwen2.5-72b-instruct
@@ -1146,6 +1219,7 @@ qwq-plus,llm,swiss_health,CA,0.3211252648694758,0.23503165093067185,qwen,qwq-plu
 qwq-plus,llm,uppsala_speaks,Activate,0.4146378654344878,0.3773227958265074,qwen,qwq-plus
 qwq-plus,llm,uppsala_speaks,Standard,0.2833202974465068,0.2828145679123519,qwen,qwq-plus
 qwq-plus,llm,valsamoggia,Valsamoggia,0.09291445012719168,0.15309561181226045,qwen,qwq-plus
+qwq-plus,llm,zh_thalwil,Thalwill,-0.06921505039129372,0.04933927376468466,qwen,qwq-plus
 qwq-plus,llm,zh_uster,USTER,0.47188067907421916,0.21904253582412056,qwen,qwq-plus
 qwq-plus,llm,zh_winterthur,Winterthur,0.29628525182732823,0.19642538930345135,qwen,qwq-plus
 qwq-plus,llm,zukunft,Zukunft,0.5908108102109257,0.2265878788913046,qwen,qwq-plus
@@ -1169,6 +1243,7 @@ grok-2-1212,llm,swiss_health,CA,0.39750010374602085,-0.10896096315033747,xai,gro
 grok-2-1212,llm,uppsala_speaks,Activate,0.37959167939649463,-0.036124665015911536,xai,grok-2-1212
 grok-2-1212,llm,uppsala_speaks,Standard,0.3568109115593012,-0.0467158818132128,xai,grok-2-1212
 grok-2-1212,llm,valsamoggia,Valsamoggia,0.36567075423176676,0.04500958191693132,xai,grok-2-1212
+grok-2-1212,llm,zh_thalwil,Thalwill,-0.06620739202532178,-0.11007221736844616,xai,grok-2-1212
 grok-2-1212,llm,zh_uster,USTER,0.46863973307623796,0.08037229786615736,xai,grok-2-1212
 grok-2-1212,llm,zh_winterthur,Winterthur,0.33513972384118507,-0.214967240691673,xai,grok-2-1212
 grok-2-1212,llm,zukunft,Zukunft,-0.17519043991120387,-0.3495765879338701,xai,grok-2-1212
@@ -1192,6 +1267,7 @@ grok-3-beta,llm,swiss_health,CA,0.34344115765924643,0.3205985462075962,xai,grok-
 grok-3-beta,llm,uppsala_speaks,Activate,0.33962059735793737,0.4530024990670199,xai,grok-3-beta
 grok-3-beta,llm,uppsala_speaks,Standard,0.29640231339251244,0.5092874332282735,xai,grok-3-beta
 grok-3-beta,llm,valsamoggia,Valsamoggia,0.3359316520940119,0.20012230707195805,xai,grok-3-beta
+grok-3-beta,llm,zh_thalwil,Thalwill,-0.03632393361892616,0.22561189797304756,xai,grok-3-beta
 grok-3-beta,llm,zh_uster,USTER,0.6002698272985658,0.5581261225327298,xai,grok-3-beta
 grok-3-beta,llm,zh_winterthur,Winterthur,0.3610653269616366,0.5956930222971355,xai,grok-3-beta
 grok-3-beta,llm,zukunft,Zukunft,0.5643283605376133,0.6058135629834213,xai,grok-3-beta
@@ -1215,6 +1291,7 @@ grok-3-mini-beta,llm,swiss_health,CA,0.3212137457620965,0.2894395117550842,xai,g
 grok-3-mini-beta,llm,uppsala_speaks,Activate,0.45418295894153915,0.4925261321009684,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,uppsala_speaks,Standard,0.26262600625653665,0.35762970333416755,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,valsamoggia,Valsamoggia,0.27981284268225437,0.004747445878790505,xai,grok-3-mini-beta
+grok-3-mini-beta,llm,zh_thalwil,Thalwill,0.010845830261129397,0.25584781897804315,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,zh_uster,USTER,0.43531830905746194,0.5008598510618028,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,zh_winterthur,Winterthur,0.49734101926275476,0.6245346708477904,xai,grok-3-mini-beta
 grok-3-mini-beta,llm,zukunft,Zukunft,0.5682315232316897,0.6022349014442981,xai,grok-3-mini-beta
@@ -1238,6 +1315,7 @@ grok-3-mini-beta-r=high,llm,swiss_health,CA,0.33261879639692604,0.26006647901522
 grok-3-mini-beta-r=high,llm,uppsala_speaks,Activate,0.3677432547281543,0.5361143963656158,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,uppsala_speaks,Standard,0.3620602763410825,0.46535884601555433,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,valsamoggia,Valsamoggia,0.48384027321103784,0.4680361333436284,xai,grok-3-mini-beta-r=high
+grok-3-mini-beta-r=high,llm,zh_thalwil,Thalwill,-0.03732447397409033,0.26062048555081646,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,zh_uster,USTER,0.4781461689307043,0.5581987039361602,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,zh_winterthur,Winterthur,0.3782225992966417,0.6253168448803105,xai,grok-3-mini-beta-r=high
 grok-3-mini-beta-r=high,llm,zukunft,Zukunft,0.5691055603475197,0.6196936131144226,xai,grok-3-mini-beta-r=high
@@ -1261,9 +1339,82 @@ grok-3-mini-beta-r=low,llm,swiss_health,CA,0.2894312485440127,0.3135879013910005
 grok-3-mini-beta-r=low,llm,uppsala_speaks,Activate,0.36635345976539035,0.4925759282731994,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,uppsala_speaks,Standard,0.3233959359708398,0.442655526024504,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,valsamoggia,Valsamoggia,0.203739211783444,0.19366958154958047,xai,grok-3-mini-beta-r=low
+grok-3-mini-beta-r=low,llm,zh_thalwil,Thalwill,-0.12537243097249684,0.12439412581829559,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,zh_uster,USTER,0.5184538110689949,0.6007165772000098,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,zh_winterthur,Winterthur,0.4655017600132487,0.6436524333492759,xai,grok-3-mini-beta-r=low
 grok-3-mini-beta-r=low,llm,zukunft,Zukunft,0.5894356261950602,0.35302662439879906,xai,grok-3-mini-beta-r=low
+grok-3-mini-fast-beta,llm,acp,Citizen Parliamentarian,-0.27184368657380875,-0.01045893570277987,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,auscj,HGE Deliberative Group,-0.7649279807370246,-0.7257709857601473,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,bep,BEP,0.5904560489450401,0.40144383828283975,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,biobanking_mayo_ubc,Mayo,0.295627115797807,0.09754414695883898,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,biobanking_mayo_ubc,UBC Bio,0.2397268660889813,0.16438937831866013,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,biobanking_wa,WA Citizens,0.4436612103713018,0.38476291147856095,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,biobanking_wa,WA Stakeholder,0.48351112849276023,0.3786788726510584,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,ccps,CCPS ACT Deliberative,0.28010835132383805,0.4912289848197711,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,ds_aargau,Aargau,0.3576219095025459,0.14097370639394127,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,ds_bellinzona,Bellinzona,0.23746076009069061,0.5661648600308623,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,energy_futures,CSIRO NSW,0.48900585485114423,0.38047793850318384,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,energy_futures,CSIRO WA,0.30401376123303936,0.6117194783590427,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,fnqcj,FNQCJ,-0.09938487887120961,0.353914898040905,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,forestera,Forest Lay Citizen,0.5200352063005025,0.6013829806090161,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,forestera,Forest Stakeholder,0.4250242742048842,0.49825051408270027,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,fremantle,Fremantle,-0.3554594689758548,-0.19690908782025254,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,swiss_health,CA,0.341617786712348,0.27070869558606864,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,uppsala_speaks,Activate,0.42042505719016643,0.49754318555671395,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,uppsala_speaks,Standard,0.28289251855505304,0.3874169485714526,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,valsamoggia,Valsamoggia,-0.42271794762004455,0.01890172378908772,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,zh_thalwil,Thalwill,0.027627594582770643,0.32356884528806706,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,zh_uster,USTER,0.5739513656889084,0.5173561366265084,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,zh_winterthur,Winterthur,0.4737073576119253,0.6840198212543447,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta,llm,zukunft,Zukunft,0.5934854207703177,0.6095878702782271,xai,grok-3-mini-fast-beta
+grok-3-mini-fast-beta-r=high,llm,acp,Citizen Parliamentarian,-0.330492972273261,0.01484562471599751,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,auscj,HGE Deliberative Group,-0.7914015058103139,-0.8914962780067425,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,bep,BEP,0.47416312877039246,0.3709707044988201,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,biobanking_mayo_ubc,Mayo,0.3378747530449129,0.261372080309529,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,biobanking_mayo_ubc,UBC Bio,0.22453097766995067,0.14690249622788001,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,biobanking_wa,WA Citizens,0.4270581942356493,0.5445592561917172,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,biobanking_wa,WA Stakeholder,0.4475344526369893,0.38173862097126454,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,ccps,CCPS ACT Deliberative,0.3718860468569509,0.5354502044803858,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,ds_aargau,Aargau,0.27877158837596583,0.13319215373100213,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,ds_bellinzona,Bellinzona,0.22670695679383246,0.5239186218454133,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,energy_futures,CSIRO NSW,0.5023473493140669,0.40420801578798093,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,energy_futures,CSIRO WA,0.34751428365936343,0.6485326272132623,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,fnqcj,FNQCJ,-0.07969111339660384,0.3831307071135815,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,forestera,Forest Lay Citizen,0.4859466965278829,0.5963348627290053,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,forestera,Forest Stakeholder,0.5334811598525211,0.6335230126300846,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,fremantle,Fremantle,0.43464838671329864,0.26635733673820106,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,swiss_health,CA,0.3573100966643985,0.32599969783546745,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,uppsala_speaks,Activate,0.46460913543662574,0.44565491974635546,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,uppsala_speaks,Standard,0.1391766912951906,0.36648454030276917,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,valsamoggia,Valsamoggia,0.4733672151502095,0.4308073769973741,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,zh_thalwil,Thalwill,-0.12174902553878775,0.16973934484586123,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,zh_uster,USTER,0.5368581743201883,0.5142043442226905,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,zh_winterthur,Winterthur,0.4763915896826374,0.6621226057158104,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=high,llm,zukunft,Zukunft,0.5737569303893622,0.6089696743255704,xai,grok-3-mini-fast-beta-r=high
+grok-3-mini-fast-beta-r=low,llm,acp,Citizen Parliamentarian,-0.2668274558656334,0.014806295863770559,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,auscj,HGE Deliberative Group,-0.7848725070432032,-0.8751180188516526,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,bep,BEP,0.5450501335881801,0.40768397196290845,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,biobanking_mayo_ubc,Mayo,0.4216725284741283,0.1323844412202494,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,biobanking_mayo_ubc,UBC Bio,0.20236817431725984,0.17960817378074584,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,biobanking_wa,WA Citizens,0.4478196401243504,0.5364427965824408,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,biobanking_wa,WA Stakeholder,0.46638144119166913,0.3951598684596441,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,ccps,CCPS ACT Deliberative,0.3322878089475574,0.5134799022308164,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,ds_aargau,Aargau,0.32907925014467554,0.15184481111545703,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,ds_bellinzona,Bellinzona,0.3176665557750671,0.5093841317041763,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,energy_futures,CSIRO NSW,0.47073043383732993,0.32715620360048325,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,energy_futures,CSIRO WA,0.26841558130725796,0.5639987178359156,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,fnqcj,FNQCJ,-0.05765783564065741,0.42372053933234877,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,forestera,Forest Lay Citizen,0.5368072369650909,0.5913425306465012,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,forestera,Forest Stakeholder,0.4722766384425281,0.524828408386518,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,fremantle,Fremantle,0.30591760449361605,-0.03009836240106695,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,swiss_health,CA,0.26202657288675346,0.3144079802998854,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,uppsala_speaks,Activate,0.4408354688415981,0.5267969141045357,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,uppsala_speaks,Standard,0.40992934639084866,0.43015659021175034,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,valsamoggia,Valsamoggia,0.40285717230301055,0.25972967449341783,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,zh_thalwil,Thalwill,-0.1289168467625489,0.19436281129666333,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,zh_uster,USTER,0.4353444048929058,0.5954683153521967,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,zh_winterthur,Winterthur,0.39000515913128564,0.6155150974795125,xai,grok-3-mini-fast-beta-r=low
+grok-3-mini-fast-beta-r=low,llm,zukunft,Zukunft,0.5959560418933689,0.6061025965239819,xai,grok-3-mini-fast-beta-r=low
 grok-beta,llm,acp,Citizen Parliamentarian,0.07205363155923483,-0.16970140141822102,xai,grok-beta
 grok-beta,llm,auscj,HGE Deliberative Group,-0.6812923043388346,-0.1545244916652942,xai,grok-beta
 grok-beta,llm,bep,BEP,0.43776411521026426,-0.04899656778695929,xai,grok-beta
@@ -1284,6 +1435,7 @@ grok-beta,llm,swiss_health,CA,0.45913426132825697,0.08032321175832023,xai,grok-b
 grok-beta,llm,uppsala_speaks,Activate,0.4994430791603133,0.2851117660807674,xai,grok-beta
 grok-beta,llm,uppsala_speaks,Standard,0.3046143332320832,0.1915116804270248,xai,grok-beta
 grok-beta,llm,valsamoggia,Valsamoggia,0.39179344826842666,-0.11872659434516133,xai,grok-beta
+grok-beta,llm,zh_thalwil,Thalwill,0.15075796416055365,-0.16986905671364397,xai,grok-beta
 grok-beta,llm,zh_uster,USTER,0.5143769400427984,0.08474823714514179,xai,grok-beta
 grok-beta,llm,zh_winterthur,Winterthur,0.3346549338859197,-0.09957277481546949,xai,grok-beta
 grok-beta,llm,zukunft,Zukunft,0.5609580024762193,-0.016216501066370466,xai,grok-beta
