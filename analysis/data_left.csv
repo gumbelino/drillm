@@ -1,2 +1,2 @@
 provider,model,completions_total,completions_left,time_left_min,cost_left
-google,gemini-2.0-flash-thinking-exp,600,453,218.85939999999997,0
+anthropic,claude-3-7-sonnet-20250219-think=high,100,67,NA,NA

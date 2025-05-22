@@ -1,0 +1,577 @@
+---
+title: "cscw2025poster"
+output: html_document
+---
+
+# CSCW 2025 Analysis
+
+## Methods
+```{r}
+
+included_cases %>%
+  arrange(case) %>%
+  full_join(surveys, by=join_by(survey)) %>%
+  write_output_csv("included_cases.csv")
+
+# number of human participants
+paste(nrow(human_data) / 2, "participants")
+
+# number of llm responses
+paste(nrow(llm_data %>% filter(model %in% included_models_summary$model)), "LLM responses")
+
+nrow(DRIInd.LLMs.it %>% filter(model %in% included_models_summary$model, case %in% included_cases$case))
+
+# number of llms
+paste(nrow(included_models_summary), "models")
+
+# number of llms
+paste(length(unique(included_models_summary$provider)), "providers:")
+
+# number surveys (- gbr)
+paste(nrow(surveys) - 1, "surveys")
+
+# providers
+for (provider in unique(included_models_summary$provider)) {
+  cat(paste0(provider, ", "))
+}
+
+# models
+for (provider in unique(included_models_summary$provider)) {
+  
+  models <- included_models_summary %>%
+    filter(provider == !!provider) %>%
+    select(model)
+  
+  cat(paste0(provider, ":"))
+  for (model in models$model) {
+    cat(paste0(model, ", "))
+  }
+  cat("\n")
+  
+}
+
+# models %>%
+#   filter(model %in% included_models_summary$model, min_iterations < 30) %>%
+#   select(provider, model)
+
+
+nrow(DRIInd.LLMs.it)
+
+```
+
+
+## Human Pre-Post Analysis
+```{r CSCW human}
+
+df <- DRI.Global %>% filter(type == "human_only") %>%
+  mutate(diff = DRI_POST_V3 - DRI_PRE_V3)
+
+nrow(df)
+
+df %>% identify_outliers(diff)
+
+df %>% shapiro_test(diff) 
+
+df %>% ggqqplot("diff")
+
+df <- df %>% 
+  pivot_longer(
+    c("DRI_PRE_V3", "DRI_POST_V3"),
+    names_to = "stage",
+    values_to = "dri") %>%
+  select(survey, case, stage, dri)
+
+df %>%
+  group_by(stage) %>%
+  summarise(
+    count = n(),
+    mean = mean(dri, na.rm = TRUE),
+    sd = sd(dri, na.rm = TRUE)
+  )
+
+df %>%
+  ggpaired(
+    x = "stage",
+    y = "dri",
+    line.color = "gray",
+    line.size = 0.4) +
+  stat_compare_means(paired = TRUE, method = "t.test") +
+  labs(
+    title = "Pre vs. Post Deliberation Human-Only Group DRI",
+  ) +
+  xlab("Deliberation Stage") +
+  ylab("DRI") +
+  scale_x_discrete(labels = c("Pre", "Post"))
+
+df %>%
+  ggpaired(
+    x = "stage",
+    y = "dri",
+    line.color = "gray",
+    line.size = 0.4) +
+  stat_compare_means(paired = TRUE, method = "wilcox.test") +
+  labs(
+    title = "Pre vs. Post Deliberation Human-Only Group DRI",
+  ) +
+  xlab("Deliberation Stage") +
+  ylab("DRI") +
+  scale_x_discrete(labels = c("Pre", "Post"))
+
+```
+
+## Humans vs. LLMs
+### 4.1 General
+```{r}
+
+dat <- DRIInd.ALL %>%
+  filter(source_type == "llm" ) %>%
+    bind_rows(DRIInd.Global)
+
+dat %>% 
+  group_by(source_type) %>%
+  get_summary_stats(DRIPostV3, type = "common")
+
+# out <- boxplot(df[df$source_type == "llm", ]$DRIPostV3, plot=FALSE)$out
+# df.test <- df[-which(df[df$source_type == "llm",]$DRIPostV3 %in% out),]
+# out <- boxplot(df.test[df.test$source_type == "human", ]$DRIPostV3, plot=FALSE)$out
+# df.test <- df.test[-which(df.test[df.test$source_type == "human",]$DRIPostV3 %in% out),]
+
+
+df.test %>% 
+  group_by(source_type) %>%
+  shapiro_test(DRIPostV3)
+
+res.wilcox <- dat %>% 
+  wilcox_test(DRIPostV3 ~ source_type)
+res.wilcox
+
+df %>%
+  ggviolin(
+    x = "source_type",
+    y = "DRIPostV3",
+    color = "source_type",
+    add = "boxplot"
+  ) +
+  # ggboxplot(x = "source_type", y = "DRIPostV3", color="source_type") +
+  #rotate_x_text(70) +
+  labs(
+    # title = "Human vs. LLM Post-Deliberation DRI",
+    caption = get_test_label(res.wilcox, detailed = TRUE),
+    #caption = get_pwc_label(pwc),
+  ) +
+  xlab("Sources") +
+  ylab("DRI") +
+  stat_summary(
+    fun.data = function(x)
+      data.frame(y = 1.2, label = paste0("\U00B5 = ", round(mean(
+        x
+      ), 2))),
+    geom = "text"
+  ) +
+  scale_x_discrete(labels = c("llm" = "LLMs", "human" = "Humans")) +
+  theme(axis.text.x = element_markdown(), legend.position = "none") -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "CSCW5.png", sep = "/"),
+  plot,
+  width = 8,
+  height = 4
+)
+
+
+```
+
+### 4.2 Cases 
+```{r CSCW cases, fig.width=10,fig.height=10}
+
+df <- DRIInd.ALL %>%
+  filter(source_type == "llm" ) %>%
+    bind_rows(DRIInd.Global)
+
+df.summ <- df %>% 
+  group_by(source_type, case) %>%
+  get_summary_stats(DRIPostV3, type = "common") %>%
+  select(source_type, case, n, mean)
+
+df.hum <- df.summ %>% filter(source_type == "human")
+df.llm <- df.summ %>% filter(source_type == "llm")
+
+df.summ <- full_join(df.hum, df.llm, by=join_by(case))
+
+df.summ$diff = df.summ$mean.x - df.summ$mean.y
+
+df.summ$index <- rownames(df.summ)
+
+pwc <- df %>% 
+  group_by(case) %>%
+  wilcox_test(DRIPostV3 ~ source_type, detailed = TRUE) 
+
+df.summ <- pwc %>% select(case, p) %>% full_join(df.summ, by=join_by(case))
+
+df.summ$sig <- df.summ$p < 0.05
+
+df.summ$label <- paste0("Case ", df.summ$index, " (N = ", df.summ$n.x , ")")
+
+write_output_csv(df.summ, "df_summ.csv")
+
+df.summ %>%
+  arrange(n.x)
+
+ggline(df.summ, x = "label", y = "diff", shape="sig", point.size = 3, point.color = "sig") +
+  # theme_minimal() +
+  geom_hline(yintercept=0, linetype="dashed", color = "red") +
+  rotate_x_text(45) +
+  xlab("Deliberation Cases") +
+  ylab("Humans - LLMs DRI") +
+  ylim(c(-0.2,0.7)) +
+  # theme(
+  #   plot.background = element_rect(fill = "white"),
+  #   legend.position = "bottom right",
+  #   panel.grid.major.y = element_blank(),
+  #   panel.grid.minor = element_blank(),
+  #   panel.border = element_blank(),
+  # )
+  theme(legend.position="none") -> plot
+  #labs(fill = "Dose (mg)")
+  #scale_fill_discrete(name = "p < 0.5", labels = c("TRUE", "FALSE"))
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "CSCW4.png", sep = "/"),
+  plot,
+  width = 8,
+  height = 4
+)
+# 
+# 
+# pwc <- pwc %>%
+#   filter(group1 == "human" | group2 == "human") %>%
+#  # add_xy_position(x = "source") %>%
+#   mutate(
+#     model = ifelse(group1 == "human", group2, group1),
+#     ref = "human"
+#   ) %>%
+#   filter(p > 0.05) #%>%
+#   #select(model, p.adj.signif, ref)
+# 
+# 
+# df %>%
+# ggboxplot(x = "source_type", y = "DRIPostV3", color = "source_type", facet.by = "case", short.panel.labs = FALSE) +
+#   labs(
+#     #title = "LLM Post-Deliberation DRI",
+#     #subtitle = get_test_label(res.wilcox, detailed = TRUE),
+#     caption = get_pwc_label(pwc),
+#   ) +
+#   xlab("Participant Type") +
+#   ylab("DRI (Post-Deliberation)") +
+#   ylim(c(-1.8,1.8)) +
+#     stat_summary(fun.data = function(x) data.frame(y=1.2, label = paste("\U00B5 =", round(mean(x), 2))), geom="text") +
+#   stat_compare_means(aes(group = source_type), label = "p.signif", label.y = 1.5, label.x = 1.5, hide.ns = TRUE, method = "wilcox.test") +
+#   theme(legend.position="none") -> plot
+# 
+# plot
+# 
+# ggsave(
+#   paste(OUTPUT_DIR, "plots", "CSCW2.png", sep = "/"),
+#   plot,
+#   width = 10,
+#   height = 10
+# )
+
+```
+
+### 4.3 LLMs
+```{r, fig.width=8,fig.height=6}
+
+df <- DRIInd.ALL %>%
+  filter(source_type == "llm" ) %>%
+    bind_rows(DRIInd.Global)
+
+# m <- df %>%
+#   filter(source_type == "llm" ) %>%
+#   group_by(model) %>%
+#   summarise(n = n())
+# 
+# nrow(m)
+
+order <- df %>%
+  group_by(source) %>%
+  summarise(
+    median = median(DRIPostV3, na.rm = TRUE)
+  ) %>%
+  arrange(median)
+order <- order$source
+
+res.kruskal <- df %>% 
+  kruskal_test(DRIPostV3 ~ source)
+res.kruskal
+
+pwc <- df %>% 
+  dunn_test(DRIPostV3 ~ source, p.adjust.method = "bonferroni") 
+
+pwc <- pwc %>%
+  filter(group1 == "human" | group2 == "human") %>%
+  #add_xy_position(x = "source") %>%
+  mutate(
+    model = ifelse(group1 == "human", group2, group1),
+    ref = "human"
+  ) #%>%
+  #filter(p.adj.signif != "ns") #%>%
+  #select(model, p.adj.signif, ref)
+
+df <- full_join(df, pwc, by=join_by(model))
+
+pwc <- pwc %>%
+  filter(p.adj.signif != "ns")
+
+# nrow(pwc)
+
+df %>%
+ggboxplot(x = "source", y = "DRIPostV3", color="p.adj", order=order) +
+  rotate_x_text(60) +
+  labs(
+    # title = "Humans vs. Individual LLMs",
+    subtitle = get_test_label(res.kruskal, detailed = TRUE),
+    caption = get_pwc_label(pwc),
+  ) +
+  scale_x_discrete(
+    labels = ~ case_when(
+      # .x == "human" ~ paste0("<span style='color:#e76c68'>", .x, "</span>"),
+      .x %in% pwc$model ~ paste0(.x, " *"),
+      .default = .x
+    )
+  ) +
+  xlab("Sources") +
+  ylab("DRI") +
+  gradient_color(c("#00BFC4",  "#DE6961")) +
+  theme(axis.text.x = element_markdown()) -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "CSCW3.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 5
+)
+
+```
+
+### Appendices
+
+
+
+## Human-only vs. Human-LLM Analysis
+```{r CSCW human+llm, fig.width=10,fig.height=10}
+
+df <- DRI.Global %>%
+  filter(!is.na(model) | type == "human_only") %>%
+  group_by(model, case) %>%
+  summarise(
+    it = n(),
+    DRI_PRE_V3_mean = mean(DRI_PRE_V3, na.rm = TRUE),
+    DRI_POST_V3_mean = mean(DRI_POST_V3, na.rm = TRUE),
+    diff_mean = DRI_POST_V3_mean - DRI_PRE_V3_mean,
+  ) %>%
+  mutate(
+    source = ifelse(is.na(model), "human_only", model),
+    source_type = ifelse(is.na(model), "human", "llm")
+  ) %>%
+  mutate(
+    source = as.factor(source)
+  ) %>%
+  as.data.frame()
+
+
+pwc <- df %>% 
+  wilcox_test(DRI_POST_V3_mean ~ source, p.adjust.method = "bonferroni")
+
+pwc <- pwc %>% add_xy_position(x = "source")
+
+
+# ggboxplot(df, x = "group", y = "weight") +
+#   stat_pvalue_manual(pwc, hide.ns = TRUE) +
+#   labs(
+#     subtitle = get_test_label(res.kruskal, detailed = TRUE),
+#     caption = get_pwc_label(pwc)
+#     )
+
+
+order <- df %>%
+  group_by(source) %>%
+  summarise(
+    median = median(DRI_POST_V3_mean, na.rm = TRUE)
+  ) %>%
+  arrange(median)
+order <- order$source
+
+
+df %>% 
+  group_by(source) %>%
+  get_summary_stats(DRI_POST_V3_mean, type = "common")
+
+df %>%
+  ggboxplot(x = "source", y = "DRI_POST_V3_mean", color = "source_type", order = order) +
+  rotate_x_text(70)
+
+
+
+res.wilcox <- df %>% 
+  wilcox_test(DRIPostV3 ~ source_type)
+res.wilcox
+
+
+df %>%
+  group_by(case) %>%
+  kruskal_effsize(DRI_POST_V3_mean ~ source_type)
+
+
+
+pwc <- df %>% 
+  dunn_test(DRI_POST_V3_mean ~ source, p.adjust.method = "bonferroni") 
+
+pwc <- pwc %>%
+  filter(group1 == "human_only" | group2 == "human_only") %>%
+  mutate(
+    model = ifelse(group1 == "human_only", group2, group1),
+    ref = "human_only"
+  ) %>%
+  filter(p.adj.signif != "ns") %>%
+  select(model, p.adj.signif, ref)
+
+
+library(ggtext)
+
+
+df %>%
+ggboxplot(x = "source_type", y = "DRIPostV3", color="source_type") +
+  #rotate_x_text(70) +
+  labs(
+    title = "Human vs. LLM Post-Deliberation DRI",
+    subtitle = get_test_label(res.wilcox, detailed = TRUE),
+    #caption = get_pwc_label(pwc),
+  ) +
+  xlab("Sources") +
+  ylab("DRI (Post-Deliberation)") +
+  theme(axis.text.x = element_markdown()) -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "CSCW.png", sep = "/"),
+  plot,
+  # width = 10,
+  # height = 8
+)
+
+
+
+
+DRIInd.Global$source_type = "human"
+DRIInd.Global$source = "human"
+
+
+df <- DRIInd.ALL %>%
+  filter(source_type == "llm" ) %>%
+    bind_rows(DRIInd.Global)
+
+m <- df %>%
+  filter(source_type == "llm" ) %>%
+  group_by(model) %>%
+  summarise(n = n())
+
+nrow(m)
+
+order <- df %>%
+  group_by(source) %>%
+  summarise(
+    median = median(DRIPostV3, na.rm = TRUE)
+  ) %>%
+  arrange(median)
+order <- order$source
+
+res.kruskal <- df %>% 
+  kruskal_test(DRIPostV3 ~ source)
+res.kruskal
+
+pwc <- df %>% 
+  dunn_test(DRIPostV3 ~ source, p.adjust.method = "bonferroni") 
+
+pwc <- pwc %>%
+  filter(group1 == "human" | group2 == "human") %>%
+  add_xy_position(x = "source") %>%
+  mutate(
+    model = ifelse(group1 == "human", group2, group1),
+    ref = "human"
+  ) %>%
+  filter(p.adj.signif != "ns") #%>%
+  #select(model, p.adj.signif, ref)
+
+nrow(pwc)
+
+df %>%
+ggboxplot(x = "source", y = "DRIPostV3", color="source_type", order=order) +
+  rotate_x_text(60) +
+  labs(
+    title = "Humans vs. Individual LLMs",
+    subtitle = get_test_label(res.kruskal, detailed = TRUE),
+    caption = get_pwc_label(pwc),
+  ) +
+  scale_x_discrete(
+    labels = ~ case_when(
+      .x == "human" ~ paste0("<span style='color:#e76c68'>", .x, "</span>"),
+      .x %in% pwc$model ~ paste0(.x, " <b style='color:#e76c68'>", "*", "</b>"),
+      .default = .x
+    )
+  ) +
+  xlab("Sources") +
+  ylab("DRI (Post-Deliberation)") +
+  theme(axis.text.x = element_markdown()) -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "CSCW3.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+res.wilcox <- df %>%
+  wilcox_test(DRIPostV3 ~ source_type)
+res.wilcox
+
+df %>%
+ggboxplot(x = "source_type", y = "DRIPostV3", color = "source_type", facet.by = "case", add = "jitter", short.panel.labs = FALSE) +
+  labs(
+    title = "LLM Post-Deliberation DRI",
+    subtitle = get_test_label(res.wilcox, detailed = TRUE),
+    caption = get_pwc_label(pwc),
+  ) +
+  xlab("Participant Type") +
+  ylab("DRI (Post-Deliberation)") +
+  ylim(c(-2,2)) +
+  stat_compare_means(aes(group = source_type), label = "p.signif", label.y = 1.5, label.x = 1.5, hide.ns = TRUE, method = "wilcox.test") -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "CSCW2.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 10
+)
+
+res.wilcox <- df %>%
+  group_by(case) %>%
+  wilcox_test(DRIPostV3 ~ source_type)
+res.wilcox
+
+df %>%
+  kruskal_effsize(DRIPostV3 ~ source_type)
+
+
+```
+

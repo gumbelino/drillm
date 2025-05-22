@@ -20,7 +20,9 @@ library(readxl)
 library(psych)
 library(boot)
 library(car)
+library(rstatix)
 library(dunn.test)
+library(ggpubr)
 library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
 
 SURVEY_FILE <- "data/surveys_v5.xlsx"
@@ -1098,6 +1100,8 @@ We collected `r nrow(human_data)` human responses across `r length(unique(human_
 cases <- read_csv(CASES_FILE, show_col_types = FALSE)
 excluded_cases <- cases %>% filter(!included)
 
+included_cases <- cases %>% filter(is.na(included))
+
 excluded_cases %>%
   select(-included)%>%
   knitr::kable(
@@ -1105,6 +1109,8 @@ excluded_cases %>%
     row.names = TRUE,
     col.names = c("Case", "Survey", "Participants", "Excluded Reason")
   )
+
+# Thawil does not align with experience with deliberative democracy
 
 ```
 
@@ -1673,7 +1679,7 @@ get_ind_DRI <- function(IC) {
   
 }
 
-get_case_DRI <- function(IC, type="human_only") {
+get_case_DRI <- function(IC, type="human_only", model=NA, it = NA) {
    
   ## Group DRI level ##
   DRI_PRE <- dri_calc(data = IC, v1 = 'R1', v2 = 'Q1')
@@ -1704,6 +1710,8 @@ get_case_DRI <- function(IC, type="human_only") {
     DRI_POST,
     DRI_POST_V2,
     DRI_POST_V3,
+    model = model,
+    it = it,
   )
   
   #Tests for groups
@@ -1912,7 +1920,7 @@ for (case_study in 1:nrow(mini_publics)) {
       data_with_llm <- add_single_llm_participant(llm_survey_data, it, data_case_study, provider, model, survey)
       
       IC.LLM <- get_IC(data_with_llm, survey, case)
-      DRI.Case.LLM <- get_case_DRI(IC.LLM, type)
+      DRI.Case.LLM <- get_case_DRI(IC.LLM, type, model, it)
       DRIInd.LLM <- get_ind_DRI(IC.LLM)
       DRIInd.LLM.Model <- get_ind_LLM_DRI(DRIInd.LLM, provider, model)
       
@@ -1958,6 +1966,7 @@ for (case_study in 1:nrow(mini_publics)) {
       DRIInd.LLMs.it[[length(DRIInd.LLMs.it) + 1]] <- DRIInd.LLM.Model
       
       DRI.Global <- rbind(DRI.Global, DRI.Case.LLM)
+      #DRI.Group.LLM <- rbind(DRI.Group.LLM, DRI.Case.LLM)
       
     }
     
@@ -2053,7 +2062,10 @@ if (length(missing) > 0) {
 
 # add delta column
 DRI.Global <- DRI.Global %>%
-  mutate(DRI_DELTA = DRI_POST - DRI_PRE)
+  mutate(
+    DRI_DELTA = DRI_POST - DRI_PRE,
+    DRI_DELTA_V3 = DRI_POST_V3 - DRI_PRE_V3,
+  )
 
 # write summary to file
 write_output_csv(LLM_alpha_DRI, "LLM_alpha_DRI.csv")
@@ -2150,20 +2162,7 @@ df %>%
   theme_minimal() + theme(legend.position = "none") +
   geom_point(
     data = . %>% filter(signif),
-    aes(x = -1, y = 5), color = "red", shape = 8, size = 5)
-
-# Assuming your dataframe is named `df`
-df %>% arrange(source_type, source) %>%
-ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
-  geom_boxplot() +
-  labs(title = "Distribution of DRIPostV3 for Each Source Type",
-       x = "Source",
-       y = "DRIPostV3") +
-  theme_minimal() + 
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 90, hjust = 1))
-
+    aes(x = -0.5, y = 5), color = "red", shape = 8, size = 5)
 
 ```
 
@@ -2178,7 +2177,7 @@ kruskal_test_result
 
 ### Post-hoc tests
 
-```{r H1-posthoc}
+```{r H1-posthoc, fig.width=10,fig.height=6}
 
 if (kruskal_test_result$p.value < 0.05) {
   # Perform Dunn's test if Kruskal-Wallis test is significant
@@ -2188,23 +2187,61 @@ if (kruskal_test_result$p.value < 0.05) {
   
   random_comp <- dunn_test_result %>%
     filter(grepl("random", comparisons)) %>%
-    mutate(P.rounded = round(P.adjusted, 3)) %>%
+    mutate(P.rounded = round(P.adjusted, 5)) %>%
     mutate(P.formated = ifelse(P.rounded < 0.05, paste0(P.rounded, "*"), P.rounded))
   
   # Print the results of Dunn's test with Bonferroni correction
-  random_comp %>%
+  random_comp <- random_comp %>%
     arrange(P.adjusted) %>% 
-    mutate(model = str_remove(comparisons, " - random")) %>%
+    mutate(model = str_remove(comparisons, " - random"))
+  
+  random_comp <- random_comp %>%
+    mutate(label = paste0(model, " ")) %>%
+    mutate(label = if_else(P.adjusted <= 0.0001, paste0(label, "*"), label)) %>%
+    mutate(label = if_else(P.adjusted <= 0.001, paste0(label, "*"), label)) %>%
+    mutate(label = if_else(P.adjusted <= 0.01, paste0(label, "*"), label)) %>%
+    mutate(label = if_else(P.adjusted <= 0.05, paste0(label, "*"), label))
+  
+  random_comp %>%
     select(model, P.formated) %>%
     knitr::kable(
       caption = "Models compared to random",
       col.names = c("Model", "P-adjusted"),
-      digits = 3
+      digits = 5
     )
   
 } else {
   message("Kruskal-Wallis test is not significant; no need for post-hoc testing.")
 }
+
+
+# Assuming your dataframe is named `df`
+df %>%
+    full_join(random_comp, by=join_by(model)) %>%
+  mutate(label = if_else(is.na(label), source, label)) %>%
+ggplot(aes(x = reorder(label, DRIPostV3, FUN = median), y = DRIPostV3, fill = source_type)) +
+  geom_boxplot() +
+  labs(title = "LLM (Individual) vs. Random (Individual) DRI",
+       x = "Source",
+       y = "DRI (Post-Deliberation)") +
+  theme_minimal() + 
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "bottom right",
+    panel.border = element_blank(),
+    axis.text.x = element_text(angle = 50, hjust = 1),
+  ) -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "H1-random.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+
 
 ```
 
@@ -2241,20 +2278,30 @@ df %>%
   theme_minimal() + theme(legend.position = "none") +
   geom_point(
     data = . %>% filter(signif),
-    aes(x = -1, y = 5), color = "red", shape = 8, size = 5)
+    aes(x = -0.5, y = 5), color = "red", shape = 8, size = 5)
 
 # Assuming your dataframe is named `df`
-df %>% arrange(source_type, source) %>%
-ggplot(aes(x = source, y = DRIPostV3, fill = source_type)) +
+df %>%
+  ggplot(aes(
+    x = reorder(source, DRIPostV3, FUN = median),
+    y = DRIPostV3,
+    fill = source_type
+  )) +
   geom_boxplot() +
-  labs(title = "Distribution of DRIPostV3 for Each Source Type",
-       x = "Source",
-       y = "DRIPostV3") +
-  theme_minimal() + 
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(angle = 90, hjust = 1))
+  labs(title = "Distribution of DRIPostV3 for Each Source Type", x = "Source", y = "DRIPostV3") +
+  theme_minimal() +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 70, hjust = 1))
 
+
+p <- ggboxplot(df, x = "source", y = "DRIPostV3",
+          color = "source_type") +
+  theme(legend.position = "none",
+        axis.text.x = element_text(angle = 70, hjust = 1))
+
+#  Add p-value#  Add p-valuemedian()
+p + stat_compare_means(label.x = "command") +
+  stat_compare_means(label = "p.signif", method = "t.test", ref.group = "human_only_mean", hide.ns = TRUE, vjust = 1)
 
 ```
 
@@ -2279,7 +2326,7 @@ kruskal_test_result
 
 ### Post-hoc tests
 
-```{r H2-posthoc}
+```{r H2-posthoc, fig.width=10,fig.height=6}
 
 if (kruskal_test_result$p.value < 0.05) {
   # Perform Dunn's test if Kruskal-Wallis test is significant
@@ -2289,13 +2336,22 @@ if (kruskal_test_result$p.value < 0.05) {
   
   human_comp <- dunn_test_result %>%
     filter(grepl("human", comparisons)) %>%
-    mutate(P.rounded = round(P.adjusted, 3)) %>%
-    mutate(P.formated = ifelse(P.rounded < 0.05, paste0(P.rounded, "*"), P.rounded))
+    mutate(P.formated = ifelse(P.adjusted < 0.05, paste0(P.adjusted, "*"), P.adjusted))
   
   # Print the results of Dunn's test with Bonferroni correction
-  human_comp %>%
-    arrange(P.adjusted) %>% 
+  human_comp <- human_comp %>%
+    arrange(P.adjusted) %>%
     mutate(model = str_remove(comparisons, " - human_only_mean")) %>%
+    mutate(model = str_remove(model, "human_only_mean - "))
+  
+  human_comp <- human_comp %>%
+    mutate(label = paste0(model, " ")) %>%
+    mutate(label = if_else(P.adjusted <= 0.0001, paste0(label, "*"), label)) %>%
+    mutate(label = if_else(P.adjusted <= 0.001, paste0(label, "*"), label)) %>%
+    mutate(label = if_else(P.adjusted <= 0.01, paste0(label, "*"), label)) %>%
+    mutate(label = if_else(P.adjusted <= 0.05, paste0(label, "*"), label))
+  
+  human_comp %>%
     select(model, P.formated) %>%
     knitr::kable(
       caption = "Models compared to human",
@@ -2308,7 +2364,119 @@ if (kruskal_test_result$p.value < 0.05) {
 }
 
 
+# Assuming your dataframe is named `df`
+df %>%
+  full_join(human_comp, by=join_by(model)) %>%
+  mutate(label = if_else(is.na(label), source, label)) %>%
+  ggplot(aes(
+    x = reorder(label, DRIPostV3, FUN = median),
+    y = DRIPostV3,
+    fill = source_type
+  )) +
+  geom_boxplot() +
+  labs(title = "LLM (Individual) vs. Human (Mean) DRI", x = "Source", y = "DRI (Post-Deliberation)") +
+  theme_minimal() +
+  theme(
+    plot.background = element_rect(fill = "white"),
+    legend.position = "bottom right",
+    panel.border = element_blank(),
+    axis.text.x = element_text(angle = 50, hjust = 1),
+  ) -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "H2-human.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
 ```
+
+## H1 and H2
+```{r, fig.width=10, fig.height=8}
+
+order <- DRIInd.ALL %>%
+  group_by(source) %>%
+  summarise(
+    median = median(DRIPostV3, na.rm = TRUE)
+  ) %>%
+  arrange(median)
+
+order <- order$source
+
+
+res.kruskal <- DRIInd.ALL %>% kruskal_test(DRIPostV3 ~ source)
+res.kruskal
+
+pwc <- DRIInd.ALL %>% 
+  dunn_test(DRIPostV3 ~ source, p.adjust.method = "bonferroni") 
+
+pwc1 <- pwc %>%
+  filter(group1 == "human_only_mean" | group2 == "human_only_mean") %>%
+  mutate(
+    model = ifelse(group1 == "human_only_mean", group2, group1),
+    ref = "human_only_mean"
+  ) %>%
+  filter(p.adj.signif != "ns") %>%
+  select(model, p.adj.signif, ref)
+
+#pwc1[pwc1$model == "gpt-4", ]$p.adj.signif
+
+pwc2 <- pwc %>%
+  filter(group1 == "random" | group2 == "random") %>%
+  mutate(
+    model = ifelse(group1 == "random", group2, group1),
+    ref = "random"
+  ) %>%
+  filter(p.adj.signif != "ns") %>%
+  select(model, p.adj.signif, ref)
+
+library(ggtext)
+
+
+DRIInd.ALL %>%
+ggboxplot(x = "source", y = "DRIPostV3", color = "source_type", order = order) +
+  # stat_pvalue_manual(pwc1, hide.ns = TRUE, y.position = 1, color = "red", step.increase = 0.06) +
+  # stat_pvalue_manual(pwc2, hide.ns = TRUE, y.position = 1, color = "blue", step.increase = 0.06) +
+  rotate_x_text(70) +
+  scale_x_discrete(
+    labels = ~ case_when(
+      .x == "random" ~ paste0("<span style='color:#619CFF'>", .x, "</span>"),
+      .x == "human_only_mean" ~ paste0("<span style='color:#e76c68'>", .x, "</span>"),
+      .x %in% pwc2$model ~ paste0(.x, " <b style='color:#619CFF'>", "*", "</b>"),
+      .x %in% pwc1$model ~ paste0(.x, " <b style='color:#e76c68'>", "*", "</b>"),
+      .default = .x
+    )
+  ) +
+  labs(
+    title = "LLM (Individual) vs. Human (Mean) vs. Random (Individual) DRI",
+    subtitle = get_test_label(res.kruskal, detailed = TRUE),
+    caption = get_pwc_label(pwc),
+  ) +
+  xlab("Sources") +
+  ylab("DRI (Post-Deliberation)") +
+  theme(axis.text.x = element_markdown()) -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "H1H2.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 8
+)
+
+pr <- included_models_summary %>%
+  filter(provider == "anthropic") %>%
+  select(provider, model)
+
+
+
+```
+
+
 
 ## H3. LLMs’ DRI scores are improving over time, across each version.
 
@@ -2328,9 +2496,6 @@ Independent variables: - [LLM series (moderator) -- which llm?] - [case (moderat
 
 ```{r H3-assumptions, fig.width=10,fig.height=6}
 
-library(rstatix)
-library(ggpubr)
-
 
 
 v_series <- unique(included_models_summary$series)
@@ -2340,49 +2505,87 @@ df <- included_models_summary %>%
   select(provider, model, series, version, case, DRIPostV3) %>%
   arrange(version)
 
-df <- df %>%
-  filter(series == "open-qwen") %>%
-  mutate(id = as.factor(paste(series, case, sep = "/"))) %>%
-  select(id, version, DRIPostV3)
+res <- list()
+plot_data <- data.frame()
 
-v_vals <- sort(unique(df$version))
+for (series in v_series) {
+  
+  #series = "llama"
 
-df <- df %>%
-  mutate(
-    v = as.factor(match(version, v_vals))
+  series_df <- df %>% filter(series == !!series)
+  num_v <- length(unique(series_df$version))
+  
+  if (num_v < 2) {
+    next
+  }
+  
+  #cat(series, num_v, "versions\n")
+  
+  series_df <- series_df %>%
+    mutate(id = as.factor(paste(series, case, sep = "/"))) %>%
+    select(series, id, version, DRIPostV3)
+
+  v_vals <- sort(unique(series_df$version))
+  
+  series_df <- series_df %>%
+    mutate(
+      v = as.factor(match(version, v_vals))
+    )
+  
+  series_df %>%
+    group_by(v) %>%
+    get_summary_stats(DRIPostV3, type = "common")
+
+  if (nrow(plot_data) == 0) {
+    plot_data <- series_df
+  } else {
+    plot_data <- bind_rows(plot_data, series_df)
+  }
+  
+  # normality assumption
+  series_df %>%
+    group_by(v) %>%
+    shapiro_test(DRIPostV3)
+  
+  ggqqplot(series_df, "DRIPostV3", facet.by = "v")
+  
+  res.fried <- series_df %>% friedman_test(DRIPostV3 ~ v | id)
+  res.fried
+  
+  res[[length(res)+1]] <- tibble(
+    series,
+    res.fried,
   )
+  
+}
 
-
-
-
-
-df %>%
-  group_by(v) %>%
-  get_summary_stats(DRIPostV3, type = "common")
+res <- bind_rows(res)
 
 # plot data
-bxp <- ggboxplot(df, x = "v", y = "DRIPostV3", add = "point")
-bxp
+plot_data %>%
+  full_join(res, by=join_by(series)) %>%
+  mutate(label = paste0("p=", round(p, 3))) %>%
+  ggplot(aes(x=v, y=DRIPostV3)) + 
+  geom_violin() +
+  geom_boxplot(width=0.1) +
+  geom_smooth(method = "lm", se=FALSE, color="red", aes(group=1)) +
+  theme_minimal() + 
+  facet_wrap(~series)
 
-# identify outliers
-df %>%
-  group_by(v) %>%
-  identify_outliers(DRIPostV3)
+res %>%
+  select(series, p, method) %>%
+  arrange(p) %>%
+  knitr::kable()
 
 
-# normality assumption
-df %>%
-  group_by(v) %>%
-  shapiro_test(DRIPostV3)
 
-ggqqplot(df, "DRIPostV3", facet.by = "v")
+
+
 
 # not ANOVA!
 # res.aov <- anova_test(data = df, dv = DRIPostV3, wid = id, within = v)
 # get_anova_table(res.aov)
 
-res.fried <- df %>% friedman_test(DRIPostV3 ~ v |id)
-res.fried
 
 ```
 
