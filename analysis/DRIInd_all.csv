@@ -119,6 +119,30 @@ claude-3-7-sonnet-20250219,llm,zh_thalwil,Thalwill,-0.04303300720208525,0.109666
 claude-3-7-sonnet-20250219,llm,zh_uster,USTER,0.6018704460740449,0.6164841142055546,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,zh_winterthur,Winterthur,0.3866122386589024,0.5526716608536762,anthropic,claude-3-7-sonnet-20250219
 claude-3-7-sonnet-20250219,llm,zukunft,Zukunft,0.5765351663812703,0.6016727625854634,anthropic,claude-3-7-sonnet-20250219
+claude-3-7-sonnet-20250219-think=high,llm,acp,Citizen Parliamentarian,-0.11957978557121485,-0.06643050262411461,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,auscj,HGE Deliberative Group,-0.43109256650640804,-0.31734033627518404,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,bep,BEP,0.5316225637501235,0.28081077012612266,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,biobanking_mayo_ubc,Mayo,0.4782741364411762,0.37656340339227057,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,biobanking_mayo_ubc,UBC Bio,0.45149973248275765,0.27272153824341383,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,biobanking_wa,WA Citizens,0.6123309735928031,0.158791018176351,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,biobanking_wa,WA Stakeholder,0.5054323974004356,0.2455131419294151,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,ccps,CCPS ACT Deliberative,-0.13396498204226437,-0.0780122449659223,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,ds_aargau,Aargau,-0.47603928919858596,-0.38983670886198246,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,ds_bellinzona,Bellinzona,0.2720592223232692,0.4852054465285338,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,energy_futures,CSIRO NSW,0.5578567678400965,0.45194892526353103,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,energy_futures,CSIRO WA,0.45231282165449915,0.6246996711239393,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,fnqcj,FNQCJ,0.010653964057787846,0.12292760073782831,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,forestera,Forest Lay Citizen,0.2295157087344908,-0.23566458816628721,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,forestera,Forest Stakeholder,0.009988029570452195,-0.08944311929295568,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,fremantle,Fremantle,0.20208892334311712,0.08164347394496645,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,swiss_health,CA,0.18272269478682368,0.09625021681131371,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,uppsala_speaks,Activate,0.5564866836329805,0.29197330845003816,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,uppsala_speaks,Standard,0.3403004517203456,0.21470403994787707,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,valsamoggia,Valsamoggia,0.3430405917137034,0.32408962787297335,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,zh_thalwil,Thalwill,-1.010539340687437,-0.29787448460396243,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,zh_uster,USTER,0.5142804687298059,0.5222079274387423,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,zh_winterthur,Winterthur,0.053913385360635724,-0.31626476880203325,anthropic,claude-3-7-sonnet-20250219-think=high
+claude-3-7-sonnet-20250219-think=high,llm,zukunft,Zukunft,0.5847442310465087,0.5172068972959709,anthropic,claude-3-7-sonnet-20250219-think=high
 claude-3-7-sonnet-20250219-think=low,llm,acp,Citizen Parliamentarian,-0.2556159899673207,0.0049463267550475115,anthropic,claude-3-7-sonnet-20250219-think=low
 claude-3-7-sonnet-20250219-think=low,llm,auscj,HGE Deliberative Group,-0.7287051728819793,-0.399110225119916,anthropic,claude-3-7-sonnet-20250219-think=low
 claude-3-7-sonnet-20250219-think=low,llm,bep,BEP,0.5412693858974535,0.20133375642776136,anthropic,claude-3-7-sonnet-20250219-think=low
