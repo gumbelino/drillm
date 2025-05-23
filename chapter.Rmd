@@ -115,7 +115,7 @@ llm_data <- llm_data %>%
 alpha_results <- list()
 
 models_with_data <- llm_data %>%
-  distinct(provider, model) 
+  distinct(provider, model)
 
 # if (output.file.exists(ALPHA_RESULTS_FILE)) {
 #   last_alpha_results <- read_output_csv(ALPHA_RESULTS_FILE)
@@ -254,6 +254,8 @@ rm(provider_model_data)
 
 data <- full_join(dri_data, alpha_results, by=join_by(provider, model,survey))
 
+data <- data %>%
+  filter(!model %like% "t=1")
 
 ```
 
@@ -492,21 +494,37 @@ ggsave(
 
 ```
 
-```{r}
+```{r, fig.width=8,fig.height=4}
 
 library(data.table)
 
 selected_data <- grouped_data %>%
-  filter(model %like% "grok-3-mini" | model %like% "claude-3-7-sonnet-20250219")
+  filter(model %like% "grok-3-mini" |
+           model %like% "claude-3-7-sonnet-20250219") %>%
+  mutate(family = case_when(
+    model %like% "grok-3-mini-beta" ~ "grok-3-mini",
+    model %like% "grok-3-mini-fast" ~ "grok-3-mini-fast",
+    model %like% "claude-3-7-sonnet" ~ "claude-3-7-sonnet",
+    .default = NA
+  )) %>%
+  mutate(label = case_when(
+    model %like% "low" ~ "effort = low",
+    model %like% "high" ~ "effort = high",
+    .default = family
+  ))
+
 
 selected_data %>%
   ggdotplot(
     x="is_reasoner_clean",
     y="DRI",
-    label = "model",
+    label = "label",
     #label.rectangle = TRUE,
+    facet.by = "family",
     fill = "is_reasoner_clean",
     color = "is_reasoner_clean",
+    ylim = c(0.11,0.41),
+    title = "DRI vs. Reasoning Capability"
   ) +
   xlab("Reasoning Capability") +
   ylab("DRI") +
