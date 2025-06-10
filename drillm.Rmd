@@ -984,6 +984,7 @@ human_data <- human_data %>%
 
 ```
 
+
 ## Handle Swiss cases
 ```{r swiss cases}
 
@@ -1120,6 +1121,8 @@ We excluded `r nrow(excluded_cases)` cases due to the reasons listed above.
 
 human_data <- human_data %>%
   filter(!Case %in% excluded_cases$case)
+
+write_output_csv(human_data, "human_data.csv")
 
 ```
 
@@ -1301,7 +1304,7 @@ aggregate_llm_data <- function(data) {
 time_start <- Sys.time()
 llm_data_aggregated <- aggregate_llm_data(llm_data)
 time_end <- Sys.time()
-elapsed_time <- difftime(time_end, time_start, units = "auto")
+difftime(time_end, time_start, units = "seconds")
 
 # write summary to file
 write_output_csv(llm_data_aggregated, AGGREGATION_RESULTS_FILE)
