@@ -1,0 +1,253 @@
+---
+title: "Science"
+author: "Francesco Veri, Gustavo Umbelino"
+date: "`r Sys.Date()`"
+bibliography: bibliography/refs.bib
+link-citations: true
+csl: bibliography/apsa.csl
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r libraries}
+
+library(tidyverse)
+library(ggpubr)
+
+```
+
+
+```{r constants}
+
+HUMAN_DATA_FILE <- "human_data.csv"
+OUTPUT_DIR <- "analysis"
+
+ITERATIONS <- 10000
+
+```
+
+```{r functions}
+read_output_csv <- function(file_name) {
+  read_csv(paste(OUTPUT_DIR, file_name, sep = "/"), show_col_types = FALSE)
+}
+
+write_output_csv <- function(data, file_name) {
+  write_csv(data, paste(OUTPUT_DIR, file_name, sep = "/"))
+}
+
+now_utc <- function() {
+   now <- Sys.time()
+   attr(now, "tzone") <- "UTC"
+   now
+}
+
+dri_calc_v3 <- function(data, v1, v2) {
+  d <- abs((data[[v1]] - data[[v2]]) / sqrt(2))
+  lambda <- 1 - (sqrt(2) / 2)
+  
+  # Scalar penalty based on strength of signal (|r| and |q|)
+  penalty <- ifelse(pmax(abs(data[[v1]]), abs(data[[v2]])) <= 0.2, pmax(abs(data[[v1]]), abs(data[[v2]])) / 0.2, 1)
+  
+  consistency <- (1 - d) * penalty
+  avg_consistency <- mean(consistency)
+  
+  dri <- 2 * ((avg_consistency - lambda) / (1 - lambda)) - 1
+  return(dri)
+}
+
+get_dri <- function(data) {
+  
+  if (nrow(data) < 1) {
+    return(NA)
+  }
+      
+  PNums <- data$PNum
+  
+  Q <- data %>% select(C1:C50)
+  R <- data %>% select(P1:P10)
+  
+  # remove all NA columns (in case there are less than 50
+  Q <- Q[, colSums(is.na(Q)) != nrow(Q)]
+  R <- R[, colSums(is.na(R)) != nrow(R)]
+  
+  # transpose data
+  Q <- t(Q) %>% as.data.frame()
+  R <- t(R) %>% as.data.frame()
+  
+  # name columns with participant numbers
+  colnames(Q) <- PNums
+  colnames(R) <- PNums
+  
+  # obtain a list of correlations without duplicates
+  # cor() returns a correlation matrix between Var1 and Var2
+  # Var1 and Var2 are the variables being correlated
+  # Freq is the correlation
+  QWrite <- subset(as.data.frame(as.table(cor(Q, method = "spearman"))),
+                   match(Var1, names(Q)) > match(Var2, names(Q)))
+  
+  RWrite <- subset(as.data.frame(as.table(cor(R, method = "spearman"))),
+                   match(Var1, names(R)) > match(Var2, names(R)))
+  
+  # initialize the output in the first iteration
+  IC <- data.frame("P_P" = paste0(QWrite$Var1, '-', QWrite$Var2))
+  IC$P1 <- as.numeric(as.character(QWrite$Var1))
+  IC$P2 <- as.numeric(as.character(QWrite$Var2))
+
+  # prepare QWrite
+  QWrite <- as.data.frame(QWrite$Freq)
+  names(QWrite) <- "Q2"
+  
+  # prepare RWrite for merge
+  RWrite <- as.data.frame(RWrite$Freq)
+  names(RWrite) <- "R2"
+  
+  # merge
+  IC <- cbind(IC, QWrite, RWrite)
+  
+  ## IC Points calculations ##
+  IC$IC_POST <- 1 - abs((IC$R2 - IC$Q2) / sqrt(2))
+  
+  ## Group DRI level V3 ##
+  DRI_POST_V3 <- dri_calc_v3(IC, 'R2', 'Q2')
+  
+  return(DRI_POST_V3)
+  
+}
+
+
+```
+
+
+
+```{r data}
+
+human_data <- read_output_csv(HUMAN_DATA_FILE)
+
+```
+
+
+```{r analysis}
+
+set.seed(123)
+res <- list()
+perms <- list()
+j <- 0
+
+# select subset of data to analyse: Bellinzona, post-deliberation
+data <- human_data %>% filter(StageID == 2)
+
+cases <- sorted(unique(data$Case))
+
+for (case in cases) {
+  
+  j <- j + 1
+  
+  cat(paste0("[",j,"/",length(cases),"] ", "Starting: ", case, " - "))
+  # get case data
+  data_case <- data %>% filter(Case == case)
+  
+  # get observed DRI
+  obs_dri <- get_dri(data_case)
+  
+  # initiate results
+  df <- tibble(
+    case = case,
+    dri = obs_dri,
+    source = "observed"
+  )
+  
+  # get preferences
+  pref_cols <- grep("^P\\d", names(data_case), value = TRUE)
+  shuffled_data <- data_case
+  
+  
+  dri_shuffle <- list()
+  time_start <- Sys.time()
+  
+  # permutation loop
+  for (i in 1:ITERATIONS) {
+    shuffled_data[pref_cols] <- shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
+    
+    dri_shuffle[[i]] <- tibble(
+      case = case,
+      dri = get_dri(shuffled_data),
+      source = "perm",
+      iteration = i,
+    )
+    
+  }
+  
+  time_end <- Sys.time()
+  
+  elapsed_time <- as.numeric(difftime(time_end, time_start, units = "secs"))
+  
+  cat(paste0("elapsed time: ", round(elapsed_time, 2), "s\n"))
+
+  
+  dri_shuffle <- bind_rows(dri_shuffle)
+  
+  df <- bind_rows(df, dri_shuffle)
+  
+  perms[[length(perms)+1]] <- df
+  
+  p <- nrow(dri_shuffle %>% filter(dri >= obs_dri)) / nrow(dri_shuffle)
+  
+  res[[length(res) + 1]] <- tibble(
+    case = case,
+    N = nrow(data_case),
+    observed_dri = obs_dri,
+    mean_perm_dri = mean(dri_shuffle$dri, na.rm = TRUE),
+    p = p,
+    elapsed_time_s = elapsed_time,
+  )
+  
+  # df %>%
+  # gghistogram(
+  #   x = "dri",
+  #   fill = "lightgray",
+  #   add = "mean",
+  #   rug = TRUE,
+  #   color = "source",
+  #   title = "Permutation test",
+  #   subtitle = "Bellinzona, post-deliberation DRI",
+  #   caption = paste(ITERATIONS, "iterations; p =", p)
+  # ) -> plot
+  # 
+  # ggsave(
+  # paste(OUTPUT_DIR, "plots", paste0(case,"-perm.png"), sep = "/"),
+  # plot,
+  # width = 8,
+  # height = 4
+#)
+  
+}
+
+res <- bind_rows(res)
+perms <- bind_rows(perms)
+
+perms %>%
+  gghistogram(
+    x = "dri",
+    facet.by = "case",
+    fill = "source",
+    add = "mean",
+    rug = TRUE,
+    #color = "source",
+    title = "Permutation test",
+    subtitle = "Post-deliberation DRI",
+    caption = paste(ITERATIONS, "iterations"),
+  ) -> plot
+
+plot
+  
+ggsave(
+  paste(OUTPUT_DIR, "plots", paste0("all-perm.png"), sep = "/"),
+  plot,
+  width = 10,
+  height = 6
+)
+
+```
+
+

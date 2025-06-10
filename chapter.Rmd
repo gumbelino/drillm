@@ -23,6 +23,7 @@ library(boot)
 library(car)
 library(ggpubr)
 library(rstatix)
+library(data.table)
 
 
 
@@ -351,7 +352,9 @@ And used Spearman correlation.
 
 ```{r}
 
-labels <- grouped_data[which(grouped_data$alpha > 0.85), ]$model
+labels <- grouped_data[which(grouped_data$alpha > 0.80 | grouped_data$DRI > 0.35), ]$model
+
+nrow(grouped_data)
 
 grouped_data %>%
   ggscatter(
@@ -360,15 +363,16 @@ grouped_data %>%
     add = "reg.line",
     # ylim=c(0.7, 0.9),
     #xlim=c(-0.1, 0.5),
-    # label = "model",
-    # label.select = labels,
+    #label = "model",
+    #repel = TRUE,
+    #label.select = labels,
     # label.rectangle = TRUE,
     conf.int = TRUE,
     cor.coef = TRUE,
     cor.method = "spearman",
-    title = "Spearman Correlation Grouped by Model",
-    xlab = "Post-Deliberation DRI (Average Across Model Iterations)",
-    ylab = "Cronbach's Alpha (Policies)"
+    #title = "Spearman Correlation Grouped by Model",
+    xlab = "LLM DRI (post-deliberation, individual-level)",
+    ylab = "Cronbach's alpha (policies)"
   ) -> plot
 
 plot
@@ -379,6 +383,9 @@ ggsave(
   width = 8,
   height = 4
 )
+
+cor.test(grouped_data$DRI, grouped_data$alpha, method = "spearman")
+
 
 ```
 
@@ -404,33 +411,50 @@ grouped_data <- grouped_data %>%
 grouped_data %>%
   ggboxplot(x = "is_reasoner_clean", y = "alpha", add = "jitter")  
 
+labels <- grouped_data[which(grouped_data$alpha > 0.83), ]$model
+
+grouped_data %>%
+  group_by(is_reasoner_clean) %>%
+  get_summary_stats(alpha, type = "median_iqr")
+
 res.wilcox <- grouped_data %>%
   as.data.frame() %>%
-  wilcox_test(alpha ~ is_reasoner_clean)
+  wilcox_test(alpha ~ is_reasoner_clean, detailed = TRUE) %>%
+  add_significance() %>%
+  add_xy_position(x = "is_reasoner_clean")
 res.wilcox
+
+grouped_data %>%
+  as.data.frame() %>%
+  wilcox_effsize(alpha ~ is_reasoner_clean)
+
 
 n_reasoners <- grouped_data %>% filter(is_reasoner_clean) %>% nrow()
 n_non_reasoners <- grouped_data %>% filter(!is_reasoner_clean) %>% nrow()
 
 grouped_data %>%
-  ggviolin(
+  ggboxplot(
     x = "is_reasoner_clean",
     y = "alpha",
     color = "is_reasoner_clean",
-    add = c("boxplot", "jitter")
+    add = c("jitter"),
+    label = "model",
+    repel = TRUE,
+    label.select = labels,
   ) +
   # ggboxplot(x = "source_type", y = "DRIPostV3", color="source_type") +
   #rotate_x_text(70) +
+  stat_pvalue_manual(res.wilcox, tip.length = 0) +
   labs(
     # title = "Human vs. LLM Post-Deliberation DRI",
     caption = get_test_label(res.wilcox, detailed = TRUE),
     #caption = get_pwc_label(pwc),
   ) +
-  xlab("Reasoning Capability") +
-  ylab("Cronbach's Alpha (Policies)") +
+  xlab("Reasoning capability") +
+  ylab("Cronbach's alpha (policies)") +
   stat_summary(
     fun.data = function(x)
-      data.frame(y = 0.9, label = paste0("\U00B5 = ", round(mean(
+      data.frame(y = 0.88, label = paste0("\U00B5 = ", round(mean(
         x
       ), 2))),
     geom = "text"
@@ -454,15 +478,25 @@ ggsave(
 
 res.wilcox <- grouped_data %>%
   as.data.frame() %>%
-  wilcox_test(DRI ~ is_reasoner_clean)
+  wilcox_test(DRI ~ is_reasoner_clean, detailed = TRUE) %>%
+  add_significance() %>%
+  add_xy_position(x = "is_reasoner_clean")
 res.wilcox
 
 grouped_data %>%
-  ggviolin(
+  group_by(is_reasoner_clean) %>%
+  get_summary_stats(DRI, type = "median_iqr")
+
+grouped_data %>%
+  as.data.frame() %>%
+  wilcox_effsize(DRI ~ is_reasoner_clean)
+
+grouped_data %>%
+  ggboxplot(
     x = "is_reasoner_clean",
     y = "DRI",
     color = "is_reasoner_clean",
-    add = c("boxplot", "jitter")
+    add = c("jitter")
   ) +
   # ggboxplot(x = "source_type", y = "DRIPostV3", color="source_type") +
   #rotate_x_text(70) +
@@ -471,11 +505,11 @@ grouped_data %>%
     caption = get_test_label(res.wilcox, detailed = TRUE),
     #caption = get_pwc_label(pwc),
   ) +
-  xlab("Reasoning Capability") +
-  ylab("DRI") +
+  xlab("Reasoning capability") +
+  ylab("LLM DRI") +
   stat_summary(
     fun.data = function(x)
-      data.frame(y = 0.7, label = paste0("\U00B5 = ", round(mean(
+      data.frame(y = 0.5, label = paste0("\U00B5 = ", round(mean(
         x
       ), 2))),
     geom = "text"
@@ -495,8 +529,6 @@ ggsave(
 ```
 
 ```{r, fig.width=8,fig.height=4}
-
-library(data.table)
 
 selected_data <- grouped_data %>%
   filter(model %like% "grok-3-mini" |
@@ -543,4 +575,36 @@ ggsave(
 
 
 ```
+
+```{r}
+
+nrow(models)
+
+length(unique(data$survey))
+
+length(unique(data$case))
+
+length(unique(data$model))
+
+nrow(llm_data)
+
+nrow(data) * 5
+
+summary(data$alpha_considerations)
+summary(data$alpha_policies)
+
+data %>%
+  select(alpha_considerations, alpha_policies) %>%
+  get_summary_stats(type = "common")
+
+data %>%
+  filter(alpha_considerations <= 0 | alpha_policies <= 0) %>%
+    select(model, survey, alpha_considerations, alpha_policies)
+
+data %>%
+  filter(alpha_considerations >= 1 | alpha_policies >= 1) %>%
+  select(model, survey, alpha_considerations, alpha_policies)
+
+```
+
 

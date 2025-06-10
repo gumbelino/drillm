@@ -1,1 +1,3 @@
 provider,model,completions_total,completions_left,time_left_min,cost_left
+anthropic,claude-sonnet-4-20250514-think=high,100,37,94.19583333333331,2.703055555555556
+anthropic,claude-sonnet-4-20250514-think=low,100,8,6.6968224299065415,0.32299065420560735
