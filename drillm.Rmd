@@ -1061,6 +1061,9 @@ for (j in 7:10) {
 # add swiss data to human data
 human_data <- bind_rows(human_data, swiss_data)
 
+# overwrite llm_data with right swiss cases
+write_csv(llm_data, paste(OUTPUT_DIR, "llm_data.csv", sep = "/"))
+
 ```
 
 
@@ -1304,7 +1307,7 @@ aggregate_llm_data <- function(data) {
 time_start <- Sys.time()
 llm_data_aggregated <- aggregate_llm_data(llm_data)
 time_end <- Sys.time()
-difftime(time_end, time_start, units = "seconds")
+difftime(time_end, time_start, units = "auto")
 
 # write summary to file
 write_output_csv(llm_data_aggregated, AGGREGATION_RESULTS_FILE)
