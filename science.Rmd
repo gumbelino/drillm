@@ -26,13 +26,16 @@ LLMS_FILE <- "private/llms_v3.csv"
 OUTPUT_DIR <- "analysis"
 
 SIG_LEVEL <- 0.05
-LLM_ITERATIONS <- 2
+LLM_ITERATIONS <- 5
 ITERATIONS <- 1000
-NUM_MODELS <- 5
+NUM_MODELS <- NA
 
 SKIP_HUMAN <- TRUE
 
-cat("LLM time estimate:", (LLM_ITERATIONS * 13 * NUM_MODELS * ITERATIONS * 0.002) / 60, "min")
+time_est <- (LLM_ITERATIONS * 13 * NUM_MODELS * ITERATIONS * 0.002) / 60
+
+cat("LLM time estimate:", time_est / 60, "h")
+
 
 ```
 
@@ -243,7 +246,7 @@ llm_data <- read_output_csv(LLM_DATA_FILE)
 
 # get models info
 models <- read_csv(LLMS_FILE, show_col_types = FALSE) %>%
-  filter(included, is_reasoner, model %in% llm_data$model)
+  filter(included)
 
 ```
 
@@ -397,7 +400,7 @@ perms <- list()
 j <- 0
 m <- 0 
 
-# select subset of data to analyse: Bellinzona, post-deliberation
+# select subset of data to analyse: post-deliberation
 data <- human_data %>% filter(StageID == 2)
 
 cases <- sort(unique(deliberative_cases$case))
@@ -535,7 +538,7 @@ write_output_csv(perms, "LLM_perm_data.csv")
 # )
 
 res %>%
-  group_by(model) %>%
+  group_by(model, it) %>%
   summarise(
     N = n(),
     sig.count = sum(p < SIG_LEVEL),
@@ -555,4 +558,7 @@ res %>%
   arrange(-sig.rate)
 
 ```
+
+Remaining quesitons:
+* 
 
