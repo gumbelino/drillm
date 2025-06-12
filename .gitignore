@@ -7,3 +7,4 @@ data/
 billing/
 llm_data/*
 llm_data_*/*
+analysis/LLM_perm_data.csv
