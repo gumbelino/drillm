@@ -17,6 +17,7 @@ META_DATA = [
     "temperature",
     "input_tokens",
     "output_tokens",
+    "prompt_uid",
 ]
 
 POLICIES = "policies"
@@ -74,6 +75,8 @@ PROMPT_R = """## Instructions:
 - Do not include any additional formatting, such as bullets or special characters.
 - Do not include more than one space in a row.
 """
+
+PROMPT_S = "Answer the following prompts as {0} {1}, who {2}."
 
 # Rate the considerations using a ranked based sort choice sorting process.
 Q_METHOD_INSTRUCTION = """
@@ -248,6 +251,7 @@ def log_request(
     provider,
     model,
     temperature,
+    system_prompt,
     survey,
     type,
     prompt,
@@ -263,6 +267,7 @@ def log_request(
         "provider": provider,
         "model": model_version if model_version else model,
         "temperature": temperature,
+        "system_prompt": system_prompt,
         "survey": survey,
         "type": type,
         "prompt": prompt,
@@ -283,6 +288,7 @@ def log_execution(
     provider,
     model,
     temperature,
+    prompt_uid,
     iterations,
     num_requests,
     num_completions,
@@ -305,6 +311,7 @@ def log_execution(
         "provider": provider,
         "model": model,
         "temperature": temperature,
+        "prompt": prompt_uid,
         "num surveys": len(surveys_exec),
         "num iterations": iterations,
         "num completions": num_completions,
@@ -580,3 +587,38 @@ def quasi_normality_check(ratings):
     is_quasi_normal = abs(mean - median) < 10 and iqr < 30
 
     return is_quasi_normal
+
+
+def build_system_prompt(uid):
+
+    # check for "all" keyword
+    if uid == "all":
+        return None
+
+    # open csv file
+    prompts_df = pd.read_csv("prompts/prompts.csv")
+
+    # get row with uid
+    row = prompts_df[prompts_df["uid"] == uid]
+
+    # check if row is empty
+    if row.empty:
+        raise ValueError(f"Prompt with uid {uid} not found in prompts.csv")
+
+    # get role and description
+    role = row["role"].values[0]
+    description = row["description"].values[0]
+    article = row["article"].values[0]
+
+    # build system prompt
+    system_prompt = PROMPT_S.format(article, role, description)
+
+    return system_prompt
+
+
+def get_system_prompts():
+
+    # open csv file
+    prompts_df = pd.read_csv("prompts/prompts.csv")
+
+    return prompts_df

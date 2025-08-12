@@ -1,33 +1,9 @@
-import anthropic
+import utils
 
-client = anthropic.Anthropic()
+sps = utils.get_system_prompts()
 
-response = client.messages.create(
-    model="claude-3-7-sonnet-20250219",
-    max_tokens=20000,
-    thinking={"type": "enabled", "budget_tokens": 16000},
-    messages=[
-        {
-            "role": "user",
-            "content": "Hello Claude! Can you tell me a bit about yourself?",
-        }
-    ],
-)
+for i, uid in enumerate(sps["uid"]):
 
-# Process the response content
-for content_block in response.content:
-    if content_block.type == "thinking":
-        thinking_content = content_block.thinking
-    elif content_block.type == "text":
-        text_content = content_block.text
+    sp = utils.build_system_prompt(uid)
 
-
-# Print the results
-print("=" * 50)
-print("THINKING:")
-print("=" * 50)
-print(thinking_content if thinking_content else "No thinking content found")
-print("\n" + "=" * 50)
-print("RESPONSE TEXT:")
-print("=" * 50)
-print(text_content if text_content else "No text content found")
+    print(f"{i+1}: {sp}\n")

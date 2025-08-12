@@ -42,7 +42,7 @@ REASONING_BUDGET = {"low": 1024, "high": 16000}
 # See https://github.com/anthropics/anthropic-sdk-python#long-requests for more details
 
 
-def send_message(model, messages, temperature):
+def send_message(model, messages, temperature, system_prompt=None):
 
     if is_reasoning(model):
 
@@ -51,6 +51,7 @@ def send_message(model, messages, temperature):
 
         return client.messages.create(
             model=model,
+            system=system_prompt,
             max_tokens=MAX_TOKENS
             + REASONING_BUDGET[
                 reasoning_effort
@@ -65,6 +66,7 @@ def send_message(model, messages, temperature):
 
     return client.messages.create(
         model=model,
+        system=system_prompt,
         max_tokens=MAX_TOKENS,
         temperature=temperature,
         messages=messages,
@@ -80,7 +82,7 @@ def get_response(model, res):
             elif content_block.type == "text":
                 response_content = content_block.text
 
-        # format response like deepseek
+        # format response like DeepSeek
         return f"<think>{reasoning_content}</think>{response_content}"
 
     return res.content[0].text
@@ -92,6 +94,7 @@ def generate_data(
     p_prompt,
     c_prompt,
     cuid,
+    system_prompt=None,
     model="claude-3-haiku-20240307",
     temperature=0,
     reason=False,
@@ -113,6 +116,7 @@ def generate_data(
         model,
         messages,
         temperature,
+        system_prompt,
     )
 
     c_response = get_response(model, res)
@@ -128,6 +132,7 @@ def generate_data(
         provider,
         model,
         temperature,
+        system_prompt,
         mp,
         CONSIDERATIONS,
         c_prompt,
@@ -152,6 +157,7 @@ def generate_data(
         model,
         messages,
         temperature,
+        system_prompt,
     )
 
     p_response = get_response(model, res)
@@ -167,6 +173,7 @@ def generate_data(
         provider,
         model,
         temperature,
+        system_prompt,
         mp,
         POLICIES,
         p_prompt,
@@ -192,7 +199,9 @@ def generate_data(
             model,
             messages,
             temperature,
+            system_prompt,
         )
+
         r_response = get_response(model, res)
 
         reason_text = parse_reasoning_from_response(r_response)
@@ -208,6 +217,7 @@ def generate_data(
             provider,
             model,
             temperature,
+            system_prompt,
             mp,
             REASONS,
             PROMPT_R,

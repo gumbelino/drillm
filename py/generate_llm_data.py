@@ -3,6 +3,7 @@ import os
 import sys
 from surveys import get_surveys_data, get_policies_and_considerations
 from utils import (
+    build_system_prompt,
     check_params,
     get_api,
     get_current_time,
@@ -67,11 +68,12 @@ def get_llm_provider(model):
         raise (f"The API for {model} is not setup!")
 
 
-def generate_data(model, iterations, temperature=0, only_survey=None):
+def generate_data(model, iterations, temperature=0, only_survey=None, prompt_uid=None):
 
-    # execurtion params
+    # execution params
     model_info = get_model_info(model)
     provider = get_provider(model)
+    system_prompt = build_system_prompt(prompt_uid) if prompt_uid else None
 
     try:
         llm_provider = get_llm_provider(model)
@@ -129,6 +131,7 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
     print(f"LLM provider: {provider}")
     print(f"Model: {model}")
     print(f"Temperature: {temperature}")
+    print(f"System prompt: [{prompt_uid}] {system_prompt}")
 
     # iterate over each survey
     for i, survey in enumerate(surveys_exec):
@@ -175,6 +178,7 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
                     p_prompt,
                     c_prompt,
                     completion_uid,
+                    system_prompt=system_prompt,
                     model=model,
                     temperature=temperature,
                     reason=REASON,
@@ -198,9 +202,9 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
             c_ranks = [x for _, x in sorted(zip(c_indexes, c_ranks))]
 
             # create output dataframes
-            p_df.loc[0] = [completion_uid] + meta + p_ranks
-            c_df.loc[0] = [completion_uid] + meta + c_ranks
-            r_df.loc[0] = [completion_uid] + meta + [reason]
+            p_df.loc[0] = [completion_uid] + meta + [prompt_uid] + p_ranks
+            c_df.loc[0] = [completion_uid] + meta + [prompt_uid] + c_ranks
+            r_df.loc[0] = [completion_uid] + meta + [prompt_uid] + [reason]
 
             # read costs
             input_tokens += meta[4]
@@ -218,7 +222,7 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
 
             # save progress to file
             # note: progress_df passed by reference, so values here are updated too
-            update_progress(progress_df, provider, model, survey)
+            update_progress(progress_df, provider, model, survey, prompt_uid)
 
             num_success += 1
             surveys_success[survey] += 1
@@ -277,6 +281,7 @@ def generate_data(model, iterations, temperature=0, only_survey=None):
         provider,
         model,
         temperature,
+        prompt_uid,
         iterations,
         num_requests,
         num_completions,
@@ -313,12 +318,19 @@ def main():
         default=None,
         help="single survey to generate data for",
     )
+    parser.add_argument(
+        "--prompt",
+        type=str,
+        required=False,
+        default=None,
+        help="the unique identifier of a system prompt to use for the generation",
+    )
 
     # Parse the arguments
     args = parser.parse_args()
 
     # Call the generate_data function with parsed arguments
-    generate_data(args.model, args.iterations, args.temp, args.survey)
+    generate_data(args.model, args.iterations, args.temp, args.survey, args.prompt)
 
 
 if __name__ == "__main__":

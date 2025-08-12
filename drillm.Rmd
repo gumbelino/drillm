@@ -25,8 +25,10 @@ library(dunn.test)
 library(ggpubr)
 library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
 
+LLM_DATA_DIR <- "llm_data_part_1_2025-08-12"
+
 SURVEY_FILE <- "data/surveys_v5.xlsx"
-EXEC_LOG_FILE <- "llm_data/exec_log.csv"
+EXEC_LOG_FILE <- paste(LLM_DATA_DIR, "exec_log.csv", sep = "/")
 LLMS_FILE <- "private/llms_v3.csv"
 HUMAN_DATA_FILE <- "data/total dataset_clean.csv"
 SWISS_DATA_FILE <- "data/CA_PRE_POST.csv"
@@ -50,7 +52,7 @@ if (!dir.exists(OUTPUT_DIR)) {
 ```{r helper functions}
 
 create_file_path <- function(provider, model, survey, file_type) {
-  file.path("llm_data", provider, model, survey, paste0(file_type, ".csv"))
+  file.path(LLM_DATA_DIR, provider, model, survey, paste0(file_type, ".csv"))
 }
 
 output.file.exists <- function(file_name) {
@@ -188,7 +190,7 @@ get_llm_data <- function() {
       min_iterations <- models$min_iterations[i]
       
       # check if any file for the survey exists
-      survey_path <- paste0("llm_data/", provider, "/", model, "/", survey_name, "/")
+      survey_path <- paste0(LLM_DATA_DIR, "/", provider, "/", model, "/", survey_name, "/")
       if (!any(file.exists(paste0(survey_path, file_types, ".csv")))) {
         next
       }

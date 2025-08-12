@@ -1,0 +1,11 @@
+uid,type,role,description
+lib,ideology,liberal,"advocates individual liberty, rights, limited government, and free markets, emphasizing individual autonomy"
+con,ideology,conservative,"seeks to preserve traditional institutions, customs, and values, favoring order and gradual change"
+soc,ideology,socialist,"aims for social ownership or control of production, emphasizing equality and collective welfare"
+ana,ideology,anarchist,"rejects all coercive authority and hierarchical government, advocating stateless, voluntary societies"
+fas,ideology,fascist,"promotes extreme nationalism, authoritarianism, militarism, and a totalitarian state"
+fem,ideology,feminist,"advocates for gender equality, challenging patriarchal structures and discrimination against women"
+eco,ideology,ecologist,"focuses on environmental protection and sustainability, advocating for societal change to ecological limits"
+nat,ideology,nationalist,"prioritizes the interests and identity of a particular nation, often seeking self-determination"
+fun,ideology,fundamentalist,"adheres strictly to core beliefs, often religious, applying these principles to all life aspects"
+pop,ideology,populist,"appeals directly to ""the people"" against a perceived corrupt elite using anti-establishment rhetoric"
