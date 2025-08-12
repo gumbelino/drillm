@@ -137,9 +137,9 @@ dat %>%
 # df.test <- df.test[-which(df.test[df.test$source_type == "human",]$DRIPostV3 %in% out),]
 
 
-df.test %>% 
-  group_by(source_type) %>%
-  shapiro_test(DRIPostV3)
+# df.test %>% 
+#   group_by(source_type) %>%
+#   shapiro_test(DRIPostV3)
 
 res.wilcox <- dat %>% 
   wilcox_test(DRIPostV3 ~ source_type)
@@ -284,7 +284,6 @@ ggsave(
 
 ### 4.3 LLMs
 ```{r, fig.width=8,fig.height=6}
-
 df <- DRIInd.ALL %>%
   filter(source_type == "llm" ) %>%
     bind_rows(DRIInd.Global)
@@ -349,7 +348,10 @@ ggboxplot(x = "source", y = "DRIPostV3", color="p.adj", order=order) +
   theme(axis.text.x = element_markdown()) -> plot
 
 plot
+```
 
+
+```{r, include=FALSE}
 ggsave(
   paste(OUTPUT_DIR, "plots", "CSCW3.png", sep = "/"),
   plot,
@@ -574,4 +576,15 @@ df %>%
 
 
 ```
+
+
+
+```{r}
+
+alphas <- read_output_csv("alpha_results.csv")
+llms <- read_output_csv("llm")
+
+
+```
+
 

@@ -84,6 +84,8 @@ remove_NA_cols <- function(data) {
 # get models info
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
+models <- models %>% filter(included) %>% filter(is.na(CSCW))
+
 models %>%
   select(provider, model, num_parameters, context_length, arch, version) %>% 
   arrange(provider, model) %>%
@@ -944,10 +946,12 @@ write_csv(alpha_results, paste(OUTPUT_DIR, "alpha_results.csv", sep = "/"))
 # Aggregate alpha_results by model and calculate summary statistics
 alpha_summary <- alpha_results %>%
   filter(model %in% included_models_summary$model) %>%
+  #filter(model %in% models$model) %>%
   group_by(provider, model) %>%
   summarise(
     N = sum(N),
     mean_alpha_all = mean(alpha_all, na.rm = TRUE),
+    std_alpha_all = sd(alpha_policies, na.rm = TRUE),
     min_alpha_considerations = min(alpha_considerations, na.rm = TRUE),
     max_alpha_considerations = max(alpha_considerations, na.rm = TRUE),
     mean_alpha_considerations = mean(alpha_considerations, na.rm = TRUE),
@@ -958,6 +962,9 @@ alpha_summary <- alpha_results %>%
     std_alpha_policies = sd(alpha_policies, na.rm = TRUE),
     .groups = "drop"
   )
+
+get_summary_stats(alpha_results, type="robust")
+
 
 alpha_summary %>%
   mutate(considerations = round(mean_alpha_considerations,2),
@@ -3145,6 +3152,21 @@ ggplot(llm_scores_reason, aes(x = is_reasoner, y = aggregate_index, fill = is_re
   ) +
   theme_minimal(base_size = 13) +
   coord_flip()
+```
+
+# Qualitative Analysis
+```{r qual}
+
+qual_data <- llm_data %>% 
+  select(provider, model, survey, R) %>%
+  group_by(provider, model, survey) %>%
+  slice_head(n=1)
+  
+
+qual_data %>%
+  head()
+
+
 ```
 
 ### References

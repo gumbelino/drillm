@@ -23,30 +23,30 @@ human_only_mean,human,zh_thalwil,Thalwill,-0.15568095144935512,-0.10166446376051
 human_only_mean,human,zh_uster,USTER,0.34455173595629685,0.4953697853451704,NA,NA
 human_only_mean,human,zh_winterthur,Winterthur,0.21919794591369968,0.5202587050867213,NA,NA
 human_only_mean,human,zukunft,Zukunft,0.42151882027369325,0.502087804552416,NA,NA
-random,random,acp,Citizen Parliamentarian,-0.13409099280661751,-0.002703104055778116,NA,NA
-random,random,auscj,HGE Deliberative Group,0.2801809834400608,0.22639811719803227,NA,NA
-random,random,bep,BEP,0.013239716075587715,0.16113700795759067,NA,NA
-random,random,biobanking_mayo_ubc,Mayo,-0.06121128041392909,-0.1493842388194201,NA,NA
-random,random,biobanking_mayo_ubc,UBC Bio,0.11246631296891363,-0.24414889357914293,NA,NA
-random,random,biobanking_wa,WA Citizens,-0.1520944795908702,-0.3626443616196211,NA,NA
-random,random,biobanking_wa,WA Stakeholder,-0.08542382388825431,0.12591118931343726,NA,NA
-random,random,ccps,CCPS ACT Deliberative,0.06599441452715138,-0.0979252006581125,NA,NA
-random,random,ds_aargau,Aargau,-0.051973954059300054,-0.07930409090092694,NA,NA
-random,random,ds_bellinzona,Bellinzona,0.03145157136794574,0.260236341915161,NA,NA
-random,random,energy_futures,CSIRO NSW,-0.25097227479545003,-0.06788666134735855,NA,NA
-random,random,energy_futures,CSIRO WA,-0.46225609912008925,-0.348833847195683,NA,NA
-random,random,fnqcj,FNQCJ,0.2144186083613855,-0.5836212326760712,NA,NA
-random,random,forestera,Forest Lay Citizen,-0.36008338519703176,-0.11387518649644812,NA,NA
-random,random,forestera,Forest Stakeholder,-0.2256531187425418,0.2707121505487038,NA,NA
-random,random,fremantle,Fremantle,0.08556920521893252,0.05101066475074356,NA,NA
-random,random,swiss_health,CA,-0.05526641668023502,-0.028501903928243033,NA,NA
-random,random,uppsala_speaks,Activate,0.013697980909253227,0.034704492232614736,NA,NA
-random,random,uppsala_speaks,Standard,-0.23513098355236606,-0.06688892405733127,NA,NA
-random,random,valsamoggia,Valsamoggia,-0.333823762949254,-0.16092822490092418,NA,NA
-random,random,zh_thalwil,Thalwill,0.1116514935967543,-0.025481623704440737,NA,NA
-random,random,zh_uster,USTER,-0.11620698012611008,-0.3608263021351569,NA,NA
-random,random,zh_winterthur,Winterthur,0.18218683944562475,0.2720720910639667,NA,NA
-random,random,zukunft,Zukunft,-0.26388826861734926,-0.15105267391584976,NA,NA
+random,random,acp,Citizen Parliamentarian,-0.1760938387477594,-0.27799951958791025,NA,NA
+random,random,auscj,HGE Deliberative Group,0.10641647143966182,0.1250422954759487,NA,NA
+random,random,bep,BEP,0.015577516302413885,0.21761812043082496,NA,NA
+random,random,biobanking_mayo_ubc,Mayo,-0.018027185511140686,-0.03653546433125432,NA,NA
+random,random,biobanking_mayo_ubc,UBC Bio,-0.03481449129848013,0.07857805067404966,NA,NA
+random,random,biobanking_wa,WA Citizens,-0.11350450083454178,0.11364624062318596,NA,NA
+random,random,biobanking_wa,WA Stakeholder,0.2483171009111531,-0.21386508928469916,NA,NA
+random,random,ccps,CCPS ACT Deliberative,0.17389555506338605,0.3354266067029583,NA,NA
+random,random,ds_aargau,Aargau,-0.31253274775538253,-0.24435782907448866,NA,NA
+random,random,ds_bellinzona,Bellinzona,-0.14639044329567763,-0.13279273927263313,NA,NA
+random,random,energy_futures,CSIRO NSW,0.17089425708501205,0.2976816349735243,NA,NA
+random,random,energy_futures,CSIRO WA,0.3495884002667635,0.26406998296526396,NA,NA
+random,random,fnqcj,FNQCJ,0.2128354161562771,0.6726457858854942,NA,NA
+random,random,forestera,Forest Lay Citizen,-0.4225678011183843,0.168538835927994,NA,NA
+random,random,forestera,Forest Stakeholder,0.05072936007491902,-0.11808796403115407,NA,NA
+random,random,fremantle,Fremantle,-0.007479058397108385,0.07945092456800462,NA,NA
+random,random,swiss_health,CA,-0.1202327350885053,0.11562728635774766,NA,NA
+random,random,uppsala_speaks,Activate,-0.42114769217608394,-0.288460836947001,NA,NA
+random,random,uppsala_speaks,Standard,-0.21926726296343513,-0.4368772401287693,NA,NA
+random,random,valsamoggia,Valsamoggia,0.17271767957267015,0.2543903000604055,NA,NA
+random,random,zh_thalwil,Thalwill,0.08883136185910101,0.25774620200947074,NA,NA
+random,random,zh_uster,USTER,0.11525380860790979,0.17551793447432562,NA,NA
+random,random,zh_winterthur,Winterthur,-0.06143122734526596,-0.050517472486645953,NA,NA
+random,random,zukunft,Zukunft,-0.3057567215579381,-0.39253827481448345,NA,NA
 claude-3-5-haiku-20241022,llm,acp,Citizen Parliamentarian,-0.024902331733186123,-0.01852694480923074,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,auscj,HGE Deliberative Group,-0.35049865593684737,-0.35544420892306855,anthropic,claude-3-5-haiku-20241022
 claude-3-5-haiku-20241022,llm,bep,BEP,0.41004945688625805,0.2589574905209991,anthropic,claude-3-5-haiku-20241022
@@ -215,6 +215,30 @@ claude-3-opus-20240229,llm,zh_thalwil,Thalwill,-0.1188902185280235,0.14962462382
 claude-3-opus-20240229,llm,zh_uster,USTER,0.5836010491868711,0.5787651869781996,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,zh_winterthur,Winterthur,0.3923683801126421,0.546471279143663,anthropic,claude-3-opus-20240229
 claude-3-opus-20240229,llm,zukunft,Zukunft,0.5573773561698312,0.5815764208334304,anthropic,claude-3-opus-20240229
+claude-sonnet-4-20250514,llm,acp,Citizen Parliamentarian,0.06006854013561491,-0.21510923866436418,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,auscj,HGE Deliberative Group,-0.3559997267916588,-0.011499585138777801,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,bep,BEP,0.5856217383671942,0.45323248961660567,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,biobanking_mayo_ubc,Mayo,-0.13634507382640126,0.13483455573066394,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,biobanking_mayo_ubc,UBC Bio,0.12420290068829831,0.197398943918456,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,biobanking_wa,WA Citizens,-0.09315046128037618,-0.17672753442040404,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,biobanking_wa,WA Stakeholder,-0.36129924339164565,0.04640684427325219,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,ccps,CCPS ACT Deliberative,0.5169276360874844,0.5550283147018742,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,ds_aargau,Aargau,0.2762326243621751,0.12845505464964807,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,ds_bellinzona,Bellinzona,0.3679125129659677,0.5817235050974199,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,energy_futures,CSIRO NSW,0.5589758437043293,0.2600840234859124,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,energy_futures,CSIRO WA,0.5120895467083786,0.39382662861911877,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,fnqcj,FNQCJ,0.18847258548852697,0.2736358272445904,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,forestera,Forest Lay Citizen,0.5881340848431971,0.0977530908017751,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,forestera,Forest Stakeholder,0.4541168802922171,-0.002650296200016178,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,fremantle,Fremantle,-0.05688136729922488,0.15628596859322116,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,swiss_health,CA,0.35388867508560473,0.20940420750201896,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,uppsala_speaks,Activate,0.42660732663350864,0.5772074017755243,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,uppsala_speaks,Standard,-0.02909590536173201,0.3168493472513111,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,valsamoggia,Valsamoggia,-0.2315792959730274,0.23502485745692475,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,zh_thalwil,Thalwill,-0.21703507136410238,0.11786702486719247,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,zh_uster,USTER,0.5626328521683748,0.4640585862974844,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,zh_winterthur,Winterthur,0.4518392123318402,0.2721112557099928,anthropic,claude-sonnet-4-20250514
+claude-sonnet-4-20250514,llm,zukunft,Zukunft,0.5252049522460804,0.36832052145777794,anthropic,claude-sonnet-4-20250514
 command,llm,acp,Citizen Parliamentarian,-0.08669332336032998,-0.03143631308822029,cohere,command
 command,llm,auscj,HGE Deliberative Group,-0.00860686120857801,0.052818925861358994,cohere,command
 command,llm,bep,BEP,-0.18752653008367748,-0.0810056356372492,cohere,command

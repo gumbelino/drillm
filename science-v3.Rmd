@@ -1,0 +1,1095 @@
+---
+title: "Science"
+author: "Francesco Veri, Gustavo Umbelino"
+date: "`r Sys.Date()`"
+bibliography: bibliography/refs.bib
+link-citations: true
+csl: bibliography/apsa.csl
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r libraries}
+
+library(tidyverse)
+library(ggpubr)
+library(glmmTMB)
+library(performance)
+library(broom.mixed)
+library(data.table)
+
+
+```
+
+# Constants
+```{r constants}
+
+HUMAN_DATA_FILE <- "human_data.csv"
+LLM_DATA_FILE <- "science_llm_data.csv"
+LLMS_FILE <- "private/llms_v3.csv"
+OUTPUT_DIR <- "analysis"
+
+SIG_LEVEL <- 0.05
+LLM_ITERATIONS <- 5
+ITERATIONS <- 1000
+NUM_MODELS <- NA
+
+SKIP_HUMAN <- TRUE
+
+time_est <- (LLM_ITERATIONS * 13 * NUM_MODELS * ITERATIONS * 0.002) / 60
+
+cat("LLM time estimate:", time_est / 60, "h")
+
+
+```
+
+# Functions
+```{r functions}
+read_output_csv <- function(file_name) {
+  read_csv(paste(OUTPUT_DIR, file_name, sep = "/"), show_col_types = FALSE)
+}
+
+write_output_csv <- function(data, file_name) {
+  write_csv(data, paste(OUTPUT_DIR, file_name, sep = "/"))
+}
+
+now_utc <- function() {
+   now <- Sys.time()
+   attr(now, "tzone") <- "UTC"
+   now
+}
+
+dri_calc_v3 <- function(data, v1, v2) {
+  d <- abs((data[[v1]] - data[[v2]]) / sqrt(2))
+  lambda <- 1 - (sqrt(2) / 2)
+  
+  # Scalar penalty based on strength of signal (|r| and |q|)
+  penalty <- ifelse(pmax(abs(data[[v1]]), abs(data[[v2]])) <= 0.2, pmax(abs(data[[v1]]), abs(data[[v2]])) / 0.2, 1)
+  
+  consistency <- (1 - d) * penalty
+  avg_consistency <- mean(consistency)
+  
+  dri <- 2 * ((avg_consistency - lambda) / (1 - lambda)) - 1
+  return(dri)
+}
+
+get_dri <- function(data) {
+  
+  if (nrow(data) < 1) {
+    return(NA)
+  }
+      
+  PNums <- data$PNum
+  
+  Q <- data %>% select(C1:C50)
+  R <- data %>% select(P1:P10)
+  
+  # remove all NA columns (in case there are less than 50
+  Q <- Q[, colSums(is.na(Q)) != nrow(Q)]
+  R <- R[, colSums(is.na(R)) != nrow(R)]
+  
+  # transpose data
+  Q <- t(Q) %>% as.data.frame()
+  R <- t(R) %>% as.data.frame()
+  
+  # name columns with participant numbers
+  colnames(Q) <- PNums
+  colnames(R) <- PNums
+  
+  # obtain a list of correlations without duplicates
+  # cor() returns a correlation matrix between Var1 and Var2
+  # Var1 and Var2 are the variables being correlated
+  # Freq is the correlation
+  QWrite <- subset(as.data.frame(as.table(cor(Q, method = "spearman"))),
+                   match(Var1, names(Q)) > match(Var2, names(Q)))
+  
+  RWrite <- subset(as.data.frame(as.table(cor(R, method = "spearman"))),
+                   match(Var1, names(R)) > match(Var2, names(R)))
+  
+  # initialize the output in the first iteration
+  IC <- data.frame("P_P" = paste0(QWrite$Var1, '-', QWrite$Var2))
+  IC$P1 <- as.numeric(as.character(QWrite$Var1))
+  IC$P2 <- as.numeric(as.character(QWrite$Var2))
+
+  # prepare QWrite
+  QWrite <- as.data.frame(QWrite$Freq)
+  names(QWrite) <- "Q2"
+  
+  # prepare RWrite for merge
+  RWrite <- as.data.frame(RWrite$Freq)
+  names(RWrite) <- "R2"
+  
+  # merge
+  IC <- cbind(IC, QWrite, RWrite)
+  
+  ## IC Points calculations ##
+  IC$IC_POST <- 1 - abs((IC$R2 - IC$Q2) / sqrt(2))
+  
+  ## Group DRI level V3 ##
+  DRI_POST_V3 <- dri_calc_v3(IC, 'R2', 'Q2')
+  
+  return(DRI_POST_V3)
+  
+}
+
+
+get_ind_dri <- function(data) {
+  
+  if (nrow(data) < 1) {
+    return(NA)
+  }
+      
+  PNums <- data$PNum
+  
+  Q <- data %>% select(C1:C50)
+  R <- data %>% select(P1:P10)
+  
+  # remove all NA columns (in case there are less than 50
+  Q <- Q[, colSums(is.na(Q)) != nrow(Q)]
+  R <- R[, colSums(is.na(R)) != nrow(R)]
+  
+  # transpose data
+  Q <- t(Q) %>% as.data.frame()
+  R <- t(R) %>% as.data.frame()
+  
+  # name columns with participant numbers
+  colnames(Q) <- PNums
+  colnames(R) <- PNums
+  
+  # obtain a list of correlations without duplicates
+  # cor() returns a correlation matrix between Var1 and Var2
+  # Var1 and Var2 are the variables being correlated
+  # Freq is the correlation
+  QWrite <- subset(as.data.frame(as.table(cor(Q, method = "spearman"))),
+                   match(Var1, names(Q)) > match(Var2, names(Q)))
+  
+  RWrite <- subset(as.data.frame(as.table(cor(R, method = "spearman"))),
+                   match(Var1, names(R)) > match(Var2, names(R)))
+  
+  # initialize the output in the first iteration
+  IC <- data.frame("P_P" = paste0(QWrite$Var1, '-', QWrite$Var2))
+  IC$P1 <- as.numeric(as.character(QWrite$Var1))
+  IC$P2 <- as.numeric(as.character(QWrite$Var2))
+
+  # prepare QWrite
+  QWrite <- as.data.frame(QWrite$Freq)
+  names(QWrite) <- "Q2"
+  
+  # prepare RWrite for merge
+  RWrite <- as.data.frame(RWrite$Freq)
+  names(RWrite) <- "R2"
+  
+  # merge
+  IC <- cbind(IC, QWrite, RWrite)
+  
+  ## IC Points calculations ##
+  IC$IC_POST <- 1 - abs((IC$R2 - IC$Q2) / sqrt(2))
+  
+  Plist <- unique(c(IC$P1, IC$P2))
+  
+  Plist <- Plist[order(Plist)]
+  
+  DRIInd <- data.frame('PNum' = Plist)
+
+  #Add individual-level metrics
+  for (i in 1:length(Plist)) {
+    
+    # calculate updated DRI V3
+    DRIInd$DRIPostV3[i] <- dri_calc_v3(
+      data = IC  %>% filter(P1 == Plist[i] | P2 == Plist[i]),
+      v1 = 'R2',
+      v2 = 'Q2'
+    )
+    
+  }
+  
+  return(DRIInd)
+  
+}
+
+get_llm_dri <- function(data) {
+  
+  ind_dri <- get_ind_dri(data)
+  llm_ind_dri <- ind_dri %>% filter(PNum == 0)
+  
+  return(llm_ind_dri[1, 2])
+  
+}
+
+
+add_llm_participant <- function(llm_survey_data, data) {
+  
+  # get llm data
+  llm_participant <- llm_survey_data[it, ]
+  
+  # check if it exists
+  if (nrow(llm_participant) == 0) {
+    warning(paste("No participant found for", paste(provider, model, survey, sep = "/")))
+  }
+  
+  # create 2 participants, PRE and POST
+  llm_participants <- bind_rows(llm_participant, llm_participant)
+  llm_participants$PNum <- 0 # PNum = 0 is LLM
+  llm_participants$StageID <- c(1,2)
+  
+  data_with_llm <- bind_rows(data, llm_participants)
+  
+  return(data_with_llm)
+  
+}
+
+
+```
+
+
+# Data
+```{r data}
+
+human_data <- read_output_csv(HUMAN_DATA_FILE)
+llm_data <- read_output_csv(LLM_DATA_FILE)
+
+length(unique(llm_data$model)) # 58 models
+length(unique(llm_data$survey)) # 20 surveys
+
+# 5 iterations = 5800 LLM responses
+
+
+# nrow(human_data %>% group_by(Case) %>% summarise(n = n()))
+
+# remove claude-sonnet-4 because of incomplete data
+# llm_data %>%
+#   group_by(model, survey) %>%
+#   summarise(N = n()) %>%
+#   filter(model %like% "claude-sonnet-4")
+
+
+
+```
+
+# Permutation Test Analysis
+
+## Human-Only
+
+In this test, we are looking for deliberative cases.
+
+```{r analysis}
+
+if (SKIP_HUMAN) {
+  res <- read_output_csv("human-only_perm_test_results_v3.csv")
+} else {
+  
+  set.seed(123)
+  res <- list()
+  perms <- list()
+  j <- 0
+  
+  # select pre and post deliberation
+  data <- human_data #%>% filter(StageID == 2)
+  
+  cases <- sort(unique(data$Case))
+  
+  for (case in cases) {
+    
+    # for progress checking
+    j <- j + 1
+    cat(paste0("[",j,"/",length(cases),"] ", "Starting: ", case, " - "))
+    
+    # get case data
+    data_case <- data %>% filter(Case == case)
+    
+    # get observed delta
+    obs_pre_dri <- get_dri(data_case %>% filter(StageID == 1))
+    obs_post_dri <- get_dri(data_case %>% filter(StageID == 2))
+    obs_delta <- obs_post_dri - obs_pre_dri
+    
+    # initiate results
+    df <- tibble(
+      case = case,
+      delta = obs_delta,
+      source = "observed",
+    )
+    
+    # get preferences
+    shuffle_cols <- grep("^StageID$", names(data_case), value = TRUE)
+    shuffled_data <- data_case
+    
+    
+    dri_shuffle <- list()
+    time_start <- Sys.time()
+    
+    # permutation loop
+    for (i in 1:ITERATIONS) {
+      shuffled_data[pref_cols] <- shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
+      
+      pre_dri <- get_dri(shuffled_data %>% filter(StageID == 1))
+      post_dri <- get_dri(shuffled_data %>% filter(StageID == 2))
+      
+      # GET DRI "PRE"
+      dri_shuffle[[i]] <- tibble(
+        case = case,
+        delta = post_dri - pre_dri,
+        source = "permutation",
+        permutation = i,
+      )
+      
+      
+    }
+    
+    time_end <- Sys.time()
+    
+    elapsed_time <- as.numeric(difftime(time_end, time_start, units = "secs"))
+    
+    cat(paste0("elapsed time: ", round(elapsed_time, 2), "s\n"))
+  
+    
+    dri_shuffle <- bind_rows(dri_shuffle)
+    
+    df <- bind_rows(df, dri_shuffle)
+    
+    perms[[length(perms)+1]] <- df
+    
+    p <- nrow(dri_shuffle %>% filter(delta >= obs_delta)) / nrow(dri_shuffle)
+    
+    res[[length(res) + 1]] <- tibble(
+      case = case,
+      N = nrow(data_case),
+      observed_delta = obs_delta,
+      mean_perm_delta = mean(dri_shuffle$delta, na.rm = TRUE),
+      p = p,
+      elapsed_time_s = elapsed_time,
+    )
+    
+  }
+  
+  res <- bind_rows(res)
+  perms <- bind_rows(perms)
+  
+  write_output_csv(res, "human-only_perm_test_results_v3.csv")
+  write_output_csv(perms, "human-only_perm_data_v3.csv")
+  
+  perms %>%
+    gghistogram(
+      x = "delta",
+      facet.by = "case",
+      fill = "source",
+      add = "mean",
+      rug = TRUE,
+      # color = "p.sig",
+      title = "Permutation test",
+      subtitle = "Pre/Post-Deliberation Delta DRI",
+      caption = paste(ITERATIONS, "permutations"),
+    ) -> plot
+  
+  plot
+    
+  ggsave(
+    paste(OUTPUT_DIR, "plots", paste0("all-perm-v3.png"), sep = "/"),
+    plot,
+    width = 10,
+    height = 6
+  )
+  
+}
+
+```
+
+## Select deliberative cases
+```{r select cases}
+
+# set sugnificance level to 0.1
+deliberative_cases <- res %>% filter(p <= 0.1)
+
+deliberative_cases %>%
+  arrange(p) %>%
+  select(-elapsed_time_s) %>%
+  knitr::kable(caption = "Deliberative Cases", digits = 3)
+
+# sum(deliberative_cases$N)/2
+
+# nrow(models)
+# 
+# llm_data %>% filter(model %in% models$model)
+# 
+# unique(deliberative_cases$case)
+
+
+```
+
+## Data checks
+```{r}
+all_cases <- read_csv("data/cases.csv", show_col_types = FALSE)
+
+surveys <- all_cases %>%
+  filter(case %in% deliberative_cases$case)
+
+surveys <- unique(surveys$survey)
+
+
+final_llm_data <- analysis_data %>%
+  filter(survey %in% surveys)
+  # filter(model %in% models$model) %>%
+  # arrange(created_at) %>%
+  # group_by(model, survey) %>%
+  # slice_head(n = 5)
+
+nrow(final_llm_data)
+  
+
+length(unique(final_llm_data$model))
+length(unique(final_llm_data$survey))
+
+```
+
+
+```{r test}
+
+# group dri == mean individual dri
+ind_dri <- get_ind_dri(data_case)
+
+get_dri(data_case)
+
+mean(ind_dri$DRIPostV3)
+
+```
+
+
+## LLM 
+```{r llm}
+
+set.seed(123)
+res_llms <- list()
+perms <- list()
+j <- 0
+m <- 0 
+
+# select subset of data to analyse: post-deliberation
+data <- human_data %>% filter(StageID == 2)
+
+cases <- sort(unique(deliberative_cases$case))
+
+model_names <- sort(unique(models$model))
+
+if (NUM_MODELS) {
+  model_names <- model_names[1:NUM_MODELS]
+}
+
+for (case in cases) {
+  
+  # for progress checking
+  j <- j + 1
+  cat(paste0("[",j,"/",length(cases),"] ", "Starting: ", case, "\n"))
+  
+  # get case data
+  data_case <- data %>% filter(Case == case)
+  
+  survey_case <- unique(data_case$survey)
+  
+  m <- 0
+  for (model in model_names) {
+    
+    m <- m + 1
+    cat(paste0("- [",m,"/",length(model_names),"] ", "Model: ", model, "\n"))
+    
+    # add LLM participant
+    llm_case_data <- analysis_data %>%
+      filter(model == !!model, survey == survey_case) #%>%
+      #arrange(created_at)
+    
+    for (it in 1:LLM_ITERATIONS) {
+      
+      cat(paste0("- - [",it,"] "))
+      
+      llm_participant <- llm_case_data[it, ]
+      llm_participant$PNum <- 0
+      
+      data_case_with_llm <- bind_rows(data_case, llm_participant)
+      
+      # get observed DRI
+      obs_dri <- get_llm_dri(data_case_with_llm)
+      
+      if (is.na(obs_dri)) {
+        warning("Observed DRI is NA!!")
+        llm_participant
+      }
+      
+      # initiate results
+      df <- tibble(
+        model = model,
+        it = it,
+        case = case,
+        dri = obs_dri,
+        source = "observed"
+      )
+      
+      # get preferences
+      pref_cols <- grep("^P\\d", names(data_case_with_llm), value = TRUE)
+      shuffled_data <- data_case_with_llm
+      
+      
+      dri_shuffle <- list()
+      time_start <- Sys.time()
+      
+      # permutation loop
+      for (i in 1:ITERATIONS) {
+        shuffled_data[pref_cols] <- shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
+        
+        dri_shuffle[[i]] <- tibble(
+          model = model,
+          it = it,
+          case = case,
+          dri = get_dri(shuffled_data),
+          source = "permutation",
+          permutation = i,
+        )
+        
+      }
+      
+      time_end <- Sys.time()
+      
+      elapsed_time <- as.numeric(difftime(time_end, time_start, units = "secs"))
+      
+      cat(paste0("elapsed time: ", round(elapsed_time, 2), "s, observed DRI = ", round(obs_dri, 3), "\n"))
+    
+      
+      dri_shuffle <- bind_rows(dri_shuffle)
+      
+      df <- bind_rows(df, dri_shuffle)
+      
+      perms[[length(perms)+1]] <- df
+      
+      p <- nrow(dri_shuffle %>% filter(dri >= obs_dri)) / nrow(dri_shuffle)
+      
+      res_llms[[length(res_llms) + 1]] <- tibble(
+        model = model,
+        it = it,
+        case = case,
+        N = nrow(data_case),
+        observed_dri = obs_dri,
+        mean_perm_dri = mean(dri_shuffle$dri, na.rm = TRUE),
+        p = p,
+        elapsed_time_s = elapsed_time,
+      )
+      
+      
+    }
+    
+  }
+  
+}
+
+res_llms <- bind_rows(res_llms)
+perms <- bind_rows(perms)
+
+write_output_csv(res_llms %>% filter(!is.na(observed_dri)), "LLM_perm_test_results.csv")
+write_output_csv(perms, "LLM_perm_data.csv")
+
+# perms %>%
+#   gghistogram(
+#     x = "dri",
+#     facet.by = c("model", "case"),
+#     fill = "source",
+#     add = "mean",
+#     rug = TRUE,
+#     title = "Permutation test",
+#     subtitle = "Post-deliberation DRI",
+#     caption = paste(ITERATIONS, "iterations"),
+#   ) -> plot
+# 
+# plot
+#   
+# ggsave(
+#   paste(OUTPUT_DIR, "plots", paste0("all-llm-perm.png"), sep = "/"),
+#   plot,
+#   width = 15,
+#   height = 6
+# )
+
+res_llms %>%
+  filter(!is.na(observed_dri)) %>%
+  group_by(model) %>%
+  summarise(
+    N = n(),
+    sig.count = sum(p < SIG_LEVEL),
+    sig.rate = sig.count / N,
+  ) %>%
+  arrange(-sig.rate) %>%
+  write_output_csv(paste0(LLM_ITERATIONS,"-responses_", ITERATIONS, "-perms_",length(model_names),"-models_summary.csv"))
+
+
+res_llms %>%
+  group_by(model) %>%
+  summarise(
+    N = n(),
+    sig.count = sum(p < SIG_LEVEL),
+    sig.rate = sig.count / N,
+  ) %>%
+  arrange(-sig.rate)
+
+
+
+
+```
+
+
+## Extended Analysis
+
+### Skip
+```{r, fig.width=8,fig.height=6}
+LLM_perm <- res_llms %>% #read("LLM_perm_test_results.csv")
+  filter(model %in% llm_data$model)
+
+LLM_perm %>%
+  group_by(model) %>%
+  summarise(n = n())
+
+###this can be a figure but when inserting name of LLM it becoem a mess
+LLM_perm %>% 
+  mutate(significance = ifelse(p < 0.05, "Significant", "Not significant")) %>% 
+  ggplot(aes(x = reorder(paste(model, case, sep = " | "), -observed_dri), 
+             y = observed_dri, 
+             fill = significance)) + 
+  geom_bar(stat = "identity") + 
+  geom_point(aes(y = mean_perm_dri), shape = 21, color = "black", size = 2, stroke = 0.5) + 
+  coord_flip() + 
+  labs(x = "", 
+       y = "Observed DRI (bar) vs Null Mean (dot)", 
+       fill = "Permutation test (p < 0.05)") + 
+  theme_minimal() +
+  theme(axis.text.y = element_blank(),
+        axis.ticks.y = element_blank())
+```
+
+### Heat map
+```{r, fig.width=8,fig.height=6}
+LLM_summary <- LLM_perm %>%
+  group_by(model, case) %>%
+  summarise(
+    mean_dri = mean(observed_dri),
+    mean_null = mean(mean_perm_dri),
+    mean_p = mean(p),
+    N = n(),
+    sig = mean(p < 0.05),
+    .groups = "drop"
+  )
+
+#this the case perspective density plot but only on observed DRI
+ggplot(LLM_summary, aes(x = case, y = reorder(model, -mean_dri), fill = mean_dri)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "#C22E5A", mid = "white", high = "#3F83F7", midpoint = 0) +
+  labs(x = "Case", y = "Large Language Model", fill = "Mean Observed DRI",
+       title = "LLM Performance across Cases (DRI)") +
+  theme_minimal(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) -> plot
+  
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "science", "fig3.png", sep = "/"),
+  plot,
+  width = 12,
+  height = 9
+)
+
+
+#this is nice a figure but difficult to read
+ggplot(LLM_perm, aes(x = mean_perm_dri, y = observed_dri)) +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey40") +
+  geom_point(aes(color = p < 0.05), alpha = 0.7) +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "black"),
+                     labels = c("Significant", "Not Significant")) +
+  theme_minimal() +
+  labs(title = "Observed vs Null DRI with Significance",
+       x = "Mean Permuted DRI", y = "Observed DRI", color = "p < 0.05")
+```
+
+
+```{r, fig.width=8,fig.height=6}
+#also this if repeated be each case it become very challanging to read
+LLM_perm <- LLM_perm %>%
+  mutate(dri_diff = observed_dri - mean_perm_dri)
+
+ggplot(LLM_perm, aes(x = reorder(model, dri_diff), y = dri_diff, fill = p < 0.05)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ case, scales = "free_x") +
+  scale_fill_manual(values = c("TRUE" = "red", "FALSE" = "grey"), name = "p < 0.05") +
+  coord_flip() +
+  labs(title = "Observed vs Null DRI Difference by Model and Case",
+       y = "Observed DRI – Mean Permuted DRI", x = "LLM Model") +
+  theme_minimal(base_size = 11)
+```
+
+### Figure 1
+```{r, fig.width=8,fig.height=6}
+#I think this figure is ok,
+
+ggplot(LLM_perm, aes(x = reorder(model, observed_dri), y = observed_dri, color = p < 0.05)) +
+  geom_point(size = 1) +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "blue", linewidth = 1) +  # blue dotted line at 0
+  coord_flip() +
+  labs(title = "Observed DRI by Model",
+       subtitle = "Colored by significance (p < 0.05)",
+       x = "LLM Model",
+       y = "Observed DRI") +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "grey"), name = "p < 0.05") +
+  theme_minimal(base_size = 10)
+
+# Step 1: Compute significance percentage and label using reframe
+model_sig_summary <- LLM_perm %>%
+  group_by(model) %>%
+  summarise(
+    total = n(),
+    significant = sum(p < 0.05),
+    perc_significant = round(100 * significant / total, 1),
+    .groups = "drop"
+  ) %>%
+  mutate(label = paste0(model, " (", sprintf(perc_significant, fmt = '%#.1f'), "%)"))
+
+
+# Step 2: Merge back into main data
+LLM_perm_labeled <- LLM_perm %>%
+  left_join(model_sig_summary, by = "model")
+
+
+# Step 3: Plot
+ggplot(LLM_perm_labeled, aes(x = reorder(label, perc_significant), y = observed_dri, color = p < 0.05)) +
+  geom_point(size = 1.2, alpha = 0.8) +
+  geom_hline(yintercept = 0, linetype = "dotted", color = "grey40") +
+  coord_flip() +
+  labs(
+    title = "Observed DRI by Model",
+    subtitle = "Points in red indicate statistical significance (p < 0.05)",
+    x = "LLM Model (Significant %)",
+    y = "Observed DRI"
+  ) +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "grey"), name = "p < 0.05") +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.text.y = element_text(size = 6),
+    legend.position = "bottom"
+  ) -> plot 
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "science", "fig1.png", sep = "/"),
+  plot,
+  width = 8,
+  height = 6
+)
+
+get_summary_stats(LLM_perm_labeled)
+
+
+```
+ 
+### Figure 1 Alt
+
+```{r, fig.width=8,fig.height=8}
+
+
+bar <- LLM_perm_labeled %>%
+  mutate(sign = case_when(
+      p < 0.001 ~ "p < 0.001",
+      p < 0.01 ~ "p < 0.01",
+      p < 0.05 ~ "p < 0.05",
+      p < 0.1 ~ "p < 0.1",
+      TRUE ~ "n.s."  # use "n.s." instead of empty string
+    )) %>%
+  group_by(label, sign, perc_significant) %>%
+  summarise(count = n()) %>%
+  arrange(perc_significant)
+
+bar$sign <- factor(bar$sign, levels = c("n.s.", "p < 0.1", "p < 0.05", "p < 0.01", "p < 0.001"))
+
+model_order <- unique(bar$label)
+
+bar %>%
+  ggbarplot(
+    x = "label",
+    y = "count",
+    fill = "sign",
+    color = "sign",
+    #label = count,
+    order = model_order,
+    title = "Observed DRI by Model",
+    subtitle = "Colored by statistical significance",
+    caption = "9 cases, 5 iterations each = 45 total observed DRIs",
+    xlab = "Large Language Models (% significance p < 0.05)",
+    ylab = "Count of statistically significance across permutation tests"
+  ) %>% ggpar(orientation = "horiz",
+              legend = "bottom",
+              legend.title = "Significance") +
+
+  scale_fill_manual(values = c(
+    "p < 0.001" = "darkred",
+    "p < 0.01" = "red",
+    "p < 0.05" = "orange",
+    "p < 0.1" = "grey50",
+    "n.s." = "black"  # mapped here
+  )) + scale_color_manual(values = c(
+    "p < 0.001" = "darkred",
+    "p < 0.01" = "red",
+    "p < 0.05" = "orange",
+    "p < 0.1" = "grey50",
+    "n.s." = "black"  # mapped here
+  ))  -> plot
+
+
+plot
+
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "science", "fig1alt.png", sep = "/"),
+  plot,
+  width = 12,
+  height = 10
+)
+
+```
+
+
+```{r, fig.width=8,fig.height=6}
+#other version
+
+ggplot(LLM_perm, aes(x = reorder(model, observed_dri), y = observed_dri, color = p < 0.05)) +
+  geom_point(size = 1, alpha = 0.8) +  # larger, slightly transparent points
+  geom_hline(yintercept = 0, linetype = "dotted", color = "grey40") +  # optional baseline
+  coord_flip() +
+  labs(
+    title = "Observed DRI by Model",
+    subtitle = "Points in red indicate statistical significance (p < 0.05)",
+    x = "LLM Model",
+    y = "Observed DRI"
+  ) +
+  scale_color_manual(values = c("TRUE" = "red", "FALSE" = "grey"), name = "p < 0.05") +
+  theme_minimal(base_size = 10) +
+  theme(
+    axis.text.y = element_text(size = 6),
+    legend.position = "bottom"
+  )
+```
+
+
+```{r, fig.width=8,fig.height=6}
+#other possible figure
+model_sig_ratio <- LLM_perm %>%
+  group_by(model) %>%
+  summarise(
+    n = n(),
+    n_sig = sum(p < 0.05),
+    prop_sig = n_sig / n
+  )
+
+ggplot(model_sig_ratio, aes(x = reorder(model, prop_sig), y = prop_sig)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(
+    title = "Proportion of Statistically Significant Results by Model",
+    x = "LLM Model",
+    y = "Share of p < 0.05"
+  ) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  theme_minimal(base_size = 10)
+```
+
+### Figure 2
+```{r, fig.width=8,fig.height=6}
+##new variable ## dummy significant vs not significant
+
+LLM_perm$significant <- LLM_perm$p < 0.05 #put 0.05 but can also be moved
+
+summary(glm(p ~ model, data = LLM_perm))
+
+#fixed
+glm_sig <- glm(significant ~ model, data = LLM_perm, family = binomial)
+summary(glm_sig)
+
+#on cases (significant are the easy or difficult cases)
+glm_sig2 <- glm(significant ~ case, data = LLM_perm, family = binomial)
+summary(glm_sig2)
+
+# TODO: report density plots of cases
+
+# 
+# #random intercept calcualting *basic model*
+model_tmbs <- glmmTMB(significant ~ 1 + (1 | case),
+                      data = LLM_perm,
+                      family = binomial)
+summary(model_tmbs)
+# AIC = 3254.0, BIC = 3384.4
+
+# #check for clustering accordingly to cases
+icc(model_tmbs) #0.099 clustering moderate so I am running with random intercept
+
+model_tmb <- glmmTMB(significant ~ model + (1 | case), 
+                     data = LLM_perm, 
+                     family = binomial)
+summary(model_tmb)
+# AIC = 3254.0, BIC = 3600.2
+
+#TODO: report this analysis
+
+#AIC: 3428.5  for fixed
+#AIC:3240 for random (this is better)
+
+# Use broom to extract and adjust p-values {VERY CONSERVATIVE RESULTS}
+tidy(glm_sig) %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
+  print(n = Inf)  # n = Inf shows all rows # or Benjamini-Hochberg (BH): controls false discovery rate (less conservative)"bonferroni"
+
+tidy(model_tmb) %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH"))  %>%
+  print(n = Inf)  # or Benjamini-Hochberg (BH): controls false discovery rate (less conservative)"bonferroni"
+
+
+# Tidy the model
+coef_df <- tidy(glm_sig, conf.int = TRUE, exponentiate = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    term = gsub("model", "", term),
+    significance = case_when(
+      p.value < 0.001 ~ "p < 0.001",
+      p.value < 0.01 ~ "p < 0.01",
+      p.value < 0.05 ~ "p < 0.05",
+      p.value < 0.1 ~ "p < 0.1",
+      TRUE ~ "n.s."  # use "n.s." instead of empty string
+    )
+  )
+print(coef_df)
+
+# frontier models
+coef_df %>% 
+  filter(estimate > 1 & significance != "n.s.")
+
+coef_df %>% 
+  filter(significance == "n.s.")
+
+coef_df %>% 
+  filter(estimate < 1 & significance != "n.s.")
+
+```
+
+
+```{r, fig.width=8,fig.height=6}
+# Plot on fixed effects
+A<-ggplot(coef_df, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_point(aes(color = significance), size = 2.4) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.15) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "grey40") +
+  coord_flip() +
+  labs(
+    title = "Odds Ratios for Predicting p < 0.05 by Model (FE)",
+    x = "LLM Model (relative to baseline)",
+    y = "Odds Ratio",
+    color = "Significance"
+  ) +
+  scale_color_manual(values = c(
+    "p < 0.001" = "darkred", 
+    "p < 0.01" = "red", 
+    "p < 0.05" = "orange", 
+    "p < 0.1" = "grey50", 
+    "n.s." = "black"  # mapped here
+  )) +
+  theme_minimal(base_size = 8)
+A
+```
+
+```{r}
+
+coef_df$model <- coef_df$term
+
+full_join(LLM_perm_labeled, coef_df, join_by(model)) %>%
+  select(model, estimate, significance)
+
+
+
+```
+
+### Figure 2 Alt
+```{r, fig.width=8,fig.height=6}
+###on random intercept model
+
+# 1. Tidy fixed effects with CIs
+coef_df <- broom.mixed::tidy(model_tmb, 
+                             effects    = "fixed", 
+                             conf.int   = TRUE, 
+                             conf.level = 0.95) %>%
+  filter(term != "(Intercept)") %>%
+  
+  # 2. Exponentiate estimates and CIs
+  mutate(
+    estimate  = exp(estimate),
+    conf.low  = exp(conf.low),
+    conf.high = exp(conf.high),
+    std.error = std.error,
+    
+    # 3. Clean up term names
+    term = gsub("model", "", term),
+    
+    # 4. Significance stars
+    significance = case_when(
+      p.value < 0.001 ~ "p < 0.001",
+      p.value < 0.01  ~ "p < 0.01",
+      p.value < 0.05  ~ "p < 0.05",
+      p.value < 0.1   ~ "p < 0.1",
+      TRUE            ~ "n.s."
+    )
+  ) %>%
+  
+  # 5. Select and order columns
+  select(term, estimate, std.error, conf.low, conf.high, p.value, significance)
+
+print(coef_df,n=60)#e.g., Sonnet 3.7 odds of the outcome are 3.8 times higher compared to the reference group (the one that show 1 odds)
+
+##plot with random intercept
+B<-ggplot(coef_df, aes(x = reorder(term, estimate), y = estimate)) +
+  geom_point(aes(color = significance), size = 2.4) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.15) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "grey40") +
+  coord_flip() +
+  labs(
+    title = "Effect of Model Type on Likelihood of Coherent Output (p < 0.05)",
+    subtitle = "Odds Ratios with 95% Confidence Intervals (Baseline: Reference Model)",
+    x = "LLM Model (relative to baseline)",
+    y = "Odds Ratio",
+    color = "Significance"
+  ) +
+  scale_color_manual(values = c(
+    "p < 0.001" = "darkred", 
+    "p < 0.01" = "red", 
+    "p < 0.05" = "orange", 
+    "p < 0.1" = "grey50", 
+    "n.s." = "black"  # mapped here
+  )) +
+  theme_minimal(base_size = 8)
+
+B -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "science", "fig2.png", sep = "/"),
+  plot,
+  width = 8,
+  height = 6
+)
+
+
+```
+
+
+```{r, fig.width=8,fig.height=6}
+A+B -> plot
+
+plot
+
+ggsave(
+  paste(OUTPUT_DIR, "plots", "science.png", sep = "/"),
+  plot,
+  width = 10,
+  height = 5
+)
+
+```
+

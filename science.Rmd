@@ -513,7 +513,7 @@ for (case in cases) {
 res <- bind_rows(res)
 perms <- bind_rows(perms)
 
-write_output_csv(res, "LLM_perm_test_results.csv")
+write_output_csv(res %>% filter(!is.na(observed_dri)), "LLM_perm_test_results.csv")
 write_output_csv(perms, "LLM_perm_data.csv")
 
 # perms %>%
@@ -538,7 +538,8 @@ write_output_csv(perms, "LLM_perm_data.csv")
 # )
 
 res %>%
-  group_by(model, it) %>%
+  filter(!is.na(observed_dri)) %>%
+  group_by(model) %>%
   summarise(
     N = n(),
     sig.count = sum(p < SIG_LEVEL),
