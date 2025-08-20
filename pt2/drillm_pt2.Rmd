@@ -286,6 +286,7 @@ ic$dj <- abs(ic$ccor - ic$pcor)/sqrt(2)
 for (pi in union(ic$pnum1, ic$pnum2)) {
   pi_data <- ic %>% filter(pnum1 == 8 | pnum2 == 8)
   pi_di <- sum(pi_data$dj) / (nrow(pi_data) - 1)
+  pi_dri <- ...
 }
 
 ```
