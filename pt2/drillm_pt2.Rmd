@@ -1,0 +1,294 @@
+---
+title: 'Triage Against the Machine: Can AI Reason Deliberatively? Part II'
+author: "Francesco Veri, Gustavo Umbelino"
+date: "`r Sys.Date()`"
+bibliography: ../bibliography/refs.bib
+link-citations: true
+csl: ../bibliography/apsa.csl
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(readr)
+library(readxl)
+library(dplyr)
+library(rstatix)
+
+LLM_DATA_DIR <- "../llm_data"
+SURVEY_FILE <- "../data/surveys_v5.xlsx"
+EXEC_LOG_FILE <- paste(LLM_DATA_DIR, "exec_log.csv", sep = "/")
+LLMS_FILE <- "../private/pt2_llms.csv"
+CASES_FILE <- "../data/deliberative_cases.csv"
+PROMPTS_FILE <- "../prompts/prompts.csv"
+OUTPUT_DIR <- "pt2/data"
+
+CONSISTENCY_RESULTS_FILE <- "data/consistency_results.csv"
+
+
+IT <- 5
+
+```
+
+# Large-Language Models (LLMs) Preview
+
+```{r models, warning=FALSE}
+
+# get models info
+models <- read_csv(LLMS_FILE, show_col_types = FALSE) %>%
+  filter(included) # only included "included" models
+
+models %>%
+  select(provider, model) %>% 
+  arrange(provider, model) %>%
+  knitr::kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model"))
+
+```
+
+Building on our previous analysis, we selected only top models.
+
+# Cases
+
+```{r cases, warning=FALSE}
+
+cases <- read_csv(CASES_FILE, show_col_types = FALSE)
+
+cases %>% arrange(survey) %>%
+  knitr::kable(caption = "Deliberative Cases", row.names = TRUE)
+```
+
+# Surveys
+
+```{r surveys, warning=FALSE}
+
+# get deliberative survey names
+survey_names <- unique(cases$survey)
+
+get_surveys <- function(survey_names) {
+  
+  surveys <- list()
+  
+  # Iterate over each sheet in the workbook
+  for (survey_name in survey_names) {
+
+    # Read the current sheet into a data frame
+    df <- read_excel(SURVEY_FILE, sheet = survey_name)
+    
+    # Check if required columns exist
+    required_columns <- c("considerations", "policies", "scale_max", "q-method")
+    missing_cols <- setdiff(required_columns, colnames(df))
+    if (length(missing_cols) > 0) {
+      cat(
+        "Sheet",
+        survey_name,
+        "is missing the following columns:",
+        paste(missing_cols, collapse = ", "),
+        "\n\n"
+      )
+      next
+    }
+    
+    # Calculate the number of non-NA rows in "considerations" column
+    n_c <- sum(!is.na(df$considerations))
+    
+    # Calculate the number of non-NA rows in "policies" column
+    n_p <- sum(!is.na(df$policies))
+    
+    # Extract integer values from "scale_max" column, assuming they are already integers
+    scale_max <- as.integer(na.omit(df$scale_max))
+    
+    # Extract logical (boolean) values from "q-method" column
+    q_method <- as.logical(na.omit(df$`q-method`))
+    
+    surveys[[length(surveys) + 1]] <- tibble(
+      survey = survey_name,
+      considerations = n_c,
+      policies = n_p,
+      scale_max,
+      q_method,
+    )
+    
+  }
+  
+  surveys <- bind_rows(surveys)
+  surveys
+  
+}
+
+surveys <- get_surveys(survey_names)
+
+surveys %>% arrange(survey) %>%
+  knitr::kable(caption = "Surveys", row.names = TRUE)
+
+```
+
+# Roles (System Prompts)
+
+```{r prompts, warning=FALSE}
+
+prompts <- read_csv(PROMPTS_FILE, show_col_types = FALSE)
+
+prompts %>% 
+  group_by(type) %>%
+  summarise(N = n()) %>%
+  knitr::kable(caption = "Number of Prompts by Type")
+
+prompts %>% arrange(type) %>%
+  select(-article) %>%
+  knitr::kable(caption = "System Prompts", row.names = TRUE)
+
+```
+
+# LLM Data Collection
+
+```{r format LLM data, include=FALSE}
+
+# source("get_llm_data.R")
+
+llm_data <- read_csv("data/llm_data_clean.csv", show_col_types = FALSE)
+
+progress <- llm_data %>%
+  group_by(model, survey, prompt_uid) %>%
+  summarise(N = n()) %>%
+  filter(model %in% models$model)
+
+for (uid in unique(prompts$uid)) {
+  
+  for (survey in surveys$survey) {
+    
+    for (model in models$model) {
+      
+      # if model/survey/uid doesn't exist,
+      n <- progress %>% filter(prompt_uid == uid, survey == !!survey, model == !!model) %>% nrow()
+      if (n == 0) {
+        new_row <- tibble(
+          model,
+          survey,
+          prompt_uid = uid,
+          N = 0
+        )
+        progress <- bind_rows(progress, new_row)
+      }
+      
+    }
+    
+  }
+  
+}
+
+progress %>%
+  mutate(done = N >= IT) %>%
+  arrange(model, survey, prompt_uid) %>%
+  filter(!done) %>%
+  knitr::kable(caption = "Data Generation Progress")
+
+progress %>%
+  group_by(model) %>%
+  summarise(done = sum(N)) %>%
+  mutate(total = nrow(surveys) * nrow(prompts) * IT,
+         perc = done * 100 / total) %>%
+  arrange(perc) %>%
+  knitr::kable(caption = "Progress per Model", digits = 2)
+
+
+progress %>%
+  group_by(prompt_uid) %>%
+  summarise(done = sum(N)) %>%
+  mutate(total = nrow(surveys) * nrow(models) * IT,
+         perc = done * 100 / total) %>%
+  arrange(perc) %>%
+  knitr::kable(caption = "Progress per Prompt", digits = 2)
+  
+
+```
+
+# Internal Consistency
+```{r}
+
+consistency_results <- read_csv(CONSISTENCY_RESULTS_FILE, show_col_types = FALSE)
+
+# Aggregate consistency_results by model and calculate summary statistics
+consistency_results %>%
+  group_by(provider, model) %>%
+  select(!N) %>%
+  get_summary_stats(type="common") %>%
+  knitr::kable(caption = "Cronbach's Alpha Summary Across 8 Surveys and 21 prompts", digits = 2)
+
+consistency_results %>%
+  arrange(-alpha_all) %>%
+  knitr::kable(caption = "Cronbach's Alpha Full Results", digits = 2)
+
+```
+
+# Testing deliberation package
+```{r}
+
+install.packages("gumbelino/deliberr")
+
+# devtools::install_github("gumbelino/deliberr", force = TRUE)
+library(deliberr)
+
+# detach("package:deliberr", unload=TRUE)
+
+library(grid)
+library(ggplot2)
+
+
+df <- llm_data %>%
+  filter(grepl("flash", model), survey == "ccps") %>%
+  filter(prompt_uid %in% c("eco", "csk") ) %>%
+  mutate(pnum = row_number()) # treat each response as a participant
+
+ic <- get_dri_ic(df)
+
+deliberr::dri_plot(ic, "ccor", "pcor", "Ecologiests vs. Climate Skeptics", "LLMs", "XX")
+
+dri_plot(ic, "ccor", "pcor", "Test", "", "0.4")
+
+## DRI Plot function Used for producing DRI plots in figures 2 and 3 ## 
+  dri_plot_here <- function(data, x, y, title, suffix, DRI){
+    
+    grob <- grobTree(textGrob(paste0("DRI = ", DRI), x=0.1,  y=0.9, hjust=0,
+                              gp=gpar(col="red", fontsize=13, fontface="italic")))
+    
+    plot <-
+      ggplot(data, aes(x = get(x), y = get(y))) +
+      geom_jitter(width = 0.02, height = 0.02, show.legend = TRUE, col = rgb(0.1, 0, 1, 0.6), lwd = 3) +
+      xlim(-1.1, 1.1) + ylim(-1.1, 1.1) +
+      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
+      geom_abline(intercept = 0, slope = 1, colour="white", lwd = 1) +
+      geom_hline(yintercept = 0, color = "white", lwd = 1) +
+      geom_vline(xintercept = 0, color = "white", lwd = 1) +
+      labs(x = "Intersubjective Agreement - Considerations", y = "Intersubjective Agreement - Preferences", caption = "testing...") +
+      ggtitle(paste0(title, ": ", suffix)) + 
+      annotation_custom(grob) + 
+      geom_density_2d_filled(inherit.aes = T, alpha = 0.3) +
+      geom_density_2d(linewidth = 0.25, colour = "black") +
+      theme(legend.position="none")
+    
+    return(plot)
+  }
+  
+  dri_plot_here(data = ic, 
+           x = 'ccor', y = 'pcor', title = 'Figure X. DRI Plots Test', suffix = 'XXX',
+           0.3)
+
+```
+
+```{r}
+
+
+ic$dj <- abs(ic$ccor - ic$pcor)/sqrt(2)
+
+for (pi in union(ic$pnum1, ic$pnum2)) {
+  pi_data <- ic %>% filter(pnum1 == 8 | pnum2 == 8)
+  pi_di <- sum(pi_data$dj) / (nrow(pi_data) - 1)
+}
+
+```
+
+
+# References

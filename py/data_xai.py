@@ -76,6 +76,7 @@ def generate_data(
     p_prompt,
     c_prompt,
     cuid,
+    system_prompt=None,
     model="grok-2-1212",
     temperature=0,
     reason=False,
@@ -88,9 +89,15 @@ def generate_data(
     provider = get_provider(model)
 
     # build initial message
-    messages = [
-        {"role": "user", "content": c_prompt},
-    ]
+    if system_prompt is None:
+        messages = [
+            {"role": "user", "content": c_prompt},
+        ]
+    else:
+        messages = [
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": c_prompt},
+        ]
 
     # send first message
     res = send_message(
@@ -111,6 +118,7 @@ def generate_data(
         provider,
         model,
         temperature,
+        system_prompt,
         mp,
         CONSIDERATIONS,
         c_prompt,
@@ -151,6 +159,7 @@ def generate_data(
         provider,
         model,
         temperature,
+        system_prompt,
         mp,
         POLICIES,
         p_prompt,
@@ -194,6 +203,7 @@ def generate_data(
             provider,
             model,
             temperature,
+            system_prompt,
             mp,
             REASONS,
             PROMPT_R,

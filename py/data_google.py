@@ -18,7 +18,14 @@ client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
 
 
 def generate_data(
-    mp, p_prompt, c_prompt, cuid, model="gemini-1.5-flash", temperature=0, reason=False
+    mp,
+    p_prompt,
+    c_prompt,
+    cuid,
+    system_prompt=None,
+    model="gemini-1.5-flash",
+    temperature=0,
+    reason=False,
 ):
 
     # get current time
@@ -28,10 +35,18 @@ def generate_data(
     provider = get_provider(model)
 
     # start chat
-    # set temperature in runtime
-    chat = client.chats.create(
-        model=model, config=types.GenerateContentConfig(temperature=temperature)
-    )
+    # set temperature and system prompt in runtime
+    if system_prompt is None:
+        chat = client.chats.create(
+            model=model, config=types.GenerateContentConfig(temperature=temperature)
+        )
+    else:
+        chat = client.chats.create(
+            model=model,
+            config=types.GenerateContentConfig(
+                temperature=temperature, system_instruction=system_prompt
+            ),
+        )
 
     # send first message
     res = chat.send_message(c_prompt)
@@ -49,6 +64,7 @@ def generate_data(
         provider,
         model,
         temperature,
+        system_prompt,
         mp,
         CONSIDERATIONS,
         c_prompt,
@@ -74,6 +90,7 @@ def generate_data(
         provider,
         model,
         temperature,
+        system_prompt,
         mp,
         POLICIES,
         p_prompt,
@@ -102,6 +119,7 @@ def generate_data(
             provider,
             model,
             temperature,
+            system_prompt,
             mp,
             REASONS,
             PROMPT_R,

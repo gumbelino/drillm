@@ -1,9 +1,9 @@
 import argparse
 import os
 import sys
+from prompts import build_system_prompt
 from surveys import get_surveys_data, get_policies_and_considerations
 from utils import (
-    build_system_prompt,
     check_params,
     get_api,
     get_current_time,
@@ -82,9 +82,9 @@ def generate_data(model, iterations, temperature=0, only_survey=None, prompt_uid
         return
 
     # get surveys data
-    surveys = get_surveys_data()
+    surveys = get_surveys_data(deliberative_cases=True)
 
-    progress_df = get_or_create_progress_tracker(surveys)
+    # progress_df = get_or_create_progress_tracker(surveys)
 
     # execution constants
     REASON = True
@@ -222,7 +222,7 @@ def generate_data(model, iterations, temperature=0, only_survey=None, prompt_uid
 
             # save progress to file
             # note: progress_df passed by reference, so values here are updated too
-            update_progress(progress_df, provider, model, survey, prompt_uid)
+            # update_progress(progress_df, provider, model, survey, prompt_uid)
 
             num_success += 1
             surveys_success[survey] += 1

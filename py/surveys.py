@@ -1,6 +1,7 @@
 import pandas as pd
 
 SURVEYS_PATH = "data/surveys_v5.xlsx"
+DELIBERATIVE_CASES = "data/deliberative_cases.csv"
 
 
 def get_survey_names(file_path=SURVEYS_PATH, no_template=False):
@@ -11,10 +12,18 @@ def get_survey_names(file_path=SURVEYS_PATH, no_template=False):
     return survey_names
 
 
-def get_surveys_data(file_path=SURVEYS_PATH):
+def get_surveys_data(file_path=SURVEYS_PATH, deliberative_cases=False):
     xls = pd.ExcelFile(file_path)
     sheets = {}
-    for sheet_name in xls.sheet_names:
+    sheet_names = xls.sheet_names
+
+    if deliberative_cases:
+        deliberative_cases = pd.read_csv(DELIBERATIVE_CASES)
+        sheet_names = filter(
+            lambda survey: survey in set(deliberative_cases["survey"]), sheet_names
+        )
+
+    for sheet_name in sheet_names:
         sheets[sheet_name] = pd.read_excel(xls, sheet_name)
     return sheets
 

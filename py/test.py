@@ -1,9 +1,5 @@
-import utils
+from prompts import get_prompt_uids
 
-sps = utils.get_system_prompts()
+prompts = get_prompt_uids()
 
-for i, uid in enumerate(sps["uid"]):
-
-    sp = utils.build_system_prompt(uid)
-
-    print(f"{i+1}: {sp}\n")
+print(prompts)

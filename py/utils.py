@@ -587,38 +587,3 @@ def quasi_normality_check(ratings):
     is_quasi_normal = abs(mean - median) < 10 and iqr < 30
 
     return is_quasi_normal
-
-
-def build_system_prompt(uid):
-
-    # check for "all" keyword
-    if uid == "all":
-        return None
-
-    # open csv file
-    prompts_df = pd.read_csv("prompts/prompts.csv")
-
-    # get row with uid
-    row = prompts_df[prompts_df["uid"] == uid]
-
-    # check if row is empty
-    if row.empty:
-        raise ValueError(f"Prompt with uid {uid} not found in prompts.csv")
-
-    # get role and description
-    role = row["role"].values[0]
-    description = row["description"].values[0]
-    article = row["article"].values[0]
-
-    # build system prompt
-    system_prompt = PROMPT_S.format(article, role, description)
-
-    return system_prompt
-
-
-def get_system_prompts():
-
-    # open csv file
-    prompts_df = pd.read_csv("prompts/prompts.csv")
-
-    return prompts_df

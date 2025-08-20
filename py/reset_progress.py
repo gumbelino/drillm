@@ -11,15 +11,17 @@ from utils import (
     POLICIES,
 )
 from surveys import get_survey_names
+from prompts import get_prompt_uids
 import os
 import pandas as pd
 
 # get surveys data
 surveys = get_survey_names(no_template=True)
 models = get_models(include_all=True)
+prompts = get_prompt_uids()
 
 
-def reset_progress(quiet=False, temperature=0):
+def reset_progress(quiet=False, temperature=0, custom_prompts=False):
 
     progress_file_path = os.path.join(OUTPUT_DIR, PROGRESS_FILE)
     progress_df = pd.DataFrame()
