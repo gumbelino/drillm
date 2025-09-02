@@ -223,71 +223,323 @@ consistency_results %>%
 
 ```
 
-# Testing deliberation package
+# Plots Surveys vs. Prompt
 ```{r}
 
-install.packages("gumbelino/deliberr")
-
-# devtools::install_github("gumbelino/deliberr", force = TRUE)
 library(deliberr)
 
-# detach("package:deliberr", unload=TRUE)
+res <- list()
 
-library(grid)
-library(ggplot2)
-
-
-df <- llm_data %>%
-  filter(grepl("flash", model), survey == "ccps") %>%
-  filter(prompt_uid %in% c("eco", "csk") ) %>%
-  mutate(pnum = row_number()) # treat each response as a participant
-
-ic <- get_dri_ic(df)
-
-deliberr::dri_plot(ic, "ccor", "pcor", "Ecologiests vs. Climate Skeptics", "LLMs", "XX")
-
-dri_plot(ic, "ccor", "pcor", "Test", "", "0.4")
-
-## DRI Plot function Used for producing DRI plots in figures 2 and 3 ## 
-  dri_plot_here <- function(data, x, y, title, suffix, DRI){
+for (uid in unique(prompts$uid)) {
+  
+  for (survey in unique(surveys$survey)) {
     
-    grob <- grobTree(textGrob(paste0("DRI = ", DRI), x=0.1,  y=0.9, hjust=0,
-                              gp=gpar(col="red", fontsize=13, fontface="italic")))
+    df <- llm_data %>%
+      filter(survey == !!survey) %>%
+      filter(prompt_uid == uid) %>%
+      mutate(pnum = row_number()) # treat each response as a participant
+  
+    ic <- get_dri_ic(df)
+    dri <- get_dri(ic)
     
-    plot <-
-      ggplot(data, aes(x = get(x), y = get(y))) +
-      geom_jitter(width = 0.02, height = 0.02, show.legend = TRUE, col = rgb(0.1, 0, 1, 0.6), lwd = 3) +
-      xlim(-1.1, 1.1) + ylim(-1.1, 1.1) +
-      theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-      geom_abline(intercept = 0, slope = 1, colour="white", lwd = 1) +
-      geom_hline(yintercept = 0, color = "white", lwd = 1) +
-      geom_vline(xintercept = 0, color = "white", lwd = 1) +
-      labs(x = "Intersubjective Agreement - Considerations", y = "Intersubjective Agreement - Preferences", caption = "testing...") +
-      ggtitle(paste0(title, ": ", suffix)) + 
-      annotation_custom(grob) + 
-      geom_density_2d_filled(inherit.aes = T, alpha = 0.3) +
-      geom_density_2d(linewidth = 0.25, colour = "black") +
-      theme(legend.position="none")
+    res[[length(res)+1]] <- tibble(
+      prompt = uid,
+      survey,
+      dri
+    )
     
-    return(plot)
+    # plot(plot_dri_ic(ic, title = paste(survey,uid, sep = "/"), suffix = "All LLMs", DRI = dri))
+    
   }
   
-  dri_plot_here(data = ic, 
-           x = 'ccor', y = 'pcor', title = 'Figure X. DRI Plots Test', suffix = 'XXX',
-           0.3)
+}
+
+res <- bind_rows(res)
+
+res %>%
+  arrange(-dri) %>%
+  knitr::kable(caption = "Prompt vs. Survey DRI across all LLMs", digits = 3)
 
 ```
 
+
+
+# Testing deliberation package
 ```{r}
 
+# install.packages("gumbelino/deliberr")
 
-ic$dj <- abs(ic$ccor - ic$pcor)/sqrt(2)
+lsf.str("package:deliberr")
 
-for (pi in union(ic$pnum1, ic$pnum2)) {
-  pi_data <- ic %>% filter(pnum1 == 8 | pnum2 == 8)
-  pi_di <- sum(pi_data$dj) / (nrow(pi_data) - 1)
-  pi_dri <- ...
+df <- llm_data %>%
+  filter(survey == "ccps") %>%
+  filter(prompt_uid %in% c("eld", "csk") ) %>%
+  mutate(pnum = row_number()) # treat each response as a participant
+
+ic <- get_dri_ic(df)
+dri <- get_dri(ic)
+
+# library(grid)
+# library(ggplot2)
+
+plot_dri_ic(ic, "Ecologists vs. Climate Skeptics", "LLMs", dri)
+
+
+```
+
+
+```{r}
+
+library(psych)
+get_dri_alpha <- function(data) {
+      
+      # Calculate Cronbach's Alpha for considerations
+      considerations_data <- data %>%
+        select(matches("^C\\d+$") & where(~!all(is.na(.))))
+      
+      if (nrow(considerations_data) > 1) {
+        
+        # Check if policies are all equal (no variance)
+        # this can happen when there are few iterations
+        c_all_equal <- all(apply(considerations_data, 1, function(row)
+          all(row == considerations_data[1, ], na.rm = TRUE)), na.rm = TRUE)
+        
+        # NOTE: assign alpha = 1, which should NOT exist!
+        if (c_all_equal) {
+          alpha_considerations <- 1
+        } else {
+        alpha_considerations <- psych::alpha(
+          considerations_data,
+          check.keys = TRUE,
+          warnings = FALSE,
+        )$total$raw_alpha
+        }
+      } else {
+        alpha_considerations <- NA
+      }
+      
+      # Calculate Cronbach's Alpha for policies
+      policies_data <- data %>%
+        select(matches("^P\\d+$") & where(~!all(is.na(.))))
+      
+      if (nrow(policies_data) > 1) {
+        
+        # Check if policies are all equal (no variance)
+        # this can happen when there are few iterations
+        p_all_equal <- all(apply(policies_data, 1, function(row)
+          all(row == policies_data[1, ], na.rm = TRUE)), na.rm = TRUE)
+        
+        # NOTE: assign alpha = 1, which should NOT exist!
+        if (p_all_equal) {
+          alpha_policies <- 1
+        }
+        
+        # normal case, calculate alpha
+        else {
+        alpha_policies <- psych::alpha(
+          policies_data,
+          check.keys = TRUE,
+          warnings = FALSE,
+        )$total$raw_alpha
+        }
+      } else {
+        alpha_policies <- NA
+      }
+      
+      if (nrow(policies_data) > 1 && nrow(considerations_data) > 1) {
+        all_data <- cbind(considerations_data, policies_data)
+        alpha_all <- psych::alpha(
+          all_data,
+          check.keys = TRUE,
+          warnings = FALSE,
+        )$total$raw_alpha
+      } else {
+        alpha_all <- NA
+      }
+      
+      # Store the results in the list
+      result <- tibble(
+        alpha_c = alpha_considerations,
+        alpha_p = alpha_policies,
+        alpha_all = alpha_all,
+      )
+      
+      return(result)
+  
 }
+
+```
+
+
+
+
+## Climate analysis
+```{r climate, include=FALSE}
+# get cases
+cc_cases <- cases %>% filter(topic == "climate")
+
+# get surveys
+cc_surveys <- unique(cc_cases$survey)
+
+# get roles: ecologist ideology, climate perspectives, or devil's advocate
+cc_roles <- prompts %>% filter(type != "ideology" | uid == "eco")
+
+library(ggplot2)
+
+res <- list()
+
+for (model in models$model) {
+  
+  for (survey in cc_surveys) {
+    
+    data <- llm_data %>% filter(model == !!model, survey == !!survey) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+    ic <- get_dri_ic(data)
+    dri <- get_dri(ic)
+    alpha <- get_dri_alpha(data)
+    
+    title <- paste(model, survey, sep = "/")
+    suffix <- paste("all", nrow(cc_roles), "climate roles")
+    # plot <- plot_dri_ic(ic, title, suffix, DRI = dri)
+    
+    file_name <- paste0(model, "-", survey, ".png")
+    
+    # ggsave(
+    #   paste("plots", file_name, sep="/"),
+    #   plot,
+    #   width = 8,
+    #   height = 6
+    # )
+    
+    res[[length(res)+1]] <- tibble(
+      model,
+      survey,
+      role = "all",
+      dri,
+      alpha,
+      n = nrow(data),
+    )
+    
+    
+    for (role in cc_roles$uid) {
+      
+      data <- llm_data %>%
+        filter(model == !!model, survey == !!survey, prompt_uid == role) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+      ic <- get_dri_ic(data)
+      dri <- get_dri(ic) 
+      alpha <- get_dri_alpha(data)
+      
+      res[[length(res)+1]] <- tibble(
+        model,
+        survey,
+        role,
+        dri,
+        alpha,
+        n = nrow(data),
+      )
+      
+    }
+    
+    
+    
+  }
+  
+}
+
+res <- bind_rows(res)
+
+# res %>%
+#   arrange(model, survey, role) %>%
+#   knitr::kable(caption = "DRI consistency cross 12 climate roles", digits = 3)
+
+library(tidyr)
+```
+
+
+
+# Summary DRI
+```{r dri-summary}
+model_role_summary <- res %>%
+  group_by(model, role) %>%
+  summarise(mean_dri = mean(dri)) %>%
+  pivot_wider(names_from = model, values_from = mean_dri)
+
+
+# find best model for each row
+model_role_summary$best <- 
+  colnames(model_role_summary)[max.col(model_role_summary[, -1],
+                                       ties.method = "first") + 1]
+
+model_role_summary %>%
+  knitr::kable(caption = "Mean DRI across models and roles", digits = 3, row.names = TRUE)
+
+
+```
+
+
+# Summary Cronbach's Alpha (Policies)
+```{r}
+model_role_summary <- res %>%
+  group_by(model, role) %>%
+  summarise(mean_alpha_p = mean(alpha_p)) %>%
+  pivot_wider(names_from = model, values_from = mean_alpha_p)
+
+
+# find best model for each row
+model_role_summary$best <- 
+  colnames(model_role_summary)[max.col(model_role_summary[, -1],
+                                       ties.method = "first") + 1]
+
+model_role_summary %>%
+  knitr::kable(caption = "Mean alpha (policies) across models and roles", digits = 3, row.names = TRUE)
+
+
+```
+
+
+# Summary Cronbach's Alpha (Consideration)
+```{r}
+model_role_summary <- res %>%
+  group_by(model, role) %>%
+  summarise(mean_alpha_c = mean(alpha_c)) %>%
+  pivot_wider(names_from = model, values_from = mean_alpha_c)
+
+
+# find best model for each row
+model_role_summary$best <- 
+  colnames(model_role_summary)[max.col(model_role_summary[, -1],
+                                       ties.method = "first") + 1]
+
+model_role_summary %>%
+  knitr::kable(caption = "Mean alpha (considerations) across models and roles", digits = 3, row.names = TRUE)
+
+
+```
+
+
+
+## Testing DRI formulas with human data
+```{r}
+
+human_data <- read_csv("../data/human_data.csv", show_col_types = FALSE)
+test <- list()
+for (case in unique(human_data$case)) {
+  data <- human_data %>% filter(case == !!case, stage_id == 1)
+  ic <- get_dri_ic(data)
+  dri <- get_dri(ic, adjusted = FALSE)
+  dri_adj <- get_dri(ic)
+  
+  cat(case, "|", dri, "|", dri_adj, "\n")
+  
+  test[[length(test)+1]] <- tibble(
+    case,
+    dri,
+    dri_adj
+  )
+}
+
+test <- bind_rows(test)
 
 ```
 

@@ -1,0 +1,431 @@
+---
+title: 'Deliberative Reasoning with(in) the Machine: Large-Language Models as Proxy for Collective Deliberation'
+author: "Nardine Alnemr, Francesco Veri, Gustavo Umbelino"
+date: "`r Sys.Date()`"
+bibliography: ../bibliography/refs.bib
+link-citations: true
+csl: ../bibliography/apsa.csl
+output:
+  md_document:
+    variant: markdown_github
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+
+library(readr)
+library(readxl)
+library(dplyr)
+library(rstatix)
+library(deliberr)
+library(tidyr)
+library(ggplot2)
+library(psych)
+library(gridExtra)
+
+
+LLM_DATA_DIR <- "../llm_data"
+SURVEY_FILE <- "../data/surveys_v5.xlsx"
+EXEC_LOG_FILE <- paste(LLM_DATA_DIR, "exec_log.csv", sep = "/")
+LLMS_FILE <- "../private/pt2_llms.csv"
+CASES_FILE <- "../data/deliberative_cases.csv"
+PROMPTS_FILE <- "../prompts/prompts.csv"
+OUTPUT_DIR <- "pt2/data"
+
+```
+
+# Large-Language Models (LLMs) Preview
+
+```{r models, warning=FALSE}
+
+# get models info
+models <- read_csv(LLMS_FILE, show_col_types = FALSE) %>%
+  filter(included) # only included "included" models
+
+models %>%
+  select(provider, model) %>% 
+  arrange(provider, model) %>%
+  knitr::kable(caption = "LLMs", row.names = TRUE, col.names = c("Provider", "Model"))
+
+```
+
+Building on our previous analysis, we selected only top models.
+
+# Cases
+
+```{r cases, warning=FALSE}
+
+cases <- read_csv(CASES_FILE, show_col_types = FALSE)
+
+cases %>% arrange(survey) %>%
+  knitr::kable(caption = "Deliberative Cases", row.names = TRUE)
+```
+
+Also building on our previous analysis, we selected only deliberative cases.
+
+# Surveys
+
+```{r surveys, warning=FALSE}
+
+# get deliberative survey names
+survey_names <- unique(cases$survey)
+
+get_surveys <- function(survey_names) {
+  
+  surveys <- list()
+  
+  # Iterate over each sheet in the workbook
+  for (survey_name in survey_names) {
+
+    # Read the current sheet into a data frame
+    df <- read_excel(SURVEY_FILE, sheet = survey_name)
+    
+    # Check if required columns exist
+    required_columns <- c("considerations", "policies", "scale_max", "q-method")
+    missing_cols <- setdiff(required_columns, colnames(df))
+    if (length(missing_cols) > 0) {
+      cat(
+        "Sheet",
+        survey_name,
+        "is missing the following columns:",
+        paste(missing_cols, collapse = ", "),
+        "\n\n"
+      )
+      next
+    }
+    
+    # Calculate the number of non-NA rows in "considerations" column
+    n_c <- sum(!is.na(df$considerations))
+    
+    # Calculate the number of non-NA rows in "policies" column
+    n_p <- sum(!is.na(df$policies))
+    
+    # Extract integer values from "scale_max" column, assuming they are already integers
+    scale_max <- as.integer(na.omit(df$scale_max))
+    
+    # Extract logical (boolean) values from "q-method" column
+    q_method <- as.logical(na.omit(df$`q-method`))
+    
+    surveys[[length(surveys) + 1]] <- tibble(
+      survey = survey_name,
+      considerations = n_c,
+      policies = n_p,
+      scale_max,
+      q_method,
+    )
+    
+  }
+  
+  surveys <- bind_rows(surveys)
+  surveys
+  
+}
+
+surveys <- get_surveys(survey_names)
+
+surveys %>% arrange(survey) %>%
+  knitr::kable(caption = "Surveys", row.names = TRUE)
+
+```
+
+Note that two of the cases share the same survey.
+
+# Roles (System Prompts)
+
+```{r prompts, warning=FALSE}
+
+prompts <- read_csv(PROMPTS_FILE, show_col_types = FALSE)
+
+prompts %>% 
+  group_by(type) %>%
+  summarise(n = n(), .groups = "drop") %>%
+  knitr::kable(caption = "Number of Prompts by Type")
+
+prompts %>% arrange(type) %>%
+  select(-article) %>%
+  knitr::kable(caption = "System Prompts", row.names = TRUE)
+
+```
+
+# LLM Data Collection
+
+```{r format LLM data, include=FALSE}
+
+# source("get_llm_data.R")
+
+llm_data <- read_csv("data/llm_data_clean.csv", show_col_types = FALSE)
+
+```
+We collected a total of `r nrow(llm_data)` LLM responses from `r nrow(models)` models across `r nrow(surveys)` surveys and `r nrow(prompts)` roles. We prompted each LLM 5 times with the same prompt.
+
+```{r}
+
+## TODO: move this to deliberr package
+get_dri_alpha <- function(data) {
+      
+      # Calculate Cronbach's Alpha for considerations
+      considerations_data <- data %>%
+        select(matches("^C\\d+$") & where(~!all(is.na(.))))
+      
+      if (nrow(considerations_data) > 1) {
+        
+        # Check if policies are all equal (no variance)
+        # this can happen when there are few iterations
+        c_all_equal <- all(apply(considerations_data, 1, function(row)
+          all(row == considerations_data[1, ], na.rm = TRUE)), na.rm = TRUE)
+        
+        # NOTE: assign alpha = 1, which should NOT exist!
+        if (c_all_equal) {
+          alpha_considerations <- 1
+        } else {
+        alpha_considerations <- psych::alpha(
+          considerations_data,
+          check.keys = TRUE,
+          warnings = FALSE,
+        )$total$raw_alpha
+        }
+      } else {
+        alpha_considerations <- NA
+      }
+      
+      # Calculate Cronbach's Alpha for policies
+      policies_data <- data %>%
+        select(matches("^P\\d+$") & where(~!all(is.na(.))))
+      
+      if (nrow(policies_data) > 1) {
+        
+        # Check if policies are all equal (no variance)
+        # this can happen when there are few iterations
+        p_all_equal <- all(apply(policies_data, 1, function(row)
+          all(row == policies_data[1, ], na.rm = TRUE)), na.rm = TRUE)
+        
+        # NOTE: assign alpha = 1, which should NOT exist!
+        if (p_all_equal) {
+          alpha_policies <- 1
+        }
+        
+        # normal case, calculate alpha
+        else {
+        alpha_policies <- psych::alpha(
+          policies_data,
+          check.keys = TRUE,
+          warnings = FALSE,
+        )$total$raw_alpha
+        }
+      } else {
+        alpha_policies <- NA
+      }
+      
+      if (nrow(policies_data) > 1 && nrow(considerations_data) > 1) {
+        all_data <- cbind(considerations_data, policies_data)
+        alpha_all <- psych::alpha(
+          all_data,
+          check.keys = TRUE,
+          warnings = FALSE,
+        )$total$raw_alpha
+      } else {
+        alpha_all <- NA
+      }
+      
+      # Store the results in the list
+      result <- tibble(
+        alpha_c = alpha_considerations,
+        alpha_p = alpha_policies,
+        alpha_all = alpha_all,
+      )
+      
+      return(result)
+  
+}
+
+```
+
+
+# Climate Analysis
+```{r climate}
+# get cases
+cc_cases <- cases %>% filter(topic == "climate")
+
+# get surveys
+cc_surveys <- unique(cc_cases$survey)
+
+# get roles: ecologist ideology, climate perspectives, or devil's advocate
+cc_roles <- prompts %>% filter(type != "ideology" | uid == "eco")
+
+cc_cases %>%
+  knitr::kable(caption = "Subset of cases used in the climate analysis", row.names = TRUE)
+
+cc_roles %>%
+  knitr::kable(caption = "Subset of roles used in the climate analysis", row.names = TRUE)
+
+
+```
+
+
+```{r, include=FALSE}
+res <- list()
+plots <- list()
+
+
+for (survey in cc_surveys) {
+  
+  for (model in models$model) {
+    
+    data <- llm_data %>% filter(model == !!model, survey == !!survey) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+    ic <- get_dri_ic(data)
+    dri <- get_dri(ic)
+    alpha <- get_dri_alpha(data)
+    
+    title <- paste(model, survey, sep = "/")
+    # suffix <- paste("all", nrow(cc_roles), "climate roles")
+    plot <- plot_dri_ic(ic, title, DRI = dri)
+    
+    file_name <- paste0(model, "-", survey, ".png")
+    
+    # ggsave(
+    #   paste("plots", file_name, sep="/"),
+    #   plot,
+    #   width = 8,
+    #   height = 6
+    # )
+    plots[[length(plots)+1]] <- plot
+    
+    res[[length(res)+1]] <- tibble(
+      model,
+      survey,
+      role = "all",
+      dri,
+      alpha,
+      n = nrow(data),
+    )
+    
+    
+    for (role in cc_roles$uid) {
+      
+      data <- llm_data %>%
+        filter(model == !!model, survey == !!survey, prompt_uid == role) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+      ic <- get_dri_ic(data)
+      dri <- get_dri(ic) 
+      alpha <- get_dri_alpha(data)
+      
+      res[[length(res)+1]] <- tibble(
+        model,
+        survey,
+        role,
+        dri,
+        alpha,
+        n = nrow(data),
+      )
+      
+    }
+    
+    
+    
+  }
+  
+}
+
+res <- bind_rows(res)
+
+# res %>%
+#   arrange(model, survey, role) %>%
+#   knitr::kable(caption = "DRI consistency cross 12 climate roles", digits = 3)
+
+```
+
+## DRI Plots
+```{r, fig.width=20, fig.height=25}
+
+# Arrange in 4 rows x 5 columns
+grid.arrange(grobs = plots,
+             nrow = 5,
+             ncol = 4,
+             widths = rep(1, 4),
+             heights = rep(1, 5))
+
+ggsave(
+  paste("plots", "all_plots.png", sep="/"),
+  plot,
+  width = 20,
+  height = 25
+)
+
+```
+
+
+
+## Summary DRI
+```{r dri-summary}
+model_role_summary <- res %>%
+  group_by(model, role) %>%
+  summarise(mean_dri = mean(dri), .groups = "drop") %>%
+  pivot_wider(names_from = model, values_from = mean_dri)
+
+
+# find best model for each row
+model_role_summary$best <- 
+  colnames(model_role_summary)[max.col(model_role_summary[, -1],
+                                       ties.method = "first") + 1]
+
+model_role_summary %>%
+  knitr::kable(caption = "Mean DRI across models and roles", digits = 3, row.names = TRUE)
+
+
+```
+
+
+## Summary Cronbach's Alpha (Policies)
+```{r}
+model_role_summary <- res %>%
+  group_by(model, role) %>%
+  summarise(mean_alpha_p = mean(alpha_p), .groups = "drop") %>%
+  pivot_wider(names_from = model, values_from = mean_alpha_p)
+
+
+# find best model for each row
+model_role_summary$best <- 
+  colnames(model_role_summary)[max.col(model_role_summary[, -1],
+                                       ties.method = "first") + 1]
+
+model_role_summary %>%
+  knitr::kable(caption = "Mean alpha (policies) across models and roles", digits = 3, row.names = TRUE)
+
+
+```
+
+
+## Summary Cronbach's Alpha (Consideration)
+```{r}
+model_role_summary <- res %>%
+  group_by(model, role) %>%
+  summarise(mean_alpha_c = mean(alpha_c), .groups = "drop") %>%
+  pivot_wider(names_from = model, values_from = mean_alpha_c)
+
+
+# find best model for each row
+model_role_summary$best <- 
+  colnames(model_role_summary)[max.col(model_role_summary[, -1],
+                                       ties.method = "first") + 1]
+
+model_role_summary %>%
+  knitr::kable(caption = "Mean alpha (considerations) across models and roles", digits = 3, row.names = TRUE)
+
+
+```
+
+
+## Detailed data
+```{r}
+
+res %>%
+  arrange(model, survey, role) %>%
+  knitr::kable(caption = "DRI consistency cross 12 climate roles", digits = 3, row.names = TRUE)
+
+```
+
+
+# References
