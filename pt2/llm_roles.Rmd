@@ -12,7 +12,8 @@ output:
     variant: markdown_github
 ---
 
-```{r deliberr, include=FALSE}
+# Install ```deliberr``` package
+```{r deliberr}
 
 # install.packages("gumbelino/deliberr")
 library(deliberr)
@@ -170,12 +171,6 @@ llm_data <- read_csv("data/llm_data_clean.csv", show_col_types = FALSE)
 ```
 We collected a total of `r nrow(llm_data)` LLM responses from `r nrow(models)` models across `r nrow(surveys)` surveys and `r nrow(prompts)` roles. We prompted each LLM 5 times with the same prompt.
 
-```{r}
-
-
-
-```
-
 
 # Climate Analysis
 ```{r climate}
@@ -217,7 +212,7 @@ for (survey in cc_surveys) {
     
     title <- paste(model, survey, sep = "/")
     # suffix <- paste("all", nrow(cc_roles), "climate roles")
-    plot <- plot_dri_ic(ic, title, DRI = dri)
+    plot <- plot_dri_ic(ic, title, dri = dri)
     
     file_name <- paste0(model, "-", survey, ".png")
     
@@ -400,7 +395,7 @@ for (role in cc_roles$uid) {
     alpha <- get_dri_alpha(data)
     
     title <- paste(role, survey, sep = "/")
-    plot <- plot_dri_ic(ic, title, DRI = dri)
+    plot <- plot_dri_ic(ic, title, dri = dri)
     
     file_name <- paste0(role, "-", survey, ".png")
     
@@ -448,7 +443,7 @@ grid.arrange(grobs = plots,
 
 ```{r}
 
-ITERATIONS = 10000
+ITERATIONS = 100
 
 # test_data <- llm_data %>% filter(model == "grok-3-beta", survey == "ccps") %>%
 #         mutate(pnum = row_number()) # treat each response as a participant
@@ -491,101 +486,101 @@ ITERATIONS = 10000
 
 
 ```{r}
-summarize_perm_dri <- function(data, type = "common") {
-  
-  # get observed dri
-  obs_dri <- perm[perm$source == "observed",]$dri
-  
-  # get all permutations
-  perm_dri <- perm[perm$source == "permutation",]
-  
-  # get permutation summary
-  perm_summ <- perm_dri %>% 
-    mutate(perm_dri = dri) %>%
-    select(perm_dri) %>%
-    get_summary_stats(type = type) %>%
-    select(-variable)
-  
-  # calculate p
-  p <- nrow(perm_dri %>% filter(dri >= obs_dri)) / nrow(perm_dri)
-  
-  # compile summary
-  summ <- tibble(
-    obs_dri,
-    p,
-    perm_summ
-  )
-  
-  return(summ)
-
-}
-
-permute_dri <- function(data, iterations = 10000, verbose = FALSE, summary = TRUE) {
-  set.seed(123)
-  res <- list()
-  
-  # GET OBSERVED DRI
-  ic <- get_dri_ic(data)
-  obs_dri <- get_dri(ic)
-  
-  raw <- tibble(
-    dri = obs_dri,
-    source = "observed",
-  )
-  
-  # RUN PERMUTATION
-  # get preferences
-  pref_cols <- grep("^P\\d", names(data), value = TRUE)
-  shuffled_data <- data
-  dri_shuffle <- list()
-  
-  time_start <- Sys.time()
-
-  # permutation loop
-  for (i in 1:iterations) {
-    
-    # shuffle preferences
-    shuffled_data[pref_cols] <- 
-      shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
-    
-    # get DRI
-    ic <- get_dri_ic(shuffled_data)
-    dri <- get_dri(ic)
-    
-    dri_shuffle[[length(dri_shuffle) + 1]] <- tibble(
-      dri,
-      source = "permutation",
-      iteration = i
-    )
-    
-  }
-  
-  time_end <- Sys.time()
-  
-  elapsed_time <- format(difftime(time_end, time_start, units = "auto"), digits = 3)
-  
-  if (verbose) cat(iterations, "permutations completed in", elapsed_time, "\n")
-
-  # merge permutation data
-  dri_shuffle <- bind_rows(dri_shuffle)
-  
-  raw <- bind_rows(raw, dri_shuffle)
-  
-  # calculate p
-  p <- nrow(dri_shuffle %>% filter(dri >= obs_dri)) / nrow(dri_shuffle)
-  
-  #
-  res <- tibble(
-    n = nrow(data),
-    obs_dri = obs_dri,
-    n_perm = nrow(dri_shuffle),
-    mean_perm_dri = mean(dri_shuffle$dri, na.rm = TRUE),
-    p = p,
-  )
-  
-  if (summary) return(res) else return (raw)
-  
-}
+# summarize_perm_dri <- function(data, type = "common") {
+#   
+#   # get observed dri
+#   obs_dri <- perm[perm$source == "observed",]$dri
+#   
+#   # get all permutations
+#   perm_dri <- perm[perm$source == "permutation",]
+#   
+#   # get permutation summary
+#   perm_summ <- perm_dri %>% 
+#     mutate(perm_dri = dri) %>%
+#     select(perm_dri) %>%
+#     get_summary_stats(type = type) %>%
+#     select(-variable)
+#   
+#   # calculate p
+#   p <- nrow(perm_dri %>% filter(dri >= obs_dri)) / nrow(perm_dri)
+#   
+#   # compile summary
+#   summ <- tibble(
+#     obs_dri,
+#     p,
+#     perm_summ
+#   )
+#   
+#   return(summ)
+# 
+# }
+# 
+# permute_dri <- function(data, iterations = 10000, verbose = FALSE, summary = TRUE) {
+#   set.seed(123)
+#   res <- list()
+#   
+#   # GET OBSERVED DRI
+#   ic <- get_dri_ic(data)
+#   obs_dri <- get_dri(ic)
+#   
+#   raw <- tibble(
+#     dri = obs_dri,
+#     source = "observed",
+#   )
+#   
+#   # RUN PERMUTATION
+#   # get preferences
+#   pref_cols <- grep("^P\\d", names(data), value = TRUE)
+#   shuffled_data <- data
+#   dri_shuffle <- list()
+#   
+#   time_start <- Sys.time()
+# 
+#   # permutation loop
+#   for (i in 1:iterations) {
+#     
+#     # shuffle preferences
+#     shuffled_data[pref_cols] <- 
+#       shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
+#     
+#     # get DRI
+#     ic <- get_dri_ic(shuffled_data)
+#     dri <- get_dri(ic)
+#     
+#     dri_shuffle[[length(dri_shuffle) + 1]] <- tibble(
+#       dri,
+#       source = "permutation",
+#       iteration = i
+#     )
+#     
+#   }
+#   
+#   time_end <- Sys.time()
+#   
+#   elapsed_time <- format(difftime(time_end, time_start, units = "auto"), digits = 3)
+#   
+#   if (verbose) cat(iterations, "permutations completed in", elapsed_time, "\n")
+# 
+#   # merge permutation data
+#   dri_shuffle <- bind_rows(dri_shuffle)
+#   
+#   raw <- bind_rows(raw, dri_shuffle)
+#   
+#   # calculate p
+#   p <- nrow(dri_shuffle %>% filter(dri >= obs_dri)) / nrow(dri_shuffle)
+#   
+#   #
+#   res <- tibble(
+#     n = nrow(data),
+#     obs_dri = obs_dri,
+#     n_perm = nrow(dri_shuffle),
+#     mean_perm_dri = mean(dri_shuffle$dri, na.rm = TRUE),
+#     p = p,
+#   )
+#   
+#   if (summary) return(res) else return (raw)
+#   
+# }
 ```
 
 
