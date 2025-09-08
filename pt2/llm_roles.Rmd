@@ -6,11 +6,20 @@ bibliography: ../bibliography/refs.bib
 link-citations: true
 csl: ../bibliography/apsa.csl
 output:
+  html_document: default
+  pdf_document: default
   md_document:
     variant: markdown_github
-  pdf_document: default
-  html_document: default
 ---
+
+```{r deliberr, include=FALSE}
+
+# install.packages("gumbelino/deliberr")
+library(deliberr)
+lsf.str("package:deliberr")
+
+```
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -19,11 +28,11 @@ library(readr)
 library(readxl)
 library(dplyr)
 library(rstatix)
-library(deliberr)
 library(tidyr)
 library(ggplot2)
 library(psych)
 library(gridExtra)
+library(ggpubr)
 
 
 LLM_DATA_DIR <- "../llm_data"
@@ -61,6 +70,7 @@ cases <- read_csv(CASES_FILE, show_col_types = FALSE)
 
 cases %>% arrange(survey) %>%
   knitr::kable(caption = "Deliberative Cases", row.names = TRUE)
+
 ```
 
 Also building on our previous analysis, we selected only deliberative cases.
@@ -162,83 +172,7 @@ We collected a total of `r nrow(llm_data)` LLM responses from `r nrow(models)` m
 
 ```{r}
 
-## TODO: move this to deliberr package
-get_dri_alpha <- function(data) {
-      
-      # Calculate Cronbach's Alpha for considerations
-      considerations_data <- data %>%
-        select(matches("^C\\d+$") & where(~!all(is.na(.))))
-      
-      if (nrow(considerations_data) > 1) {
-        
-        # Check if policies are all equal (no variance)
-        # this can happen when there are few iterations
-        c_all_equal <- all(apply(considerations_data, 1, function(row)
-          all(row == considerations_data[1, ], na.rm = TRUE)), na.rm = TRUE)
-        
-        # NOTE: assign alpha = 1, which should NOT exist!
-        if (c_all_equal) {
-          alpha_considerations <- 1
-        } else {
-        alpha_considerations <- psych::alpha(
-          considerations_data,
-          check.keys = TRUE,
-          warnings = FALSE,
-        )$total$raw_alpha
-        }
-      } else {
-        alpha_considerations <- NA
-      }
-      
-      # Calculate Cronbach's Alpha for policies
-      policies_data <- data %>%
-        select(matches("^P\\d+$") & where(~!all(is.na(.))))
-      
-      if (nrow(policies_data) > 1) {
-        
-        # Check if policies are all equal (no variance)
-        # this can happen when there are few iterations
-        p_all_equal <- all(apply(policies_data, 1, function(row)
-          all(row == policies_data[1, ], na.rm = TRUE)), na.rm = TRUE)
-        
-        # NOTE: assign alpha = 1, which should NOT exist!
-        if (p_all_equal) {
-          alpha_policies <- 1
-        }
-        
-        # normal case, calculate alpha
-        else {
-        alpha_policies <- psych::alpha(
-          policies_data,
-          check.keys = TRUE,
-          warnings = FALSE,
-        )$total$raw_alpha
-        }
-      } else {
-        alpha_policies <- NA
-      }
-      
-      if (nrow(policies_data) > 1 && nrow(considerations_data) > 1) {
-        all_data <- cbind(considerations_data, policies_data)
-        alpha_all <- psych::alpha(
-          all_data,
-          check.keys = TRUE,
-          warnings = FALSE,
-        )$total$raw_alpha
-      } else {
-        alpha_all <- NA
-      }
-      
-      # Store the results in the list
-      result <- tibble(
-        alpha_c = alpha_considerations,
-        alpha_p = alpha_policies,
-        alpha_all = alpha_all,
-      )
-      
-      return(result)
-  
-}
+
 
 ```
 
@@ -246,7 +180,9 @@ get_dri_alpha <- function(data) {
 # Climate Analysis
 ```{r climate}
 # get cases
-cc_cases <- cases %>% filter(topic == "climate")
+cc_cases <- cases %>% 
+  filter(topic == "climate", survey != "fnqcj", survey != "forestera")
+# we remove fnqcj and forestera because they are not consistent with our roles
 
 # get surveys
 cc_surveys <- unique(cc_cases$survey)
@@ -337,28 +273,41 @@ res <- bind_rows(res)
 
 ```
 
-## DRI Plots
-```{r, fig.width=20, fig.height=25}
+## Model/Survey DRI Plots
+```{r, fig.width=20, fig.height=15}
 
 # Arrange in 4 rows x 5 columns
 grid.arrange(grobs = plots,
-             nrow = 5,
+             nrow = 3,
              ncol = 4,
              widths = rep(1, 4),
-             heights = rep(1, 5))
+             heights = rep(1, 3)) -> plot
 
 ggsave(
   paste("plots", "all_plots.png", sep="/"),
   plot,
   width = 20,
-  height = 25
+  height = 15
 )
 
 ```
 
 
+## Summary consistency
 
-## Summary DRI
+```{r}
+
+res %>%
+  group_by(role) %>%
+  get_summary_stats(type = "common") %>%
+  select(-n) %>%
+  arrange(variable, -mean) %>%
+  knitr::kable(caption = "Mean DRI across models", digits = 3, row.names = TRUE)
+
+```
+
+## Summary for model
+
 ```{r dri-summary}
 model_role_summary <- res %>%
   group_by(model, role) %>%
@@ -425,6 +374,328 @@ res %>%
   arrange(model, survey, role) %>%
   knitr::kable(caption = "DRI consistency cross 12 climate roles", digits = 3, row.names = TRUE)
 
+```
+
+## DRI for all
+
+```{r}
+
+
+
+```
+
+```{r, include=FALSE}
+
+res <- list()
+plots <- list()
+
+for (role in cc_roles$uid) {
+
+  for (survey in cc_surveys) {
+    
+    data <- llm_data %>% filter(survey == !!survey, prompt_uid == role) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+    ic <- get_dri_ic(data)
+    dri <- get_dri(ic)
+    alpha <- get_dri_alpha(data)
+    
+    title <- paste(role, survey, sep = "/")
+    plot <- plot_dri_ic(ic, title, DRI = dri)
+    
+    file_name <- paste0(role, "-", survey, ".png")
+    
+
+    plots[[length(plots)+1]] <- plot
+    
+    res[[length(res)+1]] <- tibble(
+      role,
+      survey,
+      dri,
+      alpha,
+      n = nrow(data),
+    )
+    
+  }
+  
+}
+
+res <- bind_rows(res)
+
+
+```
+
+
+## Survey/Role DRI Plots
+```{r, fig.width=15, fig.height=60}
+
+# Arrange in 4 rows x 5 columns
+grid.arrange(grobs = plots,
+             nrow = 12,
+             ncol = 3,
+             widths = rep(1, 3),
+             heights = rep(1, 12))
+
+# ggsave(
+#   paste("plots", "all_role_plots.png", sep="/"),
+#   plot,
+#   width = 5,
+#   height = 12
+# )
+
+```
+
+# Permutation tests
+
+```{r}
+
+ITERATIONS = 10000
+
+# test_data <- llm_data %>% filter(model == "grok-3-beta", survey == "ccps") %>%
+#         mutate(pnum = row_number()) # treat each response as a participant
+# 
+# test <- tibble(
+#   C1 = c(1,2,3,4),
+#   C2 = c(2,3,4,3),
+#   C3 = c(3,2,4,2),
+#   C4 = c(4,3,3,1),
+#   P1 = c(1,2,3,3),
+#   P2 = c(2,3,1,2),
+#   P3 = c(3,1,2,1),
+# )
+# 
+# test_data <- test %>%
+#   mutate(pnum = row_number()) # treat each response as a participant
+# 
+# test_perm <- permute_dri(test_data, iterations = 10, summary = FALSE)
+# test_perm$model <- "model"
+# test_perm$survey <- "survey"
+# 
+# # test_perm %>% 
+# #   mutate()
+# #   group_by(model, survey) %>%
+# #   summarise()
+# 
+# ic <- get_dri_ic(test_data)
+# plot_dri_ic(ic, DRI = get_dri(ic))
+# 
+# pref_cols <- grep("^P\\d", names(test_data), value = TRUE)
+# shuffled_data <- test_data
+# 
+# shuffled_data[pref_cols] <- 
+#   shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
+# 
+# ic <- get_dri_ic(shuffled_data)
+# plot_dri_ic(ic, DRI = get_dri(ic))
+
+```
+
+
+```{r}
+summarize_perm_dri <- function(data, type = "common") {
+  
+  # get observed dri
+  obs_dri <- perm[perm$source == "observed",]$dri
+  
+  # get all permutations
+  perm_dri <- perm[perm$source == "permutation",]
+  
+  # get permutation summary
+  perm_summ <- perm_dri %>% 
+    mutate(perm_dri = dri) %>%
+    select(perm_dri) %>%
+    get_summary_stats(type = type) %>%
+    select(-variable)
+  
+  # calculate p
+  p <- nrow(perm_dri %>% filter(dri >= obs_dri)) / nrow(perm_dri)
+  
+  # compile summary
+  summ <- tibble(
+    obs_dri,
+    p,
+    perm_summ
+  )
+  
+  return(summ)
+
+}
+
+permute_dri <- function(data, iterations = 10000, verbose = FALSE, summary = TRUE) {
+  set.seed(123)
+  res <- list()
+  
+  # GET OBSERVED DRI
+  ic <- get_dri_ic(data)
+  obs_dri <- get_dri(ic)
+  
+  raw <- tibble(
+    dri = obs_dri,
+    source = "observed",
+  )
+  
+  # RUN PERMUTATION
+  # get preferences
+  pref_cols <- grep("^P\\d", names(data), value = TRUE)
+  shuffled_data <- data
+  dri_shuffle <- list()
+  
+  time_start <- Sys.time()
+
+  # permutation loop
+  for (i in 1:iterations) {
+    
+    # shuffle preferences
+    shuffled_data[pref_cols] <- 
+      shuffled_data[sample(1:nrow(shuffled_data)), pref_cols]
+    
+    # get DRI
+    ic <- get_dri_ic(shuffled_data)
+    dri <- get_dri(ic)
+    
+    dri_shuffle[[length(dri_shuffle) + 1]] <- tibble(
+      dri,
+      source = "permutation",
+      iteration = i
+    )
+    
+  }
+  
+  time_end <- Sys.time()
+  
+  elapsed_time <- format(difftime(time_end, time_start, units = "auto"), digits = 3)
+  
+  if (verbose) cat(iterations, "permutations completed in", elapsed_time, "\n")
+
+  # merge permutation data
+  dri_shuffle <- bind_rows(dri_shuffle)
+  
+  raw <- bind_rows(raw, dri_shuffle)
+  
+  # calculate p
+  p <- nrow(dri_shuffle %>% filter(dri >= obs_dri)) / nrow(dri_shuffle)
+  
+  #
+  res <- tibble(
+    n = nrow(data),
+    obs_dri = obs_dri,
+    n_perm = nrow(dri_shuffle),
+    mean_perm_dri = mean(dri_shuffle$dri, na.rm = TRUE),
+    p = p,
+  )
+  
+  if (summary) return(res) else return (raw)
+  
+}
+```
+
+
+
+## Surveys and Roles: Are models trully consistent across roles?
+```{r, fig.width=8, fig.height=12}
+perms <- list()
+summs <- list()
+for (survey in cc_surveys) {
+  
+  for (role in cc_roles$uid) {
+    
+    # get data
+    data <- llm_data %>% filter(survey == !!survey, prompt_uid == role) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+    
+    # get raw permutation data for plotting
+    perm <- permute_dri(data, iterations = ITERATIONS, summary = FALSE)
+    perm$survey <- survey
+    perm$role <- role
+    
+    perms[[length(perms)+1]] <- perm
+    
+    # get summary for table
+    summ <- summarize_perm_dri(perm)
+    summ$survey <- survey
+    summ$role <- role
+    
+    summs[[length(summs)+1]] <- summ
+
+  }
+  
+}
+
+perms <- bind_rows(perms)
+summs <- bind_rows(summs)
+
+
+perms %>%
+  gghistogram(
+    x = "dri",
+    facet.by = c("role", "survey"),
+    fill = "source",
+    add = "mean",
+    rug = TRUE,
+    title = "Survey/Role Permutation Test",
+    caption = paste(ITERATIONS, "permutations"),
+  ) -> plot
+
+plot
+
+summs %>%
+  arrange(p) %>%
+  knitr::kable(caption = "Survey/Role Permutation Summary", digits = 3)
+  
+```
+
+
+## Models and Surveys: Which models are consistent across roles?
+```{r, fig.width=12, fig.height=10}
+perms <- list()
+summs <- list()
+for (survey in cc_surveys) {
+  
+  for (model in models$model) {
+    
+    # get data (for climate roles only)
+    data <- llm_data %>% filter(model == !!model, survey == !!survey, prompt_uid %in% cc_roles$uid) %>%
+        mutate(pnum = row_number()) # treat each response as a participant
+    
+    # get raw permutation data for plotting
+    perm <- permute_dri(data, iterations = ITERATIONS, summary = FALSE)
+    perm$survey <- survey
+    perm$model <- model
+    
+    perms[[length(perms)+1]] <- perm
+    
+    # get summary for table
+    summ <- summarize_perm_dri(perm)
+    summ$survey <- survey
+    summ$model <- model
+    
+    summs[[length(summs)+1]] <- summ
+
+  }
+  
+}
+
+perms <- bind_rows(perms)
+summs <- bind_rows(summs)
+
+
+perms %>%
+  gghistogram(
+    x = "dri",
+    facet.by = c("model", "survey"),
+    fill = "source",
+    add = "mean",
+    rug = TRUE,
+    title = "Survey/Model Permutation Test",
+    caption = paste(ITERATIONS, "permutations"),
+  ) -> plot
+
+
+plot
+
+summs %>%
+  arrange(p) %>%
+  knitr::kable(caption = "Survey/Model Permutation Summary", digits = 3)
+  
 ```
 
 
