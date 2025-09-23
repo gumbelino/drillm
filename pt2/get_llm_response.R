@@ -21,64 +21,6 @@
 # across sessions.
 
 
-# --- Internal Caching for Model Prices ---
-.openrouter_cache <- new.env(parent = emptyenv())
-
-#' Fetches and caches model pricing information from OpenRouter.
-#'
-#' @param model_id The ID of the model (e.g., "google/gemini-flash-1.5").
-#' @return A list with 'prompt' and 'completion' token costs per million tokens.
-#' @keywords internal
-get_model_pricing <- function(model_id) {
-  # Check if model data is already cached
-  if (is.null(.openrouter_cache$models)) {
-    message("Fetching model pricing information from OpenRouter...")
-    response <- httr::GET("https://openrouter.ai/api/v1/models")
-    if (httr::status_code(response) == 200) {
-      .openrouter_cache$models <- httr::content(response, "parsed")$data
-    } else {
-      stop("Failed to fetch model pricing information.")
-    }
-  }
-  
-  # Find the specific model in the cached data
-  model_info <- Filter(function(m) m$id == model_id, .openrouter_cache$models)
-  
-  if (length(model_info) == 0) {
-    warning(paste("Could not find pricing information for model:", model_id))
-    return(list(prompt = 0, completion = 0))
-  }
-  
-  pricing <- model_info[[1]]$pricing
-  
-  # Prices are per million tokens, so we divide by 1,000,000
-  return(list(
-    prompt = as.numeric(pricing$prompt) / 1e6,
-    completion = as.numeric(pricing$completion) / 1e6
-  ))
-}
-
-#' Calculate the cost of an OpenRouter API request based on token usage.
-#'
-#' @param prompt_tokens An integer, the number of tokens in the prompt.
-#' @param completion_tokens An integer, the number of tokens in the completion.
-#' @param model_id A string specifying the model ID (e.g., "google/gemini-flash-1.5").
-#' @return A list containing 'prompt_cost', 'completion_cost', and 'total_cost' in USD.
-#' @export
-calculate_cost <- function(prompt_tokens, completion_tokens, model_id) {
-  pricing <- get_model_pricing(model_id)
-  
-  prompt_cost <- prompt_tokens * pricing$prompt
-  completion_cost <- completion_tokens * pricing$completion
-  total_cost <- prompt_cost + completion_cost
-  
-  return(list(
-    prompt_cost = prompt_cost,
-    completion_cost = completion_cost,
-    total_cost = total_cost
-  ))
-}
-
 
 #' Send a request to a model on OpenRouter.ai
 #'

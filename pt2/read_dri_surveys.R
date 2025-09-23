@@ -15,3 +15,4 @@ p_df <- df %>%
   select(sid, statement) %>%
   filter(!is.na(statement))
 
+
