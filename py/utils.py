@@ -562,6 +562,13 @@ def is_valid_response(c_ranks, p_ranks, considerations, policies, likert, q_meth
         print(f"ERROR: Considerations do not follow a Fixed Quasi-Normal Distribution.")
         return False
 
+    # check if all considerations are the same value
+    # NOTE: this is technically valid according to the instructions,
+    # but unlikely in the human context.
+    if len(set(c_ranks)) == 1:
+        print(f"ERROR: All considerations have the same rank.")
+        return False
+
     return True
 
 

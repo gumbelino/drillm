@@ -116,6 +116,10 @@ llm_data <- bind_rows(data_list)
 
 write_csv(llm_data, paste(OUTPUT_DIR, "llm_data.csv", sep = "/"))
 
+source("pt2/remove_invalid_data.R")
+
+llm_data <- remove_invalid_data(llm_data)
+
 # filter out 5 iterations for each model/survey/prompt combination
 llm_data_clean <- llm_data %>%
   group_by(model, survey, prompt_uid) %>%

@@ -42,12 +42,12 @@ except Exception as e:
     exit(1)
 
 # --- Step 3: Iterate through rows with N = 0 and call the data generation script ---
-print("Checking for rows with N = 0 to generate new data...")
+print("Checking for rows with N < 5 to generate new data...")
 # Filter the DataFrame for rows where the 'N' column is 0.
 rows_to_generate = df[df["N"] < 5]
 
 if rows_to_generate.empty:
-    print("No rows with N = 0 found. All data is complete.")
+    print("No rows with N < 5 found. All data is complete.")
 else:
     # Get the unique combinations of 'model' and 'prompt_uid' from the filtered rows.
     unique_combinations = rows_to_generate[
@@ -56,11 +56,13 @@ else:
 
     # Filter the unique combinations to only include models that contain "claude" (case-insensitive).
     unique_combinations = unique_combinations[
-        unique_combinations["model"].str.contains("flash", case=False, na=False)
+        unique_combinations["model"].str.contains(
+            "claude-3-haiku-20240307", case=False, na=False
+        )
     ]
 
     print(
-        f"Found {len(unique_combinations)} unique combinations with N = 0. Starting data generation..."
+        f"Found {len(unique_combinations)} unique combinations with N < 5. Starting data generation..."
     )
     print(unique_combinations)
     for index, row in unique_combinations.iterrows():
@@ -74,7 +76,7 @@ else:
             "python",
             "./py/generate_llm_data.py",
             model,
-            "1",
+            "5",
             "--survey",
             survey,
             "--prompt",
