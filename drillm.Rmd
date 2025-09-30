@@ -23,9 +23,9 @@ library(car)
 library(rstatix)
 library(dunn.test)
 library(ggpubr)
-library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
+# library(vote) # might need to manually install: https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Fortran-compiler
 
-LLM_DATA_DIR <- "llm_data_part_1_2025-08-12"
+LLM_DATA_DIR <- "llm_data" #"llm_data_part_1_2025-08-12"
 
 SURVEY_FILE <- "data/surveys_v5.xlsx"
 EXEC_LOG_FILE <- paste(LLM_DATA_DIR, "exec_log.csv", sep = "/")
@@ -86,7 +86,7 @@ remove_NA_cols <- function(data) {
 # get models info
 models <- read_csv(LLMS_FILE, show_col_types = FALSE)
 
-models <- models %>% filter(included) %>% filter(is.na(CSCW))
+models <- models %>% filter(included) %>% filter(is.na(context_length))
 
 models %>%
   select(provider, model, num_parameters, context_length, arch, version) %>% 
@@ -192,6 +192,7 @@ get_llm_data <- function() {
       # check if any file for the survey exists
       survey_path <- paste0(LLM_DATA_DIR, "/", provider, "/", model, "/", survey_name, "/")
       if (!any(file.exists(paste0(survey_path, file_types, ".csv")))) {
+        cat()
         next
       }
       

@@ -29,7 +29,7 @@
 #' It can also manage conversation history.
 #'
 #' @param user_prompt A string containing the prompt or question for the model.
-#' @param model A string specifying the model to use (e.g., "google/gemini-flash-1.5").
+#' @param model_id A string specifying the model to use (e.g., "google/gemini-flash-1.5").
 #'        You can find model names on the OpenRouter.ai website.
 #' @param system_prompt A string defining the role or behavior of the model. This is
 #'        only used for the first message in a conversation (when 'context' is NULL).
@@ -60,7 +60,7 @@
 #' # First turn of the conversation
 #' first_turn <- ask_openrouter(
 #'   user_prompt = "What are the three main benefits of using R for data analysis?",
-#'   model = "google/gemini-flash-1.5",
+#'   model_id = "google/gemini-flash-1.5",
 #'   system_prompt = "You are a helpful assistant who provides concise answers."
 #' )
 #' cat("--- Initial Response ---\n")
@@ -70,7 +70,7 @@
 #' # Follow-up question using the context from the first turn
 #' second_turn <- ask_openrouter(
 #'   user_prompt = "Can you elaborate on the second benefit you mentioned?",
-#'   model = "google/gemini-flash-1.5",
+#'   model_id = "google/gemini-flash-1.5",
 #'   context = first_turn$context
 #' )
 #' cat("\n\n--- Follow-up Response ---\n")
@@ -78,7 +78,7 @@
 #' cat(paste0("\n--- Total Cost: $", format(second_turn$cost$total_cost, scientific = FALSE), " ---\n"))
 #' }
 get_llm_response <- function(user_prompt,
-                           model = "google/gemini-flash-1.5",
+                           model_id = "google/gemini-flash-1.5",
                            system_prompt = "You are a helpful assistant.",
                            context = NULL,
                            temperature = 0,
@@ -130,7 +130,7 @@ get_llm_response <- function(user_prompt,
   
   # Construct the body of the request
   body <- list(
-    model = model,
+    model = model_id,
     messages = messages,
     temperature = temperature
     # max_tokens = max_tokens,
@@ -191,30 +191,30 @@ get_llm_response <- function(user_prompt,
 #
 # 2. Call the function for the first time
 
-first_turn <- get_llm_response(
-  user_prompt = "Explain the concept of neural networks in three simple points.",
-  model = "deepseek/deepseek-r1",
-  enable_reasoning = TRUE,
-)
-
-cat("--- First Response ---\n")
-cat(first_turn$response)
-cat(paste0("\n--- Total Usage: ", format(first_turn$usage$total_tokens, scientific = FALSE, nsmall = 8), " tokens ---\n"))
-
-# 3. Use the context for a follow-up question
-if (!is.null(first_turn)) {
-  
-  second_turn <- get_llm_response(
-    user_prompt = "Now, can you elaborate on the second point?",
-    model = "deepseek/deepseek-r1",
-    context = first_turn$context # Pass the context from the first call
-  )
-  
-  cat("\n\n--- Follow-up Response ---\n")
-  cat(second_turn$response)
-  cat(paste0("\n--- Total Usage: ", format(second_turn$usage$total_tokens, scientific = FALSE, nsmall = 8), " tokens ---\n"))
-
-  }
+# first_turn <- get_llm_response(
+#   user_prompt = "Explain the concept of neural networks in three simple points.",
+#   model = "deepseek/deepseek-r1",
+#   enable_reasoning = TRUE,
+# )
+# 
+# cat("--- First Response ---\n")
+# cat(first_turn$response)
+# cat(paste0("\n--- Total Usage: ", format(first_turn$usage$total_tokens, scientific = FALSE, nsmall = 8), " tokens ---\n"))
+# 
+# # 3. Use the context for a follow-up question
+# if (!is.null(first_turn)) {
+#   
+#   second_turn <- get_llm_response(
+#     user_prompt = "Now, can you elaborate on the second point?",
+#     model = "deepseek/deepseek-r1",
+#     context = first_turn$context # Pass the context from the first call
+#   )
+#   
+#   cat("\n\n--- Follow-up Response ---\n")
+#   cat(second_turn$response)
+#   cat(paste0("\n--- Total Usage: ", format(second_turn$usage$total_tokens, scientific = FALSE, nsmall = 8), " tokens ---\n"))
+# 
+#   }
   
 
 

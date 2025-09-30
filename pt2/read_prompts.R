@@ -1,5 +1,4 @@
 
-
 # --- Internal Caching for Model Prices ---
 .openrouter_cache <- new.env(parent = emptyenv())
 
@@ -11,7 +10,7 @@
 get_model_pricing <- function(model_id) {
   # Check if model data is already cached
   if (is.null(.openrouter_cache$models)) {
-    message("Fetching model pricing information from OpenRouter...")
+    # message("Fetching model pricing information from OpenRouter...")
     response <- httr::GET("https://openrouter.ai/api/v1/models")
     if (httr::status_code(response) == 200) {
       .openrouter_cache$models <- httr::content(response, "parsed")$data
@@ -24,16 +23,15 @@ get_model_pricing <- function(model_id) {
   model_info <- Filter(function(m) m$id == model_id, .openrouter_cache$models)
   
   if (length(model_info) == 0) {
-    warning(paste("Could not find pricing information for model:", model_id))
+    warning("Could not find pricing information for model: ", model_id)
     return(list(prompt = 0, completion = 0))
   }
   
   pricing <- model_info[[1]]$pricing
   
-  # Prices are per million tokens, so we divide by 1,000,000
   return(list(
-    prompt = as.numeric(pricing$prompt) / 1e6,
-    completion = as.numeric(pricing$completion) / 1e6
+    prompt = as.numeric(pricing$prompt),
+    completion = as.numeric(pricing$completion)
   ))
 }
 
@@ -61,7 +59,6 @@ calculate_cost <- function(usage, model_id) {
 
 
 library(readr)
-library(uuid)
 
 make_dri_prompts <- function(survey_info, system_prompt_uid = NA_character_) {
   
@@ -119,72 +116,6 @@ make_dri_prompts <- function(survey_info, system_prompt_uid = NA_character_) {
   
 }
 
-## MAKE METADATA
-model_id <- "anthropic/claude-sonnet-4"
-
-split_parts <- strsplit(model_id, "/")[[1]]
-
-Sys.setenv(TZ='UTC')
-
-meta <- tibble(
-  uuid = UUIDgenerate(),
-  created_at_utc = Sys.time(),
-  provider = split_parts[1],
-  model = split_parts[2],
-  survey = "ccps",
-  role_uid = "csk",
-)
-
-### GET SURVEY INFO
-survey_infos <- get_dri_survey_info(survey_name = meta$survey)
-
-survey_info <- survey_infos[[1]]
-
-### MAKE PROMPT
-prompts <- make_dri_prompts(survey_info, meta$role_uid)
-
-
-### GET LLM RESPONSES
-cost_usd <- 0
-
-res <- get_llm_response(prompts$considerations, system_prompt = prompts$system)
-response_c <- res$response
-cost_usd <- cost_usd + calculate_cost(res$usage, model_id)
-log <- log_request(meta, "considerations", prompts$considerations, res)
-
-res <- get_llm_response(prompts$policies, context = res$context)
-response_p <- res$response
-cost_usd <- cost_usd + calculate_cost(res$usage, model_id)
-log <- bind_rows(log, log_request(meta, "policies", prompts$policies, res))
-
-res <- get_llm_response(prompts$reason, context = res$context)
-response_r <- res$response
-cost_usd <- cost_usd + calculate_cost(res$usage, model_id)
-log <- bind_rows(log, log_request(meta, "reason", prompts$reason, res))
-
-## PARSE RESPONSES
-considerations <- parse_llm_response(response_c, 50, "C")
-policies <- parse_llm_response(response_p, 10, "P")
-reason <- parse_llm_response(response_r, 1, "R")
-
-end_time <- Sys.time()
-time_s <- as.numeric(difftime(end_time, meta$created_at_utc, units = "secs"))
-
-llm_data_row <- tibble(
-  meta,
-  time_s,
-  cost_usd,
-  considerations,
-  policies,
-  reason
-)
-
-## write log
-# write_csv(llm_data_row, "pt2/data/llm_data_row.csv")
-
-## append log to file
-write_csv(log, "pt2/data/request_log.csv", append = TRUE)
-
 parse_llm_response <- function(response, max_cols=c(50, 10, 1), col_prefix=c("C", "P", "R")) {
   
   # check for reasoning case
@@ -237,6 +168,92 @@ log_request <- function(meta, type, prompt, res) {
     response = res$response,
   )
   
+}
+
+is_valid_response <- function(considerations, policies, survey_info) {
+  
+  # Extract relevant data from survey_info
+  c_ranks <- considerations %>% select(matches("^C\\d+$") & where(~!all(is.na(.))))
+  p_ranks <- policies %>% select(matches("^P\\d+$") & where(~!all(is.na(.))))
+  scale_max <- survey_info$scale_max
+  q_method <- survey_info$q_method
+  
+  # TODO: return object instead (i.e., include reason)
+  validity <- tibble(
+    is_valid = TRUE,
+    invalid_reason = NA_character_
+  )
+  
+  # Check if data is valid (length mismatch)
+  if (ncol(c_ranks) != nrow(survey_info$considerations)) {
+    message(paste("ERROR: Considerations length mismatch (", ncol(c_ranks), "/", nrow(survey_info$considerations), ")."))
+    validity$is_valid = FALSE; validity$invalid_reason = "c_length_mismatch"
+    return(validity)
+  }
+  
+  if (ncol(p_ranks) != nrow(survey_info$policies)) {
+    message(paste("ERROR: Policies length mismatch (", ncol(p_ranks), "/", nrow(survey_info$policies), ")."))
+    validity$is_valid = FALSE; validity$invalid_reason = "p_length_mismatch"
+    return(validity)
+  }
+  
+  # Check if c_ranks contains invalid values
+  if (any(c_ranks > scale_max | c_ranks < 1)) {
+    message("ERROR: Consideration ranks contain invalid values.")
+    validity$is_valid = FALSE; validity$invalid_reason = "c_invalid_values"
+    return(validity)
+  }
+  
+  # Check if p_ranks contains invalid values
+  if (any(p_ranks > ncol(p_ranks) | p_ranks < 1)) {
+    message("ERROR: Policy ranks contain invalid values.")
+    validity$is_valid = FALSE; validity$invalid_reason = "p_invalid_values"
+    return(validity)
+  }
+  
+  # Check for duplicate values in p_ranks
+  if (ncol(p_ranks) != length(unique(unlist(p_ranks)))) {
+    message("ERROR: Policy ranks contains duplicate values.")
+    validity$is_valid = FALSE; validity$invalid_reason = "p_duplicate_ranks"
+    return(validity)
+  }
+  
+  # Check for quasi-normality (assuming a quasi_normality_check function exists in R)
+  if (q_method && !quasi_normality_check(c_ranks)) {
+    message("ERROR: Considerations do not follow a Fixed Quasi-Normal Distribution.")
+    validity$is_valid = FALSE; validity$invalid_reason = "c_not_q_method"
+    return(validity)
+  }
+  
+  # Check if all considerations are the same value
+  if (length(unique(unlist(c_ranks))) == 1) {
+    message("ERROR: All considerations have the same rating.")
+    validity$is_valid = FALSE; validity$invalid_reason = "c_all_equal"
+    return(validity)
+  }
+  
+  return(validity)
+}
+
+
+# Assuming a placeholder for the quasi_normality_check function
+#' Checks if ratings approximate a Fixed Quasi-Normal Distribution.
+#'
+#' @param ratings A numeric vector of ratings.
+#' @return TRUE if the data exhibits characteristics suggestive of
+#'   a Quasi-Normal Distribution, FALSE otherwise.
+#'
+#' FIXME: make check more robust
+quasi_normality_check <- function(ratings) {
+  
+  mean_val <- mean(ratings)
+  median_val <- median(ratings)
+  iqr_val <- IQR(ratings)
+  
+  # Define rough criteria (adjust as needed)
+  is_quasi_normal <- abs(mean_val - median_val) < 10 && iqr_val < 30
+  
+  return(is_quasi_normal)
 }
 
 

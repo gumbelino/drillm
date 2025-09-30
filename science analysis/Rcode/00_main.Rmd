@@ -1,0 +1,593 @@
+---
+title: "The Wisdom of Hallucinations: LLMs, Bullshit, and Human-like Thinking"
+author: "Francesco Veri, Gustavo Kreia Umbelino"
+date: "`r Sys.Date()`"
+output:
+  html_document: default
+---
+
+```{r libraries, include=FALSE}
+
+library(tidyverse)
+library(ggpubr)
+library(glmmTMB)
+library(performance)
+library(broom.mixed)
+library(data.table)
+library(ggfortify)
+library(lme4)
+
+```
+
+# Define constants
+
+```{r constants}
+
+# input data files
+HUMAN_PERM_RES_FILE <- "../data/human_perm_test_results.csv"
+LLM_PERM_RES_FILE <- "../data/llm_perm_test_results.csv"
+
+# output data files
+DELIB_CASES_FILE <- "../data/deliberative_cases.csv"
+FIGURES_DIR <- "../figures"
+MODELS_RANK <- "../data/models_ri_rank.csv"
+
+# track the number of figures generated
+n_fig <- 0
+
+
+NUM_LLM_ITERATIONS <- 5 # number of LLM responses to use
+
+NUM_LLM_PERMUTATIONS <- 1000 # number of permutations for LLM tests 
+
+```
+
+# Load LLM data
+
+We begin by selecting and cleaning LLM data for analysis.
+
+```{r llm data}
+source("01_select_llm_data.R")
+
+# number of min/max iterations per model
+models <- llm_data_clean %>%
+  group_by(provider, model) %>%
+  summarise(total_iterations = n(), .groups = "drop") %>%
+  arrange(provider, model)
+
+models %>%
+  kable(row.names = TRUE, col.names = c("Provider", "Model", "Total Iterations"), caption = "Models included in the analysis")
+
+models %>%
+  write_csv(paste(FIGURES_DIR, "tab1.csv", sep = "/"))
+
+```
+
+We generated `r nrow(llm_data_clean)` survey responses from `r length(unique(llm_data_clean$model))` LLMs across `r length(unique(llm_data_clean$survey))` surveys. We collected LLM data by prompting each LLM with the same survey questions given to humans in each case study. We prompted each LLM 5 times to capture the variation in LLM responses.
+
+We selected a diverse range of LLM providers, including Anthropic, Cohere, DeepSeek, Google, IBM, Meta, Microsoft, Mistral AI, OpenAI, Qwen, and xAI to capture variation in LLM responses. We selected these LLM providers based on popularity, recommendations from external researchers, and recent work that explores differences across LLMs. The versions used were selected based on availability on LLM repositories, such as ollama and Hugging Face , and availability in proprietary APIs. The goal of this selection is to capture a wide range of LLMs to compare to humans.
+
+For all of the models, unless noted otherwise, we used off-the-shelf, default configurations, with temperature parameter set to zero to reduce the randomness in models’ responses. We also included some variations of the temperature and reasoning effort parameters. These modifications are attached to model names (e.g., t=1 or r=high).
+
+# Run permutation tests
+
+## Human
+
+We then select cases for analysis depending on whether they are consider deliberative or not. To test this, we employ a permutation tests where, for each case study, we permute pre/post deliberation labels. This test is designed to assess whether the difference between pre and post deliberation DRI is random or "truly" deliberative.
+
+```{r human permutations}
+
+if (!file.exists(HUMAN_PERM_RES_FILE)) {
+  source("02_human_permutation.R")
+}
+
+human_perm_res <- read_csv(HUMAN_PERM_RES_FILE, show_col_types = FALSE)
+
+human_perm_res %>%
+  mutate(deliberative = p <= 0.1) %>%
+  select(-elapsed_time_s) %>%
+  arrange(p) %>%
+  kable(caption = "All Cases", digits = 3, row.names = TRUE, col.names = c("Case", "N", "Observed Delta", "Mean Permutation Delta", "p", "Deliebrative (p <= 0.1)"))
+
+```
+
+```{r elapsed time}
+
+# get an estimate of elapsed time 
+et <- round(sum(human_perm_res$elapsed_time_s)/60)
+
+```
+
+It takes approx. `r et` min to run the human permutation tests.
+
+### Select deliberative cases
+
+```{r delib cases}
+
+# set sugnificance level to 0.1
+deliberative_cases <- human_perm_res %>% filter(p <= 0.1)
+
+deliberative_cases %>%
+  arrange(p) %>%
+  select(-elapsed_time_s) %>%
+  knitr::kable(row.names = TRUE,
+    caption = "Deliberative Cases", digits = 3)
+
+
+write_csv(deliberative_cases, DELIB_CASES_FILE)
+
+human_perm_res %>%
+  mutate(
+    N = N/2,
+    observed_delta = round(observed_delta, 3),
+    mean_perm_delta = round(mean_perm_delta, 3),
+    deliberative = p <= 0.1,
+  ) %>%
+  arrange(p) %>%
+  select(-elapsed_time_s) %>%
+  write_csv(paste(FIGURES_DIR, "tab2.csv", sep = "/"))
+
+```
+
+For the rest of the analysis, we look only at the `r nrow(deliberative_cases)` deliberative cases listed above. These cases include a total of `r sum(deliberative_cases$N)` survey responses (pre/post deliberation) and `r sum(deliberative_cases$N)/2` human participants.
+
+## LLM
+
+We conduct a permutation test to assess whether LLMs reason consistently like humans or randomly. This permutation test is designed to break the link between considerations and policy preferences in the DRI survey responses. As such, for each case and for each model, we add the model as participant in the deliberation, calculate the post-deliberation, individual-level DRI, and record the observed LLM DRI. Then, for each permutation loop, we shuffle the considerations and policy preferences of all participants and record the post-deliberation, individual-level LLM DRI.
+
+```{r llm}
+
+if (!file.exists(LLM_PERM_RES_FILE)) {
+  source("03_llm_permutation.R")
+}
+
+llm_perm_res <- read_csv(LLM_PERM_RES_FILE, show_col_types = FALSE)
+
+## new variable ## dummy significant vs not significant
+llm_perm_res$significant <- llm_perm_res$p < 0.05
+
+# get an estimate of elapsed time 
+et <- round(sum(llm_perm_res$elapsed_time_s) / 60)
+
+```
+
+It took about `r et` min to complete LLM permutation test.
+
+Note that we used a lower number of LLM permutations (compared to the previous permutation test) because of the time it takes to run the permutation tests with LLMs. Moreover, in our experience, 1,000 permutations is a good approximation of 10,000.
+
+# Analysis
+
+## Model vs. Case
+
+We begin by visualizing the distribution of observed post-deliberation, individual-level LLM DRI across cases (see Figure below).
+
+```{r heatmap, fig.width=12, fig.height=9}
+llm_summary <- llm_perm_res %>%
+  group_by(model, case) %>%
+  summarise(
+    mean_dri = mean(observed_dri),
+    .groups = "drop"
+  )
+
+# this the case perspective heat map on observed DRI
+llm_summary %>%
+  ggplot(aes(
+    x = case,
+    y = reorder(model, -mean_dri),
+    fill = mean_dri,
+  )) +
+  geom_tile() +
+  scale_fill_gradient2(
+    low = "#C22E5A",
+    mid = "white",
+    high = "#3F83F7",
+    midpoint = 0
+  ) +
+  labs(x = "Case",
+       y = "Large Language Model",
+       fill = "Mean Observed DRI",
+       title = "LLM Performance across Cases (DRI)") +
+  theme_minimal(base_size = 10) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) -> plot
+  
+plot
+```
+Some of the cases (e.g., CCPS ACT Deliberative, FNQCJ, Fremantle, and UBC Bio) seem to have more variation across models.
+
+### Regressions
+
+We create a model to understand whether case affects significance. We begin with a fixed effects (FE) logistical model. Then, we create a model with random intercept (RI) to check whether it is necessary to account for the impact of each model on cases.
+
+```{r, fig.width=8,fig.height=6}
+
+# fixed effects model
+fe_cases_model <- glm(significant ~ case, data = llm_perm_res, family = binomial)
+summary(fe_cases_model)
+
+# random intercept model
+ri_cases_model <- glmmTMB(significant ~ 1 + (1 | model),
+                      data = llm_perm_res,
+                      family = binomial)
+
+summary(ri_cases_model)
+
+icc(ri_cases_model)
+
+```
+Low ICC suggests that the FE model is good enough. Further tests are needed, but not the goal of this analysis.
+
+```{r, include=FALSE}
+n_fig <- n_fig + 1
+ggsave(
+  paste(FIGURES_DIR, paste0("fig", n_fig, ".png"), sep = "/"),
+  plot,
+  width = 12,
+  height = 9
+)
+```
+
+## Significance Percentage
+
+We analysed the percentage of significant permutations across models and cases. There are 9 deliberative cases and each model has 5 iterations, resulting in a total of 45 possible significant results.
+
+```{r, fig.width=12, fig.height=9}
+model_sig_summary <- llm_perm_res %>%
+  group_by(model) %>%
+  summarise(
+    total = n(),
+    significant = sum(p < 0.05),
+    perc_significant = round(100 * significant / total, 2),
+    .groups = "drop"
+  ) %>%
+  mutate(label = paste0(model, " (", sprintf(perc_significant, fmt = '%#.2f'), "%)"))
+
+
+llm_perm_labeled <- llm_perm_res %>%
+  left_join(model_sig_summary, by = "model")
+
+bar <- llm_perm_labeled %>%
+  mutate(sign = case_when(
+      p < 0.001 ~ "p < 0.001",
+      p < 0.01 ~ "p < 0.01",
+      p < 0.05 ~ "p < 0.05",
+      p < 0.1 ~ "p < 0.1",
+      TRUE ~ "n.s."  # use "n.s." instead of empty string
+    )) %>%
+  group_by(label, sign, perc_significant) %>%
+  summarise(count = n(), .groups = "drop") %>%
+  arrange(perc_significant)
+
+bar$sign <- factor(bar$sign, levels = c("n.s.", "p < 0.1", "p < 0.05", "p < 0.01", "p < 0.001"))
+
+model_order <- unique(bar$label)
+
+bar %>%
+  ggbarplot(
+    x = "label",
+    y = "count",
+    fill = "sign",
+    color = "sign",
+    #label = count,
+    order = model_order,
+    title = "Observed DRI by Model",
+    subtitle = "Colored by statistical significance",
+    caption = "9 cases, 5 iterations each = 45 total observed DRIs",
+    xlab = "Large Language Models (% significance p < 0.05)",
+    ylab = "Count of statistically significance across permutation tests"
+  ) %>% ggpar(orientation = "horiz",
+              legend = "bottom",
+              legend.title = "Significance") +
+
+  scale_fill_manual(values = c(
+    "p < 0.001" = "darkred",
+    "p < 0.01" = "red",
+    "p < 0.05" = "orange",
+    "p < 0.1" = "grey50",
+    "n.s." = "black"  # mapped here
+  )) + scale_color_manual(values = c(
+    "p < 0.001" = "darkred",
+    "p < 0.01" = "red",
+    "p < 0.05" = "orange",
+    "p < 0.1" = "grey50",
+    "n.s." = "black"  # mapped here
+  ))  -> plot
+
+plot
+
+# print summary statistics
+get_summary_stats(llm_perm_labeled, type="robust") %>% 
+  kable(caption = "Summary of Robust Statistics")
+
+```
+
+```{r, include=FALSE}
+n_fig <- n_fig + 1
+ggsave(
+  paste(FIGURES_DIR, paste0("fig", n_fig, ".png"), sep = "/"),
+  plot,
+  width = 12,
+  height = 10
+)
+```
+
+The following table shows the percentage of significant results per model.
+
+```{r}
+model_sig_summary %>%
+  select(-label) %>%
+  arrange(-significant) %>%
+  kable()
+```
+
+
+## Odds-Ratio
+
+To account for chance in the analysis above, we calculate the odds-ratio of a model performing like humans or randomly by first fitting a model to predict significance.
+
+### Model Selection
+
+#### Linear Regression Model
+
+Note that in this model smaller estimates are "better" because smaller p-values are "better". We begin with this model as a robustness check of further results.
+
+```{r}
+
+linear_model <- glm(p ~ model, data = llm_perm_res)
+summary(linear_model)
+
+tidy(linear_model) %>%
+  mutate(term = gsub("model", "", term)) %>%
+  arrange(estimate) %>%
+  kable(digits = 3)
+
+```
+
+#### Linear Model with Random Intercept
+
+We test whether a random intercept model might provide a better fit.
+
+```{r}
+linear_ri_model <- lmer(p ~ 1 + (1 | case),
+                     data = llm_perm_res)
+summary(linear_ri_model)
+icc(linear_ri_model)
+```
+
+The ICC suggests that random intercept might result in a better-fitting model. 
+
+```{r}
+linear_ri_model <- lmer(p ~ model + (1 | case),
+                     data = llm_perm_res)
+summary(linear_ri_model)
+
+tidy(linear_ri_model) %>%
+  mutate(term = gsub("model", "", term)) %>%
+  arrange(estimate) %>%
+  kable(digits = 3)
+
+```
+
+#### Basic Logistic Regression Model: sig \~ model
+
+We also test whether a logistic regression might be a better fit.  
+
+```{r, fig.width=8,fig.height=6}
+
+fe_model <- glm(significant ~ model, data = llm_perm_res, family = binomial)
+summary(fe_model)
+```
+
+#### Mixed-Effects Logistic Regression: sig \~ 1 + (1 \| case)
+
+We also include random intercepts for case.
+
+```{r, fig.width=8,fig.height=6}
+# random intercept calculating *basic model*
+ri_basic_model <- glmmTMB(significant ~ 1 + (1 | case),
+                      data = llm_perm_res,
+                      family = binomial)
+# summary(ri_basic_model)
+
+# #check for clustering accordingly to cases
+# intraclass correlation coefficient (ICC)
+# ICC is the proportion of variance explained by the grouping variable (case)
+icc(ri_basic_model)
+```
+The ICC results suggest that the random intercept model might be a better fit.
+
+#### Mixed-Effects Logistic Regression: sig \~ *model* + (1 \| case)
+
+We includes fixed effects for *model* random intercepts for *case*.
+
+```{r, fig.width=8,fig.height=6}
+ri_model <- glmmTMB(significant ~ model + (1 | case), 
+                     data = llm_perm_res, 
+                     family = binomial)
+summary(ri_model)
+```
+
+### Model Comparison
+```{r}
+AIC(fe_model)
+AIC(ri_model)
+
+```
+
+The lower AIC for the model with random intercept suggests a better fit for the data.
+
+### p-value corrections
+
+We adjusted the p-value based on Benjamini-Hochberg correction, but found the values to be too conservative. 
+
+```{r, fig.width=8,fig.height=6}
+# Benjamini-Hochberg (BH): controls false discovery rate (less conservative)
+tidy(fe_model) %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH")) %>%
+  mutate(term = gsub("model", "", term)) %>%
+  arrange(p_adj) %>%
+  kable(digits = 3)
+
+tidy(ri_model) %>%
+  mutate(p_adj = p.adjust(p.value, method = "BH"))  %>%
+  mutate(term = gsub("model", "", term)) %>%
+  arrange(p_adj) %>%
+  kable(digits = 3)
+
+# look at ICC -- to control for cases or not?
+# look at AIC/BIC of both -- to choose between FE vs. RI models
+```
+
+### Basic Plot
+
+```{r, fig.width=8,fig.height=6}
+# Tidy the model
+coef_df <- tidy(
+  fe_model,
+  conf.int = TRUE,
+  exponentiate = TRUE
+  ) %>%
+  filter(term != "(Intercept)") %>%
+  mutate(
+    term = gsub("model", "", term),
+    significance = case_when(
+      p.value < 0.001 ~ "p < 0.001",
+      p.value < 0.01 ~ "p < 0.01",
+      p.value < 0.05 ~ "p < 0.05",
+      p.value < 0.1 ~ "p < 0.1",
+      TRUE ~ "n.s."  # use "n.s." instead of empty string
+    )
+  )
+
+coef_df %>%
+  arrange(-estimate) %>%
+  kable(digits = 3)
+
+```
+
+```{r}
+# Plot on fixed effects
+coef_df %>%
+  ggplot(aes(x = reorder(term, estimate), y = estimate)) +
+  geom_point(aes(color = significance), size = 2.4) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.15) +
+  geom_hline(yintercept = 1,
+             linetype = "dashed",
+             color = "grey40") +
+  coord_flip() +
+  labs(
+    title = "Odds Ratios for Predicting p < 0.05 by Model (FE)",
+    x = "LLM (Relative to baseline)",
+    y = "Odds Ratio",
+    color = "Significance"
+  ) +
+  scale_color_manual(
+    values = c(
+      "p < 0.001" = "darkred",
+      "p < 0.01" = "red",
+      "p < 0.05" = "orange",
+      "p < 0.1" = "grey50",
+      "n.s." = "black"  # mapped here
+    )
+  ) +
+  theme_minimal(base_size = 8)
+```
+
+### Random Intercept Plot
+
+```{r}
+
+coef_df <- tidy(
+  ri_model,
+  effects    = "fixed",
+  conf.int   = TRUE,
+  exponentiate = TRUE
+) %>%
+  filter(term != "(Intercept)") %>%
+  
+  # exponentiate estimates and CIs
+  mutate(
+    # estimate  = exp(estimate),
+    # conf.low  = exp(conf.low),
+    # conf.high = exp(conf.high),
+    # std.error = std.error,
+    
+    # clean up term names
+    term = gsub("model", "", term),
+    
+    # add significance
+    significance = case_when(
+      p.value < 0.001 ~ "p < 0.001",
+      p.value < 0.01  ~ "p < 0.01",
+      p.value < 0.05  ~ "p < 0.05",
+      p.value < 0.1   ~ "p < 0.1",
+      TRUE            ~ "n.s."
+    )
+  ) %>%
+  
+  # select and order columns
+  select(term,
+         estimate,
+         std.error,
+         conf.low,
+         conf.high,
+         p.value,
+         significance)
+
+coef_df %>%
+  arrange(-estimate) %>%
+  kable(digits = 3)
+
+#e.g., Sonnet 3.7 odds of the outcome are 3.8 times higher compared to the reference group (the one that show 1 odds)
+
+##plot with random intercept
+coef_df %>%
+  ggplot(aes(x = reorder(term, estimate), y = estimate)) +
+  geom_point(aes(color = significance), size = 2.4) +
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high), width = 0.15) +
+  geom_hline(yintercept = 1,
+             linetype = "dashed",
+             color = "grey40") +
+  coord_flip() +
+  labs(
+    title = "Effect of Model Type on Likelihood of Coherent Output (p < 0.05)",
+    subtitle = "Odds Ratios with 95% Confidence Intervals (Baseline: Reference Model)",
+    x = "LLM Model (relative to baseline)",
+    y = "Odds Ratio",
+    color = "Significance"
+  ) +
+  scale_color_manual(
+    values = c(
+      "p < 0.001" = "darkred",
+      "p < 0.01" = "red",
+      "p < 0.05" = "orange",
+      "p < 0.1" = "grey50",
+      "n.s." = "black"  # mapped here
+    )
+  ) +
+  theme_minimal(base_size = 8) -> plot
+
+plot
+```
+
+```{r, include=FALSE}
+n_fig <- n_fig + 1
+ggsave(
+  paste(FIGURES_DIR, paste0("fig", n_fig, ".png"), sep = "/"),
+  plot,
+  width = 12,
+  height = 9
+)
+
+```
+
+# Save results to file
+```{r}
+
+coef_df %>%
+  mutate(model = term) %>%
+  select(model, estimate, std.error, p.value) %>%
+  write_csv(MODELS_RANK)
+
+```
+
+

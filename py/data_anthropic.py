@@ -64,6 +64,14 @@ def send_message(model, messages, temperature, system_prompt=None):
             messages=messages,
         )
 
+    if system_prompt is None:
+        return client.messages.create(
+            model=model,
+            max_tokens=MAX_TOKENS,
+            temperature=temperature,
+            messages=messages,
+        )
+
     return client.messages.create(
         model=model,
         system=system_prompt,

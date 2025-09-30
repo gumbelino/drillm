@@ -10,7 +10,6 @@ get_dri_survey_info <- function(survey_name = NA) {
   # read the sheet names of the Excel file
   survey_names <- excel_sheets(SURVEY_FILE)
   
-  
   if (!is.na(survey_name)) {
     survey_names <- survey_names[survey_names == survey_name]
   } else {
